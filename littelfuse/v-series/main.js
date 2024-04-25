@@ -60,6 +60,7 @@
         const descriptionCollection =
           experience.findComponentsByTag("description");
         const notApplicableCollection = experience.findLayersByTag("na");
+        let clickTime = 0;
 
         const dict = {
           type: "",
@@ -108,10 +109,11 @@
             };
             parent.postMessage(JSON.stringify(data), "*");
           } else {
-            gtag("event", "ceros-click", {
+            gtag("event", "ceros_click", {
               event_category: "CEROS",
               event_label: link,
               transport_type: "beacon",
+              send_to: trackingId,
               event_callback: function () {
                 console.log("event is succeessfully sent");
                 openRequestedSingleTab(link);
@@ -119,12 +121,16 @@
             });
           }
 
-          // dataLayer.push({
-          //   event: "outbound-link-click",
-          //   eventCategory: "CEROS",
-          //   eventAction: "ceros-click",
-          //   eventLabel: link,
-          // });
+        }
+
+        function isDoubleClickBug() {
+            if (Date.now() - clickTime < 200) {
+                clickTime = Date.now()
+                return true;
+            } else {
+                clickTime = Date.now();
+                return false;
+            }
         }
 
         // update description
@@ -284,13 +290,17 @@
         // trigger base CTA
         baseCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
         //   openRequestedSingleTab(results.baseLink);
-          sendUAEvent(results.baseLink);
+        if (!isDoubleClickBug()) {
+            sendUAEvent(results.baseLink);
+        }
         });
 
         // trigger rocker CTA
         rockerCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
         //   openRequestedSingleTab(results.rockerLink);
-          sendUAEvent(results.rockerLink);
+        if (!isDoubleClickBug()) {
+            sendUAEvent(results.rockerLink);
+        }
         });
 
         // show base name
