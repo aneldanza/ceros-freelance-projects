@@ -59,6 +59,7 @@
         const backCollection = experience.findLayersByTag("back");
         const descriptionCollection =
           experience.findComponentsByTag("description");
+        const notApplicableCollection = experience.findLayersByTag("na");
 
         const dict = {
           type: "",
@@ -84,6 +85,12 @@
             }
           },
         });
+
+        notApplicableCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+            if (answers["q-2"] != "Two") {
+                layer.hide();
+            } 
+        })
 
         // send UA event with outbound link info
         //   function sendUAEvent(link) {
@@ -183,6 +190,7 @@
           );
           if (h && hotspot.getPayload() === "No") {
             h.hide();
+            answers["q-3"] = "";
           } else {
             h.show();
           }
@@ -202,9 +210,12 @@
 
         function storeProductResults(productKey, product) {
           for (const item in products) {
-            if (products[item]["product_tag"].toLowerCase() === productKey.toLowerCase()) {
+            if (
+              products[item]["product_tag"].toLowerCase() ===
+              productKey.toLowerCase()
+            ) {
               results[`${product}Name`] = item;
-              results[`${product}ImageTag`] = products[item]["img_tag"] 
+              results[`${product}ImageTag`] = products[item]["img_tag"];
               results[`${product}Link`] = products[item][distributor];
               console.log(results);
             }
@@ -255,19 +266,15 @@
         });
 
         function showResultImage(payload, imageCollection) {
-        //   const foundImg = imageCollection.components.find(
-        //     (img) =>
-        //       img.getPayload().toLowerCase() === payload.toLocaleLowerCase()
-        //   );
-        //   foundImg && foundImg.show();
-
-          imageCollection.components.forEach(img => {
-            if (img.getPayload().toLowerCase() === payload.toLocaleLowerCase()) {
-                img.show()
+          imageCollection.components.forEach((img) => {
+            if (
+              img.getPayload().toLowerCase() === payload.toLocaleLowerCase()
+            ) {
+              img.show();
             } else {
-                img.hide()
+              img.hide();
             }
-          })
+          });
         }
 
         // trigger base CTA
