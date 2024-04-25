@@ -63,6 +63,7 @@
         const descriptionCollection =
           experience.findComponentsByTag("description");
         const notApplicableCollection = experience.findLayersByTag("na");
+        const accessoriesCollection = experience.findLayersByTag("accessories");
         let clickTime = 0;
 
         const dict = {
@@ -72,7 +73,7 @@
           lamps: "",
         };
 
-        PapaParse.parse(quizLogicLink, {
+        PapaParse.parse(link, {
           download: true,
           header: true,
           complete: (result) => {
@@ -89,6 +90,21 @@
             }
           },
         });
+
+        function handleAccessoriesButton() {
+          if (products["accessories"][distributor]) {
+            accessoriesCollection.on(CerosSDK.EVENTS.CLICKED, () => {
+              openAndTrackLink(products["accessories"][distributor]);
+            });
+          } else {
+            accessoriesCollection.hide();
+          }
+        }
+
+        accessoriesCollection.on(
+          CerosSDK.EVENTS.ANIMATION_STARTED,
+          handleAccessoriesButton
+        );
 
         notApplicableCollection.on(
           CerosSDK.EVENTS.ANIMATION_STARTED,
@@ -291,25 +307,23 @@
 
         // trigger base CTA
         baseCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          if (!isDoubleClickBug()) {
-            if (isPreview) {
-              openRequestedSingleTab(results.baseLink);
-            } else {
-              sendUAEvent(results.baseLink);
-            }
-          }
+          openAndTrackLink(results.baseLink);
         });
 
         // trigger rocker CTA
         rockerCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
+          openAndTrackLink(results.rockerLink);
+        });
+
+        function openAndTrackLink(url) {
           if (!isDoubleClickBug()) {
             if (isPreview) {
-              openRequestedSingleTab(results.rockerLink);
+              openRequestedSingleTab(url);
             } else {
-              sendUAEvent(results.rockerLink);
+              sendUAEvent(url);
             }
           }
-        });
+        }
 
         // show base name
         baseNameCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, (comp) => {
