@@ -1,6 +1,9 @@
 (function ($) {
   "use strict";
+  //   location.reload(true);
 
+  const quizLogicLink =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTfa2po3ZQvj_SMaaWULK2qegxJQjcvbkEB8AqpOvKNW6BKvFWRU2I6h5NzkQ_lBdc84Fw21yQtDe3G/pub?gid=980724681&single=true&output=csv&v=2";
   const googleSheetsLink =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQvZU-RxSNkGfSwUcqASMkCAtHVjSvoJVMMDOR-KFt_vmPhdpnnWUUIGQVSWZWIIEe-Q_gTDCaFyo4s/pub?gid=980724681&single=true&output=csv";
   const $script = $("#v-series");
@@ -64,7 +67,7 @@
           lamps: "",
         };
 
-        PapaParse.parse(googleSheetsLink, {
+        PapaParse.parse(quizLogicLink, {
           download: true,
           header: true,
           complete: (result) => {
@@ -168,7 +171,7 @@
               setProductName("base", baseNameCollection.components[0]);
               setProductName("rocker", rockerNameCollection.components[0]);
 
-              descriptionCollection.show();
+              updateResultDescription(descriptionCollection.components[0]);
             }
           });
           i++;
@@ -199,16 +202,10 @@
 
         function storeProductResults(productKey, product) {
           for (const item in products) {
-            if (products[item].key.toLowerCase() === productKey.toLowerCase()) {
+            if (products[item]["product_tag"].toLowerCase() === productKey.toLowerCase()) {
               results[`${product}Name`] = item;
+              results[`${product}ImageTag`] = products[item]["img_tag"] 
               results[`${product}Link`] = products[item][distributor];
-              // product === "base"
-              //   ? baseNameCollection.components.forEach((comp) =>
-              //       comp.setText(results.baseName)
-              //     )
-              //   : rockerNameCollection.components.forEach((comp) =>
-              //       comp.setText(results.rockerName)
-              //     );
               console.log(results);
             }
           }
@@ -258,11 +255,19 @@
         });
 
         function showResultImage(payload, imageCollection) {
-          const foundImg = imageCollection.components.find(
-            (img) =>
-              img.getPayload().toLowerCase() === payload.toLocaleLowerCase()
-          );
-          foundImg && foundImg.show();
+        //   const foundImg = imageCollection.components.find(
+        //     (img) =>
+        //       img.getPayload().toLowerCase() === payload.toLocaleLowerCase()
+        //   );
+        //   foundImg && foundImg.show();
+
+          imageCollection.components.forEach(img => {
+            if (img.getPayload().toLowerCase() === payload.toLocaleLowerCase()) {
+                img.show()
+            } else {
+                img.hide()
+            }
+          })
         }
 
         // trigger base CTA
@@ -314,9 +319,9 @@
           data.forEach((obj) => {
             if (!(obj.product in products)) {
               products[obj.product] = {};
-              products[obj.product]["mouser"] = obj.mouser;
-              products[obj.product]["digikey"] = obj.digikey;
-              products[obj.product]["key"] = obj.key;
+              for (const key in obj) {
+                products[obj.product][key] = obj[key];
+              }
             }
           });
         }
