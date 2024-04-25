@@ -45,6 +45,9 @@
         const delimeter = "_";
         const results = {};
         let windowObjectReference = null; // global variable
+        const isPreview =
+          window.self == window.top &&
+          window.location.hostname.includes(".preview");
 
         const resetCollection = experience.findLayersByTag("reset");
         const rockerImgCollection = experience.findComponentsByTag("rocker");
@@ -120,17 +123,16 @@
               },
             });
           }
-
         }
 
         function isDoubleClickBug() {
-            if (Date.now() - clickTime < 200) {
-                clickTime = Date.now()
-                return true;
-            } else {
-                clickTime = Date.now();
-                return false;
-            }
+          if (Date.now() - clickTime < 200) {
+            clickTime = Date.now();
+            return true;
+          } else {
+            clickTime = Date.now();
+            return false;
+          }
         }
 
         // update description
@@ -289,18 +291,24 @@
 
         // trigger base CTA
         baseCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-        //   openRequestedSingleTab(results.baseLink);
-        if (!isDoubleClickBug()) {
-            sendUAEvent(results.baseLink);
-        }
+          if (!isDoubleClickBug()) {
+            if (isPreview) {
+              openRequestedSingleTab(results.baseLink);
+            } else {
+              sendUAEvent(results.baseLink);
+            }
+          }
         });
 
         // trigger rocker CTA
         rockerCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-        //   openRequestedSingleTab(results.rockerLink);
-        if (!isDoubleClickBug()) {
-            sendUAEvent(results.rockerLink);
-        }
+          if (!isDoubleClickBug()) {
+            if (isPreview) {
+              openRequestedSingleTab(results.rockerLink);
+            } else {
+              sendUAEvent(results.rockerLink);
+            }
+          }
         });
 
         // show base name
