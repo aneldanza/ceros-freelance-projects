@@ -86,42 +86,46 @@
           },
         });
 
-        notApplicableCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+        notApplicableCollection.on(
+          CerosSDK.EVENTS.ANIMATION_STARTED,
+          (layer) => {
+            console.log("animation on n/a layer started");
+            console.log(`answers['q-2'] is ${answers["q-2"]}`);
             if (answers["q-2"] != "Two") {
-                layer.hide();
-            } 
-        })
+              layer.hide();
+            }
+          }
+        );
 
         // send UA event with outbound link info
-        //   function sendUAEvent(link) {
+        function sendUAEvent(link) {
+          if (window.self !== window.top) {
+            const data = {
+              event_category: "CEROS",
+              event_label: link,
+              event_action: "outbound_link_click",
+              tracking_id: trackingId,
+            };
+            parent.postMessage(JSON.stringify(data), "*");
+          } else {
+            gtag("event", "ceros-click", {
+              event_category: "CEROS",
+              event_label: link,
+              transport_type: "beacon",
+              event_callback: function () {
+                console.log("event is succeessfully sent");
+                openRequestedSingleTab(link);
+              },
+            });
+          }
 
-        //     if (window.self !== window.top) {
-        //       const data = {
-        //         event_category: "CEROS",
-        //         event_label: link,
-        //         event_action: "outbound_link_click",
-        //         tracking_id: trackingId
-        //       };
-        //       parent.postMessage(JSON.stringify(data), "*");
-        //     } else {
-        //       gtag("event", "ceros-click", {
-        //         event_category: "CEROS",
-        //         event_label: link,
-        //         transport_type: "beacon",
-        //         event_callback: function () {
-        //           console.log("event is succeessfully sent");
-        //           openRequestedSingleTab(link);
-        //         },
-        //       });
-        //     }
-
-        // dataLayer.push({
-        //   event: "outbound-link-click",
-        //   eventCategory: "CEROS",
-        //   eventAction: "ceros-click",
-        //   eventLabel: link,
-        // });
-        //   }
+          // dataLayer.push({
+          //   event: "outbound-link-click",
+          //   eventCategory: "CEROS",
+          //   eventAction: "ceros-click",
+          //   eventLabel: link,
+          // });
+        }
 
         // update description
         function updateResultDescription(comp) {
@@ -167,7 +171,6 @@
           const questionAnswersCollection = experience.findLayersByTag(qNum);
           questionAnswersCollection.on(CerosSDK.EVENTS.CLICKED, (hotspot) => {
             answers[qNum] = hotspot.getPayload();
-            console.log(answers);
             updateDict(qNum);
             if (qNum === "q-2") {
               handleQ2(hotspot);
@@ -180,6 +183,7 @@
 
               updateResultDescription(descriptionCollection.components[0]);
             }
+            console.log(answers);
           });
           i++;
         }
@@ -279,14 +283,14 @@
 
         // trigger base CTA
         baseCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          openRequestedSingleTab(results.baseLink);
-          // sendUAEvent(results.baseLink);
+        //   openRequestedSingleTab(results.baseLink);
+          sendUAEvent(results.baseLink);
         });
 
         // trigger rocker CTA
         rockerCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          openRequestedSingleTab(results.rockerLink);
-          // sendUAEvent(results.rockerLink);
+        //   openRequestedSingleTab(results.rockerLink);
+          sendUAEvent(results.rockerLink);
         });
 
         // show base name
