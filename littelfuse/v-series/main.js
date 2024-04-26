@@ -68,9 +68,6 @@
               "length of unique list is " + Object.keys(products).length
             );
             console.log(products);
-            // if (distributor) {
-            //   trackHotspots();
-            // }
           },
         });
 
@@ -327,19 +324,6 @@
             comp.setText(results[productName].toUpperCase());
           }
         }
-
-        // function trackHotspots() {
-        //   const productNames = Object.keys(products);
-        //   productNames.forEach((product) => {
-        //     const productHotspotCollection = experience.findComponentsByTag(
-        //       product.toLowerCase()
-        //     );
-        //     productHotspotCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-        //       const link = products[product][distributor];
-        //       openRequestedSingleTab(link);
-        //     });
-        //   });
-        // }
 
         function filterProducts(data) {
           data.forEach((obj) => {
