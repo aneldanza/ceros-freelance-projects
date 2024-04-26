@@ -71,6 +71,8 @@
           },
         });
 
+        experience.on(CerosSDK.EVENTS.PAGE_CHANGED, () => handleAccessoriesButton)
+
         function handleAccessoriesButton() {
           if (products["accessories"][distributor]) {
             accessoriesCollection.on(CerosSDK.EVENTS.CLICKED, () => {
