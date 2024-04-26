@@ -67,14 +67,16 @@
             console.log(
               "length of unique list is " + Object.keys(products).length
             );
+            handleAccessoriesButton();
             console.log(products);
           },
         });
 
-        experience.on(CerosSDK.EVENTS.PAGE_CHANGED, () => handleAccessoriesButton)
-
         function handleAccessoriesButton() {
-          if (products["accessories"][distributor]) {
+          if (
+            Object.hasOwn(products, "accessories") &&
+            products["accessories"][distributor]
+          ) {
             accessoriesCollection.on(CerosSDK.EVENTS.CLICKED, () => {
               openAndTrackLink(products["accessories"][distributor]);
             });
