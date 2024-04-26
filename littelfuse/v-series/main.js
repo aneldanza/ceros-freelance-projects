@@ -3,18 +3,9 @@
 
   const $script = $("#v-series");
 
-  const srcAttribute = $script.attr("src");
   const link = $script.attr("data-link");
   const distributor = $script.attr("data-distributor") || "";
   const trackingId = $script.attr("data-tracking-id") || "";
-
-  // Check that a src attibute was defined, and code hasn't been inlined by third party
-  if (typeof srcAttribute !== "undefined") {
-    var path = srcAttribute.split("?")[0];
-    absUrl = path.split("/").slice(0, -1).join("/") + "/";
-  } else {
-    absUrl = "./";
-  }
 
   // load CerosSDK via requirejs
   require.config({
