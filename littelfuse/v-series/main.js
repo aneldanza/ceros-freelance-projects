@@ -1,14 +1,8 @@
 (function ($) {
   "use strict";
-  //   location.reload(true);
 
-  const quizLogicLink =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTfa2po3ZQvj_SMaaWULK2qegxJQjcvbkEB8AqpOvKNW6BKvFWRU2I6h5NzkQ_lBdc84Fw21yQtDe3G/pub?gid=980724681&single=true&output=csv&v=2";
-  const googleSheetsLink =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQvZU-RxSNkGfSwUcqASMkCAtHVjSvoJVMMDOR-KFt_vmPhdpnnWUUIGQVSWZWIIEe-Q_gTDCaFyo4s/pub?gid=980724681&single=true&output=csv";
   const $script = $("#v-series");
-  // Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
-  let absUrl;
+
   const srcAttribute = $script.attr("src");
   const link = $script.attr("data-link");
   const distributor = $script.attr("data-distributor") || "";
@@ -32,8 +26,6 @@
   });
 
   require(["CerosSDK", "PapaParse"], function (CerosSDK, PapaParse) {
-    // export const quizConfig = config;
-
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
@@ -47,7 +39,7 @@
         let windowObjectReference = null; // global variable
         const isPreview =
           window.self == window.top &&
-          window.location.hostname.includes(".preview");
+          window.location.hostname.includes(".preview.ceros");
 
         const resetCollection = experience.findLayersByTag("reset");
         const rockerImgCollection = experience.findComponentsByTag("rocker");
@@ -197,7 +189,7 @@
             answers[qNum] = hotspot.getPayload();
             updateDict(qNum);
             if (qNum === "q-2") {
-              handleQ2(hotspot);
+              handleBackButtonInQ4();
             }
             if (qNum === `q-${numOfQuestions}`) {
               findResults();
@@ -212,13 +204,13 @@
           i++;
         }
 
-        function handleQ2(hotspot) {
-          const h = backCollection.layers.find((comp) =>
-            comp.getTags().includes("3")
+        function handleBackButtonInQ4() {
+          const h = backCollection.layers.find(
+            (comp) => comp.getPayload() === "3"
           );
-          if (h && hotspot.getPayload() === "No") {
+
+          if (h && answers["q-2"] === "No") {
             h.hide();
-            answers["q-3"] = "";
           } else {
             h.show();
           }
@@ -381,21 +373,13 @@
 
         function handleBackNavigation(comp) {
           const qNum = comp.getPayload();
-
-          switch (qNum) {
-            case "3":
-              goToQ2();
-              break;
-            case "4":
-              if (answers["q-3"]) {
-                const q3Folder = experience.findLayersByTag("q3-folder");
-                q3Folder.show();
-              } else {
-                goToQ2();
-              }
-            default:
-              break;
+          if (qNum === "2") {
+            goToQ2();
+          } else if (qNum === "4") {
+            handleBackButtonInQ4();
           }
+
+          answers[`q-${qNum}`] = "";
         }
 
         function openRequestedSingleTab(url) {
