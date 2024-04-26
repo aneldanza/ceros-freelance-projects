@@ -68,9 +68,9 @@
               "length of unique list is " + Object.keys(products).length
             );
             console.log(products);
-            if (distributor) {
-              trackHotspots();
-            }
+            // if (distributor) {
+            //   trackHotspots();
+            // }
           },
         });
 
@@ -328,25 +328,25 @@
           }
         }
 
-        function trackHotspots() {
-          const productNames = Object.keys(products);
-          productNames.forEach((product) => {
-            const productHotspotCollection = experience.findComponentsByTag(
-              product.toLowerCase()
-            );
-            productHotspotCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-              const link = products[product][distributor];
-              openRequestedSingleTab(link);
-            });
-          });
-        }
+        // function trackHotspots() {
+        //   const productNames = Object.keys(products);
+        //   productNames.forEach((product) => {
+        //     const productHotspotCollection = experience.findComponentsByTag(
+        //       product.toLowerCase()
+        //     );
+        //     productHotspotCollection.on(CerosSDK.EVENTS.CLICKED, () => {
+        //       const link = products[product][distributor];
+        //       openRequestedSingleTab(link);
+        //     });
+        //   });
+        // }
 
         function filterProducts(data) {
           data.forEach((obj) => {
             if (!(obj.product in products)) {
-              products[obj.product] = {};
+              products[obj.product.trim()] = {};
               for (const key in obj) {
-                products[obj.product][key] = obj[key];
+                products[obj.product.trim()][key.trim()] = obj[key.trim()];
               }
             }
           });
