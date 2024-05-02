@@ -91,7 +91,7 @@
           );
           masksCollection.layers.forEach((layer) => {
             const val = layer.getPayload().toLowerCase();
-            if (node.children.find((node) => node.value === val)) {
+            if (node.children.find((node) => node.value.toLowerCase() === val)) {
               layer.hide();
             } else {
               layer.show();
