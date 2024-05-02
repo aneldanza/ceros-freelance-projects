@@ -3,7 +3,7 @@ let windowObjectReference = null;
 window.addEventListener("message", function (event) {
   // Check if the message is the 'gtagEvent' message
 
-  if (event.data) {
+  if (event.data && typeof event.data === "string") {
     const obj = JSON.parse(event.data);
 
     if (
@@ -11,17 +11,23 @@ window.addEventListener("message", function (event) {
       obj["event_action"] === "outbound_link_click"
     ) {
       console.log(obj);
-      // Send a click event to Google Analytics
-      gtag("event", "ceros_click", {
-        event_category: obj["event_category"],
-        event_label: obj["event_label"],
-        transport_type: "beacon",
-        send_to: obj["tracking_id"],
-        event_callback: function () {
-          console.log("event is succeessfully sent");
-          openRequestedSingleTab(obj["event_label"]);
-        },
-      });
+      // Send a click event to Google Tag Manager
+
+      try {
+        openRequestedSingleTab(obj["event_label"]);
+
+        dataLayer.push({
+          event: "ceros-event",
+          cerosAction: "ceros_outbound_link_click",
+          cerosCategory: obj["event_category"],
+          cerosLabel: obj["event_label"],
+        });
+
+      } catch (e) {
+        Error(
+          `could not open new tab for the following url: ${obj["event_label"]}`
+        );
+      }
     }
   }
 });

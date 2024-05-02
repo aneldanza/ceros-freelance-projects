@@ -67,15 +67,16 @@
             console.log(
               "length of unique list is " + Object.keys(products).length
             );
+            handleAccessoriesButton();
             console.log(products);
-            // if (distributor) {
-            //   trackHotspots();
-            // }
           },
         });
 
         function handleAccessoriesButton() {
-          if (products["accessories"][distributor]) {
+          if (
+            Object.hasOwn(products, "accessories") &&
+            products["accessories"][distributor]
+          ) {
             accessoriesCollection.on(CerosSDK.EVENTS.CLICKED, () => {
               openAndTrackLink(products["accessories"][distributor]);
             });
@@ -327,19 +328,6 @@
             comp.setText(results[productName].toUpperCase());
           }
         }
-
-        // function trackHotspots() {
-        //   const productNames = Object.keys(products);
-        //   productNames.forEach((product) => {
-        //     const productHotspotCollection = experience.findComponentsByTag(
-        //       product.toLowerCase()
-        //     );
-        //     productHotspotCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-        //       const link = products[product][distributor];
-        //       openRequestedSingleTab(link);
-        //     });
-        //   });
-        // }
 
         function filterProducts(data) {
           data.forEach((obj) => {
