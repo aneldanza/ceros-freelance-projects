@@ -76,6 +76,13 @@
           },
         });
 
+        resultsCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, () => {
+          if (nextNode.children.length === 3) {
+            const threeModuleResult = experience.findLayersByTag(`module-3`);
+            threeModuleResult.click();
+          }
+        });
+
         answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const tag = comp.getTags().find((tag) => tag.includes("q:"));
           const key = tag.split(":")[1];
@@ -83,7 +90,101 @@
           nextNode = depthFirstSearch(nextNode, val, key);
           console.log(nextNode);
           handleMasks(nextNode);
+          if (key === "polarized") {
+            showModule(nextNode.children.length);
+          }
         });
+
+        function getModuleLayers(layers) {
+          const layersDict = {
+            images: [],
+            partNumber: [],
+            icons: [],
+            features: [],
+          };
+          for (let i = 0; i < layers.length; i++) {
+            const layer = layers[i];
+            if (layer.getTags().includes("img")) {
+              layersDict.images.push(layer);
+            } else if (layer.getTags().includes("icon")) {
+              layersDict.icons.push(layer);
+            } else if (
+              layer.getPayload().toLowerCase() === keys[keys.length - 1]
+            ) {
+              layersDict.partNumber.push(layer);
+            } else if (layer.getPayload().toLowerCase() === "features") {
+              layersDict.features.push(layer);
+            }
+          }
+
+          return layersDict;
+        }
+
+        function handleModuleImage(img, data) {
+          if (
+            data["image"].slice(0, 5).toLowerCase() ===
+            img.getPayload().toLowerCase()
+          ) {
+            img.show();
+          } else {
+            img.hide();
+          }
+        }
+
+        function handleModuleIcon(icon, data) {
+          if (
+            data["application"]
+              .toLowerCase()
+              .includes(icon.getPayload().toLowerCase())
+          ) {
+            icon.show();
+          } else {
+            icon.hide();
+          }
+        }
+
+        function showModule(type) {
+          nextNode.children.forEach((node, index) => {
+            const allPartsCollection = experience.findComponentsByTag(
+              `${type}-module-${index + 1}`
+            );
+            const layersDict = getModuleLayers(allPartsCollection.components);
+            const data = node.data;
+
+            layersDict.features.forEach((layer) =>
+              layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (feature) =>
+                feature.setText(data["features"])
+              )
+            );
+
+            layersDict.partNumber.forEach((layer) => {
+              layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (partNumber) =>
+                partNumber.setText(data["part"])
+              );
+            });
+
+            const imageFolder = experience.findLayersByTag(
+              `${type}-module-${index + 1}-img`
+            );
+            imageFolder.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+              const images = group.findAllComponents();
+              images.layers.forEach((img) => handleModuleImage(img, data));
+            });
+
+            const iconsFolder = experience.findLayersByTag(
+              `${type}-module-${index + 1}-icons`
+            );
+            iconsFolder.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+              const icons = group.findAllComponents();
+              icons.layers.forEach((icon) => handleModuleIcon(icon, data));
+            });
+          });
+
+          const moduleResultHotspot = experience.findComponentsByTag(
+            `module-${type}`
+          );
+          moduleResultHotspot.click();
+        }
 
         function handleMasks(node) {
           const masksCollection = experience.findLayersByTag(
@@ -91,7 +192,9 @@
           );
           masksCollection.layers.forEach((layer) => {
             const val = layer.getPayload().toLowerCase();
-            if (node.children.find((node) => node.value.toLowerCase() === val)) {
+            if (
+              node.children.find((node) => node.value.toLowerCase() === val)
+            ) {
               layer.hide();
             } else {
               layer.show();
