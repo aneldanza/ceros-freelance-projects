@@ -76,6 +76,13 @@
           },
         });
 
+        resultsCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, () => {
+          if (nextNode.children.length === 3) {
+            const threeModuleResult = experience.findLayersByTag(`module-3`);
+            threeModuleResult.click();
+          }
+        });
+
         answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const tag = comp.getTags().find((tag) => tag.includes("q:"));
           const key = tag.split(":")[1];
@@ -83,7 +90,78 @@
           nextNode = depthFirstSearch(nextNode, val, key);
           console.log(nextNode);
           handleMasks(nextNode);
+          if (key === "polarized") {
+            showModule(nextNode.children.length);
+          }
         });
+
+        function handleModuleImage(img, data) {
+          const tag = data["image"].split(".")[0].trim();
+          if (tag.toLowerCase() === img.getPayload().toLowerCase()) {
+            img.show();
+          } else {
+            img.hide();
+          }
+        }
+
+        function handleModuleIcon(icon, data) {
+          if (
+            data["application"]
+              .toLowerCase()
+              .includes(icon.getPayload().toLowerCase())
+          ) {
+            icon.show();
+          } else {
+            icon.hide();
+          }
+        }
+
+        function showModule(type) {
+          nextNode.children.forEach((node, index) => {
+            const moduleTag =
+              type > 1 ? `${type}-module-${index + 1}` : `${type}-module`;
+            const module = experience.findLayersByTag(moduleTag);
+            const collection = module.layers[0].findAllComponents();
+            const layersDict = collection.layersByTag;
+
+            const data = node.data;
+
+            layersDict.images &&
+              layersDict.images.forEach((layer) => {
+                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+                  const images = group.findAllComponents();
+                  images.layers.forEach((img) => handleModuleImage(img, data));
+                });
+              });
+
+            layersDict.icons &&
+              layersDict.icons.forEach((layer) => {
+                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+                  const icons = group.findAllComponents();
+                  icons.layers.forEach((icon) => handleModuleIcon(icon, data));
+                });
+              });
+
+            layersDict.part &&
+              layersDict.part.forEach((layer) => {
+                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (partNumber) =>
+                  partNumber.setText(data["part"])
+                );
+              });
+
+            layersDict.features &&
+              layersDict.features.forEach((layer) => {
+                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (feature) => {
+                  feature.setText(data["features"]);
+                });
+              });
+          });
+
+          const moduleResultHotspot = experience.findComponentsByTag(
+            `module-${type}`
+          );
+          moduleResultHotspot.click();
+        }
 
         function handleMasks(node) {
           const masksCollection = experience.findLayersByTag(
@@ -91,7 +169,9 @@
           );
           masksCollection.layers.forEach((layer) => {
             const val = layer.getPayload().toLowerCase();
-            if (node.children.find((node) => node.value.toLowerCase() === val)) {
+            if (
+              node.children.find((node) => node.value.toLowerCase() === val)
+            ) {
               layer.hide();
             } else {
               layer.show();
@@ -165,15 +245,6 @@
 
         // send UA event with outbound link info
         function sendUAEvent(link) {
-          // ga('send', 'event', "CEROS", "outbound-link", link);
-
-          //   ga('send', 'event', {
-          //     'eventCategory': 'CEROS',
-          //     'eventAction': 'outbound-link-click',
-          //     'eventLabel': link,
-          //     'transport': 'beacon'
-          // });
-
           dataLayer.push({
             event: "outbound-link-click",
             eventCategory: "CEROS",
@@ -219,167 +290,8 @@
           updateResultDescription
         );
 
-        // track user answers
-        let i = 1;
-        while (i <= numOfQuestions) {
-          const qNum = `q-${i}`;
-          const questionAnswersCollection = experience.findLayersByTag(qNum);
-          questionAnswersCollection.on(CerosSDK.EVENTS.CLICKED, (hotspot) => {
-            answers[qNum] = hotspot.getPayload();
-            console.log(answers);
-            updateDict(qNum);
-            if (qNum === "q-2") {
-              handleQ2(hotspot);
-            }
-            if (qNum === `q-${numOfQuestions}`) {
-              findResults();
-              resultsCollection.show();
-            }
-          });
-          i++;
-        }
-
-        function handleQ2(hotspot) {
-          const h = backCollection.layers.find((comp) =>
-            comp.getTags().includes("3")
-          );
-          if (h && hotspot.getPayload() === "No") {
-            h.hide();
-          } else {
-            h.show();
-          }
-        }
-
-        // find results
-        function findResults() {
-          const baseType = findBaseType(answers["q-1"]);
-          const baseKey = answers["q-3"]
-            ? `${baseType}${delimeter}${answers["q-2"]}${delimeter}${answers["q-3"]}${delimeter}${answers["q-4"]}`
-            : `${baseType}${delimeter}${answers["q-2"]}${delimeter}${answers["q-4"]}`;
-          console.log(baseKey);
-          const rockerKey = `${answers["q-1"]}${delimeter}${answers["q-2"]}`;
-          storeProductResults(baseKey, "base");
-          storeProductResults(rockerKey, "rocker");
-        }
-
-        function storeProductResults(productKey, product) {
-          for (const item in products) {
-            if (products[item].key.toLowerCase() === productKey.toLowerCase()) {
-              results[`${product}Name`] = item;
-              results[`${product}Link`] = products[item][distributor];
-              product === "base"
-                ? baseNameCollection.components.forEach((comp) =>
-                    comp.setText(results.baseName)
-                  )
-                : rockerNameCollection.components.forEach((comp) =>
-                    comp.setText(results.rockerName)
-                  );
-              console.log(results);
-            }
-          }
-        }
-
-        // reset user answers
-        resetCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-          for (const q in answers) {
-            answers[q] = "";
-          }
-
-          for (const key in dict) {
-            dict[key] = "";
-          }
-
-          for (const r in results) {
-            results[r] = "";
-          }
-        });
-
         // handle back navigation
         backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
-
-        function findBaseType(key) {
-          if (plainBracket.includes(key.toUpperCase())) {
-            return "Plain";
-          } else if (raisedBracket.includes(key.toUpperCase())) {
-            return "Raised";
-          } else {
-            throw Error("couldn't find bracket type for Contura " + key);
-          }
-        }
-
-        // trigger base CTA
-        baseCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          openRequestedSingleTab(results.baseLink);
-          sendUAEvent(results.baseLink);
-        });
-
-        // trigger rocker CTA
-        rockerCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          openRequestedSingleTab(results.rockerLink);
-          sendUAEvent(results.rockerLink);
-        });
-
-        // show base name
-        baseNameCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, (comp) => {
-          setProductName("base", comp);
-        });
-
-        // show rocker name
-        rockerNameCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, (comp) => {
-          setProductName("rocker", comp);
-        });
-
-        function setProductName(product, comp) {
-          const productName = `${product}Name`;
-          if (results[productName]) {
-            comp.setText(results[productName].toUpperCase());
-          } else {
-            findResults();
-            comp.setText(results[productName].toUpperCase());
-          }
-        }
-
-        function trackHotspots() {
-          const productNames = Object.keys(products);
-          productNames.forEach((product) => {
-            const productHotspotCollection = experience.findComponentsByTag(
-              product.toLowerCase()
-            );
-            productHotspotCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-              const link = products[product][distributor];
-              openRequestedSingleTab(link);
-            });
-          });
-        }
-
-        function goToQ2() {
-          const type = answers["q-1"];
-          const q1Options = experience.findComponentsByTag("q-1");
-          const selected = q1Options.components.find(
-            (component) =>
-              component.getPayload().toUpperCase() == type.toUpperCase()
-          );
-          selected.click();
-        }
-
-        function handleBackNavigation(comp) {
-          const qNum = comp.getPayload();
-
-          switch (qNum) {
-            case "3":
-              goToQ2();
-              break;
-            case "4":
-              if (answers["q-3"]) {
-                const q3Folder = experience.findLayersByTag("q3-folder");
-                q3Folder.show();
-              } else {
-                goToQ2();
-              }
-            default:
-              break;
-          }
-        }
 
         let windowObjectReference = null; // global variable
 
