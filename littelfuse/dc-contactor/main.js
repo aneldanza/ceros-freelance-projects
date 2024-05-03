@@ -95,36 +95,9 @@
           }
         });
 
-        function getModuleLayers(layers) {
-          const layersDict = {
-            images: [],
-            partNumber: [],
-            icons: [],
-            features: [],
-          };
-          for (let i = 0; i < layers.length; i++) {
-            const layer = layers[i];
-            if (layer.getTags().includes("img")) {
-              layersDict.images.push(layer);
-            } else if (layer.getTags().includes("icon")) {
-              layersDict.icons.push(layer);
-            } else if (
-              layer.getPayload().toLowerCase() === keys[keys.length - 1]
-            ) {
-              layersDict.partNumber.push(layer);
-            } else if (layer.getPayload().toLowerCase() === "features") {
-              layersDict.features.push(layer);
-            }
-          }
-
-          return layersDict;
-        }
-
         function handleModuleImage(img, data) {
-          if (
-            data["image"].slice(0, 5).toLowerCase() ===
-            img.getPayload().toLowerCase()
-          ) {
+          const tag = data["image"].split(".")[0].trim();
+          if (tag.toLowerCase() === img.getPayload().toLowerCase()) {
             img.show();
           } else {
             img.hide();
@@ -145,39 +118,43 @@
 
         function showModule(type) {
           nextNode.children.forEach((node, index) => {
-            const allPartsCollection = experience.findComponentsByTag(
-              `${type}-module-${index + 1}`
-            );
-            const layersDict = getModuleLayers(allPartsCollection.components);
+            const moduleTag =
+              type > 1 ? `${type}-module-${index + 1}` : `${type}-module`;
+            const module = experience.findLayersByTag(moduleTag);
+            const collection = module.layers[0].findAllComponents();
+            const layersDict = collection.layersByTag;
+
             const data = node.data;
 
-            layersDict.features.forEach((layer) =>
-              layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (feature) =>
-                feature.setText(data["features"])
-              )
-            );
+            layersDict.images &&
+              layersDict.images.forEach((layer) => {
+                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+                  const images = group.findAllComponents();
+                  images.layers.forEach((img) => handleModuleImage(img, data));
+                });
+              });
 
-            layersDict.partNumber.forEach((layer) => {
-              layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (partNumber) =>
-                partNumber.setText(data["part"])
-              );
-            });
+            layersDict.icons &&
+              layersDict.icons.forEach((layer) => {
+                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+                  const icons = group.findAllComponents();
+                  icons.layers.forEach((icon) => handleModuleIcon(icon, data));
+                });
+              });
 
-            const imageFolder = experience.findLayersByTag(
-              `${type}-module-${index + 1}-img`
-            );
-            imageFolder.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
-              const images = group.findAllComponents();
-              images.layers.forEach((img) => handleModuleImage(img, data));
-            });
+            layersDict.part &&
+              layersDict.part.forEach((layer) => {
+                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (partNumber) =>
+                  partNumber.setText(data["part"])
+                );
+              });
 
-            const iconsFolder = experience.findLayersByTag(
-              `${type}-module-${index + 1}-icons`
-            );
-            iconsFolder.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
-              const icons = group.findAllComponents();
-              icons.layers.forEach((icon) => handleModuleIcon(icon, data));
-            });
+            layersDict.features &&
+              layersDict.features.forEach((layer) => {
+                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (feature) => {
+                  feature.setText(data["features"]);
+                });
+              });
           });
 
           const moduleResultHotspot = experience.findComponentsByTag(
@@ -268,15 +245,6 @@
 
         // send UA event with outbound link info
         function sendUAEvent(link) {
-          // ga('send', 'event', "CEROS", "outbound-link", link);
-
-          //   ga('send', 'event', {
-          //     'eventCategory': 'CEROS',
-          //     'eventAction': 'outbound-link-click',
-          //     'eventLabel': link,
-          //     'transport': 'beacon'
-          // });
-
           dataLayer.push({
             event: "outbound-link-click",
             eventCategory: "CEROS",
@@ -322,167 +290,8 @@
           updateResultDescription
         );
 
-        // track user answers
-        let i = 1;
-        while (i <= numOfQuestions) {
-          const qNum = `q-${i}`;
-          const questionAnswersCollection = experience.findLayersByTag(qNum);
-          questionAnswersCollection.on(CerosSDK.EVENTS.CLICKED, (hotspot) => {
-            answers[qNum] = hotspot.getPayload();
-            console.log(answers);
-            updateDict(qNum);
-            if (qNum === "q-2") {
-              handleQ2(hotspot);
-            }
-            if (qNum === `q-${numOfQuestions}`) {
-              findResults();
-              resultsCollection.show();
-            }
-          });
-          i++;
-        }
-
-        function handleQ2(hotspot) {
-          const h = backCollection.layers.find((comp) =>
-            comp.getTags().includes("3")
-          );
-          if (h && hotspot.getPayload() === "No") {
-            h.hide();
-          } else {
-            h.show();
-          }
-        }
-
-        // find results
-        function findResults() {
-          const baseType = findBaseType(answers["q-1"]);
-          const baseKey = answers["q-3"]
-            ? `${baseType}${delimeter}${answers["q-2"]}${delimeter}${answers["q-3"]}${delimeter}${answers["q-4"]}`
-            : `${baseType}${delimeter}${answers["q-2"]}${delimeter}${answers["q-4"]}`;
-          console.log(baseKey);
-          const rockerKey = `${answers["q-1"]}${delimeter}${answers["q-2"]}`;
-          storeProductResults(baseKey, "base");
-          storeProductResults(rockerKey, "rocker");
-        }
-
-        function storeProductResults(productKey, product) {
-          for (const item in products) {
-            if (products[item].key.toLowerCase() === productKey.toLowerCase()) {
-              results[`${product}Name`] = item;
-              results[`${product}Link`] = products[item][distributor];
-              product === "base"
-                ? baseNameCollection.components.forEach((comp) =>
-                    comp.setText(results.baseName)
-                  )
-                : rockerNameCollection.components.forEach((comp) =>
-                    comp.setText(results.rockerName)
-                  );
-              console.log(results);
-            }
-          }
-        }
-
-        // reset user answers
-        resetCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-          for (const q in answers) {
-            answers[q] = "";
-          }
-
-          for (const key in dict) {
-            dict[key] = "";
-          }
-
-          for (const r in results) {
-            results[r] = "";
-          }
-        });
-
         // handle back navigation
         backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
-
-        function findBaseType(key) {
-          if (plainBracket.includes(key.toUpperCase())) {
-            return "Plain";
-          } else if (raisedBracket.includes(key.toUpperCase())) {
-            return "Raised";
-          } else {
-            throw Error("couldn't find bracket type for Contura " + key);
-          }
-        }
-
-        // trigger base CTA
-        baseCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          openRequestedSingleTab(results.baseLink);
-          sendUAEvent(results.baseLink);
-        });
-
-        // trigger rocker CTA
-        rockerCTACollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          openRequestedSingleTab(results.rockerLink);
-          sendUAEvent(results.rockerLink);
-        });
-
-        // show base name
-        baseNameCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, (comp) => {
-          setProductName("base", comp);
-        });
-
-        // show rocker name
-        rockerNameCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, (comp) => {
-          setProductName("rocker", comp);
-        });
-
-        function setProductName(product, comp) {
-          const productName = `${product}Name`;
-          if (results[productName]) {
-            comp.setText(results[productName].toUpperCase());
-          } else {
-            findResults();
-            comp.setText(results[productName].toUpperCase());
-          }
-        }
-
-        function trackHotspots() {
-          const productNames = Object.keys(products);
-          productNames.forEach((product) => {
-            const productHotspotCollection = experience.findComponentsByTag(
-              product.toLowerCase()
-            );
-            productHotspotCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-              const link = products[product][distributor];
-              openRequestedSingleTab(link);
-            });
-          });
-        }
-
-        function goToQ2() {
-          const type = answers["q-1"];
-          const q1Options = experience.findComponentsByTag("q-1");
-          const selected = q1Options.components.find(
-            (component) =>
-              component.getPayload().toUpperCase() == type.toUpperCase()
-          );
-          selected.click();
-        }
-
-        function handleBackNavigation(comp) {
-          const qNum = comp.getPayload();
-
-          switch (qNum) {
-            case "3":
-              goToQ2();
-              break;
-            case "4":
-              if (answers["q-3"]) {
-                const q3Folder = experience.findLayersByTag("q3-folder");
-                q3Folder.show();
-              } else {
-                goToQ2();
-              }
-            default:
-              break;
-          }
-        }
 
         let windowObjectReference = null; // global variable
 
