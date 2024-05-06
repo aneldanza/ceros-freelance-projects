@@ -130,7 +130,7 @@
           });
         }
 
-        function registerResultClcikEvent(layerArray, key) {
+        function registerResultClcikEvent(layerArray, key, data) {
           layerArray.forEach((layer) => {
             layer.on(CerosSDK.EVENTS.CLICKED, () => {
               sendUAEvent(data[key]);
@@ -162,10 +162,10 @@
               updateResultTextbox("features", data, layersDict.features);
 
             layersDict.datasheet &&
-              registerResultClcikEvent(layersDict.datasheet, "datasheet");
+              registerResultClcikEvent(layersDict.datasheet, "datasheet", data);
 
             layersDict["buy-now"] &&
-              registerResultClcikEvent(layersDict["buy-now"], distributor);
+              registerResultClcikEvent(layersDict["buy-now"], distributor, data);
           });
         }
 
