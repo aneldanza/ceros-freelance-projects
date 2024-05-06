@@ -70,9 +70,6 @@
             console.log(result.data);
             filterProducts(result.data);
             console.log(root);
-            if (distributor) {
-              trackHotspots();
-            }
           },
         });
 
@@ -133,7 +130,16 @@
           });
         }
 
-        function showModule(type) {
+        function registerResultClcikEvent(layerArray, key) {
+          layerArray.forEach((layer) => {
+            layer.on(CerosSDK.EVENTS.CLICKED, () => {
+              sendUAEvent(data[key]);
+              openRequestedSingleTab(data[key]);
+            });
+          });
+        }
+
+        function updateModuleResults(type) {
           nextNode.children.forEach((node, index) => {
             const moduleTag =
               type > 1 ? `${type}-module-${index + 1}` : `${type}-module`;
@@ -154,7 +160,17 @@
 
             layersDict.features &&
               updateResultTextbox("features", data, layersDict.features);
+
+            layersDict.datasheet &&
+              registerResultClcikEvent(layersDict.datasheet, "datasheet");
+
+            layersDict["buy-now"] &&
+              registerResultClcikEvent(layersDict["buy-now"], distributor);
           });
+        }
+
+        function showModule(type) {
+          updateModuleResults(type);
 
           const moduleResultHotspot = experience.findComponentsByTag(
             `module-${type}`
