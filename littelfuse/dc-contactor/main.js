@@ -40,6 +40,8 @@
         const numOfQuestions = 7;
         const delimeter = "_";
         const results = {};
+        let clickTime = 0;
+        let windowObjectReference = null; // global variable
         const keys = [
           "application",
           "max-voltage",
@@ -50,6 +52,10 @@
           "polarized",
           "part",
         ];
+
+        const isPreview =
+          window.self == window.top &&
+          window.location.hostname.includes(".preview.ceros");
 
         const resetCollection = experience.findLayersByTag("reset");
 
@@ -133,10 +139,29 @@
         function registerResultClcikEvent(layerArray, key, data) {
           layerArray.forEach((layer) => {
             layer.on(CerosSDK.EVENTS.CLICKED, () => {
-              sendUAEvent(data[key]);
-              openRequestedSingleTab(data[key]);
+              openAndTrackLink(data[key])
             });
           });
+        }
+
+        function openAndTrackLink(url) {
+          if (!isDoubleClickBug()) {
+            if (isPreview) {
+              openRequestedSingleTab(url);
+            } else {
+              sendUAEvent(url);
+            }
+          }
+        }
+
+        function isDoubleClickBug() {
+          if (Date.now() - clickTime < 200) {
+            clickTime = Date.now();
+            return true;
+          } else {
+            clickTime = Date.now();
+            return false;
+          }
         }
 
         function updateModuleResults(type) {
@@ -165,7 +190,11 @@
               registerResultClcikEvent(layersDict.datasheet, "datasheet", data);
 
             layersDict["buy-now"] &&
-              registerResultClcikEvent(layersDict["buy-now"], distributor, data);
+              registerResultClcikEvent(
+                layersDict["buy-now"],
+                distributor,
+                data
+              );
           });
         }
 
@@ -260,12 +289,21 @@
 
         // send UA event with outbound link info
         function sendUAEvent(link) {
-          dataLayer.push({
-            event: "outbound-link-click",
-            eventCategory: "CEROS",
-            eventAction: "ceros-click",
-            eventLabel: link,
-          });
+          if (window.self !== window.top) {
+            const data = {
+              event_category: "CEROS",
+              event_label: link,
+              event_action: "outbound_link_click",
+            };
+            parent.postMessage(JSON.stringify(data), "*");
+          } else {
+            dataLayer.push({
+              event: "ceros-event",
+              cerosAction: "ceros_outbound_link_click",
+              cerosCategory: "CEROS",
+              cerosLabel: link,
+            });
+          }
         }
 
         // update description
@@ -308,7 +346,7 @@
         // handle back navigation
         backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
 
-        let windowObjectReference = null; // global variable
+        
 
         function openRequestedSingleTab(url) {
           if (windowObjectReference === null || windowObjectReference.closed) {
