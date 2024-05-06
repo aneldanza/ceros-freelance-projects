@@ -116,6 +116,23 @@
           }
         }
 
+        function showResultImage(data, callback, imgArray) {
+          imgArray.forEach((layer) => {
+            layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+              const images = group.findAllComponents();
+              images.layers.forEach((img) => callback(img, data));
+            });
+          });
+        }
+
+        function updateResultTextbox(key, data, txtboxArray) {
+          txtboxArray.forEach((layer) => {
+            layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) =>
+              txtBox.setText(data[key])
+            );
+          });
+        }
+
         function showModule(type) {
           nextNode.children.forEach((node, index) => {
             const moduleTag =
@@ -127,34 +144,16 @@
             const data = node.data;
 
             layersDict.images &&
-              layersDict.images.forEach((layer) => {
-                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
-                  const images = group.findAllComponents();
-                  images.layers.forEach((img) => handleModuleImage(img, data));
-                });
-              });
+              showResultImage(data, handleModuleImage, layersDict.images);
 
             layersDict.icons &&
-              layersDict.icons.forEach((layer) => {
-                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
-                  const icons = group.findAllComponents();
-                  icons.layers.forEach((icon) => handleModuleIcon(icon, data));
-                });
-              });
+              showResultImage(data, handleModuleIcon, layersDict.icons);
 
             layersDict.part &&
-              layersDict.part.forEach((layer) => {
-                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (partNumber) =>
-                  partNumber.setText(data["part"])
-                );
-              });
+              updateResultTextbox("part", data, layersDict.part);
 
             layersDict.features &&
-              layersDict.features.forEach((layer) => {
-                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (feature) => {
-                  feature.setText(data["features"]);
-                });
-              });
+              updateResultTextbox("features", data, layersDict.features);
           });
 
           const moduleResultHotspot = experience.findComponentsByTag(
