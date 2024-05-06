@@ -35,11 +35,7 @@
     CerosSDK.findExperience()
       .done(function (experience) {
         let rawData = {};
-        const products = {};
         const answers = {};
-        const numOfQuestions = 7;
-        const delimeter = "_";
-        const results = {};
         let clickTime = 0;
         let windowObjectReference = null; // global variable
         const keys = [
@@ -79,6 +75,11 @@
           },
         });
 
+        resetCollection.on(CerosSDK.EVENTS.CLICKED, () => {
+          nextNode = root;
+          console.log(nextNode);
+        });
+
         resultsCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, () => {
           if (nextNode.children.length === 3) {
             const threeModuleResult = experience.findLayersByTag(`module-3`);
@@ -93,9 +94,9 @@
           nextNode = depthFirstSearch(nextNode, val, key);
           console.log(nextNode);
           handleMasks(nextNode);
-          if (key === "polarized") {
-            showModule(nextNode.children.length);
-          }
+          // if (key === "polarized") {
+          //   showModule(nextNode.children.length);
+          // }
         });
 
         function handleModuleImage(img, data) {
@@ -139,7 +140,7 @@
         function registerResultClcikEvent(layerArray, key, data) {
           layerArray.forEach((layer) => {
             layer.on(CerosSDK.EVENTS.CLICKED, () => {
-              openAndTrackLink(data[key])
+              openAndTrackLink(data[key]);
             });
           });
         }
@@ -223,11 +224,12 @@
           });
         }
 
-        function Node(name, value = "") {
+        function Node(name, value = "", parent = null) {
           this.name = name;
           this.value = value;
           this.children = [];
           this.data = {};
+          this.parent = parent;
         }
 
         function depthFirstSearch(node, targetValue, targetName) {
@@ -253,7 +255,7 @@
         function handleNewNode(val, name, parent, obj = {}) {
           const foundNode = parent.children.find((node) => node.value === val);
           if (!foundNode) {
-            const node = new Node(name, val);
+            const node = new Node(name, val, parent);
             node.data = obj;
             parent.children.push(node);
             return node;
@@ -306,47 +308,18 @@
           }
         }
 
-        // update description
-        function updateResultDescription(comp) {
-          const text = `Contura ${dict.type}, Black, ${dict.number} Lens, SP, ${dict.switch}, 20A 12V, 250 TAB (QC), ${dict.lamps}`;
-          comp.setText(text);
-        }
-
-        function updateDict(qNum) {
-          switch (qNum) {
-            case "q-1":
-              dict.type = answers[qNum].toUpperCase();
-              break;
-            case "q-2":
-              dict.number = capitalize(answers[qNum]);
-              if (dict.number === "No") {
-                dict.lamps = "No Lamps";
-              }
-              break;
-            case "q-3":
-              dict.lamps = `${dict.number} ${capitalize(answers[qNum])} ${
-                dict.number === "One" ? "Lamp" : "Lamps"
-              }`;
-            case "q-4":
-              dict.switch = answers[qNum].toUpperCase();
-            default:
-              break;
-          }
-        }
-
-        function capitalize(str) {
-          return str[0].toUpperCase() + str.slice(1).toLowerCase();
-        }
-
-        descriptionCollection.on(
-          CerosSDK.EVENTS.ANIMATION_STARTED,
-          updateResultDescription
-        );
-
         // handle back navigation
         backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
 
-        
+        function handleBackNavigation() {
+          if (!isDoubleClickBug()) {
+            nextNode = nextNode.parent;
+            handleMasks(nextNode);
+            console.log(nextNode)
+          } else {
+            console.log("detected double click");
+          }
+        }
 
         function openRequestedSingleTab(url) {
           if (windowObjectReference === null || windowObjectReference.closed) {
