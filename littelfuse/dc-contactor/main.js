@@ -35,9 +35,11 @@
     CerosSDK.findExperience()
       .done(function (experience) {
         let rawData = {};
-        const answers = {};
         let clickTime = 0;
         let windowObjectReference = null; // global variable
+        const root = new Node("Root");
+        let nextNode = root;
+
         const keys = [
           "application",
           "max-voltage",
@@ -48,6 +50,16 @@
           "polarized",
           "part",
         ];
+
+        const navDict = {
+          application: "{{}} Application",
+          "max-voltage": "Max Voltage {{}}V",
+          "current-rating": "Current {{}}A",
+          "coil-voltage": "Coil Voltage {{}}V",
+          mounting: "{{}} Mount",
+          "aux-contacts": "{{}} Aux Contacts",
+          "polarized": "{{}}"
+        };
 
         const isPreview =
           window.self == window.top &&
@@ -61,8 +73,7 @@
 
         const answerCollection = experience.findComponentsByTag("answer");
 
-        const root = new Node("Root");
-        let nextNode = root;
+        const navCollections = experience.findComponentsByTag("nav");
 
         PapaParse.parse(link, {
           download: true,
@@ -74,6 +85,9 @@
             console.log(root);
           },
         });
+
+        // handle back navigation
+        backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
 
         resetCollection.on(CerosSDK.EVENTS.CLICKED, () => {
           nextNode = root;
@@ -94,10 +108,33 @@
           nextNode = depthFirstSearch(nextNode, val, key);
           console.log(nextNode);
           handleMasks(nextNode);
-          // if (key === "polarized") {
-          //   showModule(nextNode.children.length);
-          // }
+          updateNavigation(nextNode);
+          if (key === "polarized") {
+            showModule(nextNode.children.length);
+          }
         });
+
+        function updateNavigation(nextNode) {
+          let currentNode = nextNode;
+
+          while (currentNode.parent) {
+            const components = navCollections.components.filter((comp) => {
+              return currentNode.name === comp.getPayload().toLowerCase();
+            });
+
+            components.forEach((comp) => {
+              const template = navDict[currentNode.name];
+              const value =
+                currentNode.name === "aux-contacts" &&
+                currentNode.value.toLowerCase() === "yes"
+                  ? ""
+                  : capitalize(currentNode.value.split(" ").join(""));
+              const text = template.replace("{{}}", value);
+              comp.setText(text);
+            });
+            currentNode = currentNode.parent;
+          }
+        }
 
         function handleModuleImage(img, data) {
           const tag = data["image"].split(".")[0].trim();
@@ -308,14 +345,11 @@
           }
         }
 
-        // handle back navigation
-        backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
-
         function handleBackNavigation() {
           if (!isDoubleClickBug()) {
             nextNode = nextNode.parent;
             handleMasks(nextNode);
-            console.log(nextNode)
+            console.log(nextNode);
           } else {
             console.log("detected double click");
           }
@@ -328,6 +362,10 @@
             windowObjectReference = window.open(url, "_blank");
             windowObjectReference.focus();
           }
+        }
+
+        function capitalize(str) {
+          return str[0].toUpperCase() + str.slice(1).toLowerCase();
         }
       })
       .fail(function (e) {
