@@ -1,23 +1,9 @@
 (function ($) {
   "use strict";
 
-  const logicLink =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsDn45xzDyGCrvetblyWrJF0Y69V_FA89qhMv307i_i9lnmYmA-t5mADY4vrEr6kMWeHBrA445N8QO/pub?gid=0&single=true&output=csv";
-
   const $script = $("#dc-contactor");
-  // Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
-  let absUrl;
-  const srcAttribute = $script.attr("src");
   const link = $script.attr("data-link");
   const distributor = $script.attr("distributor") || "";
-
-  // Check that a src attibute was defined, and code hasn't been inlined by third party
-  if (typeof srcAttribute !== "undefined") {
-    var path = srcAttribute.split("?")[0];
-    absUrl = path.split("/").slice(0, -1).join("/") + "/";
-  } else {
-    absUrl = "./";
-  }
 
   // load CerosSDK via requirejs
   require.config({
@@ -29,12 +15,9 @@
   });
 
   require(["CerosSDK", "PapaParse"], function (CerosSDK, PapaParse) {
-    // export const quizConfig = config;
-
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
-        let rawData = {};
         let clickTime = 0;
         let windowObjectReference = null; // global variable
         const root = new Node("Root");
@@ -79,8 +62,6 @@
           download: true,
           header: true,
           complete: (result) => {
-            rawData = result.data;
-            console.log(result.data);
             filterProducts(result.data);
             console.log(root);
           },
@@ -125,7 +106,7 @@
             currentNode = currentNode.parent;
           }
           nextNode = currentNode;
-          handleMasks(nextNode)
+          handleMasks(nextNode);
           console.log(nextNode);
         });
 
@@ -276,12 +257,14 @@
           });
         }
 
-        function Node(name, value = "", parent = null) {
-          this.name = name;
-          this.value = value;
-          this.children = [];
-          this.data = {};
-          this.parent = parent;
+        class Node {
+          constructor(name, value = "", parent = null) {
+            this.name = name;
+            this.value = value;
+            this.children = [];
+            this.data = {};
+            this.parent = parent;
+          }
         }
 
         function depthFirstSearch(node, targetValue, targetName) {
@@ -364,7 +347,6 @@
           if (!isDoubleClickBug()) {
             nextNode = nextNode.parent;
             handleMasks(nextNode);
-            // updateNavigation(nextNode);
             console.log(nextNode);
           } else {
             console.log("detected double click");
