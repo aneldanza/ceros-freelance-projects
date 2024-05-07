@@ -1,23 +1,9 @@
 (function ($) {
   "use strict";
 
-  const logicLink =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsDn45xzDyGCrvetblyWrJF0Y69V_FA89qhMv307i_i9lnmYmA-t5mADY4vrEr6kMWeHBrA445N8QO/pub?gid=0&single=true&output=csv";
-
   const $script = $("#dc-contactor");
-  // Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
-  let absUrl;
-  const srcAttribute = $script.attr("src");
   const link = $script.attr("data-link");
   const distributor = $script.attr("distributor") || "";
-
-  // Check that a src attibute was defined, and code hasn't been inlined by third party
-  if (typeof srcAttribute !== "undefined") {
-    var path = srcAttribute.split("?")[0];
-    absUrl = path.split("/").slice(0, -1).join("/") + "/";
-  } else {
-    absUrl = "./";
-  }
 
   // load CerosSDK via requirejs
   require.config({
@@ -29,17 +15,24 @@
   });
 
   require(["CerosSDK", "PapaParse"], function (CerosSDK, PapaParse) {
-    // export const quizConfig = config;
-
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
-        let rawData = {};
-        const products = {};
-        const answers = {};
-        const numOfQuestions = 7;
-        const delimeter = "_";
-        const results = {};
+        class Node {
+          constructor(name, value = "", parent = null) {
+            this.name = name;
+            this.value = value;
+            this.children = [];
+            this.data = {};
+            this.parent = parent;
+          }
+        }
+        
+        let clickTime = 0;
+        let windowObjectReference = null; // global variable
+        const root = new Node("Root");
+        let nextNode = root;
+
         const keys = [
           "application",
           "max-voltage",
@@ -51,6 +44,20 @@
           "part",
         ];
 
+        const navDict = {
+          application: "{{}} Application",
+          "max-voltage": "Max Voltage {{}}V",
+          "current-rating": "Current {{}}A",
+          "coil-voltage": "Coil Voltage {{}}V",
+          mounting: "{{}} Mount",
+          "aux-contacts": "{{}} Aux Contacts",
+          polarized: "{{}}",
+        };
+
+        const isPreview =
+          window.self == window.top &&
+          window.location.hostname.includes(".preview.ceros");
+
         const resetCollection = experience.findLayersByTag("reset");
 
         const backCollection = experience.findLayersByTag("back");
@@ -59,21 +66,23 @@
 
         const answerCollection = experience.findComponentsByTag("answer");
 
-        const root = new Node("Root");
-        let nextNode = root;
+        const navCollections = experience.findComponentsByTag("nav");
 
         PapaParse.parse(link, {
           download: true,
           header: true,
           complete: (result) => {
-            rawData = result.data;
-            console.log(result.data);
             filterProducts(result.data);
             console.log(root);
-            if (distributor) {
-              trackHotspots();
-            }
           },
+        });
+
+        // handle back navigation
+        backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
+
+        resetCollection.on(CerosSDK.EVENTS.CLICKED, () => {
+          nextNode = root;
+          console.log(nextNode);
         });
 
         resultsCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, () => {
@@ -90,10 +99,48 @@
           nextNode = depthFirstSearch(nextNode, val, key);
           console.log(nextNode);
           handleMasks(nextNode);
+          updateNavigation(nextNode);
           if (key === "polarized") {
             showModule(nextNode.children.length);
           }
         });
+
+        navCollections.on(CerosSDK.EVENTS.CLICKED, (comp) => {
+          const name = comp.getPayload().toLowerCase();
+          let currentNode = nextNode;
+          let nodeFound = false;
+          while (currentNode.parent && !nodeFound) {
+            if (currentNode.name === name) {
+              nodeFound = true;
+            }
+            currentNode = currentNode.parent;
+          }
+          nextNode = currentNode;
+          handleMasks(nextNode);
+          console.log(nextNode);
+        });
+
+        function updateNavigation(nextNode) {
+          let currentNode = nextNode;
+
+          while (currentNode.parent) {
+            const components = navCollections.components.filter((comp) => {
+              return currentNode.name === comp.getPayload().toLowerCase();
+            });
+
+            components.forEach((comp) => {
+              const template = navDict[currentNode.name];
+              const value =
+                currentNode.name === "aux-contacts" &&
+                currentNode.value.toLowerCase() === "yes"
+                  ? ""
+                  : capitalize(currentNode.value.split(" ").join(""));
+              const text = template.replace("{{}}", value);
+              comp.setText(text);
+            });
+            currentNode = currentNode.parent;
+          }
+        }
 
         function handleModuleImage(img, data) {
           const tag = data["image"].split(".")[0].trim();
@@ -116,7 +163,52 @@
           }
         }
 
-        function showModule(type) {
+        function showResultImage(data, callback, imgArray) {
+          imgArray.forEach((layer) => {
+            layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+              const images = group.findAllComponents();
+              images.layers.forEach((img) => callback(img, data));
+            });
+          });
+        }
+
+        function updateResultTextbox(key, data, txtboxArray) {
+          txtboxArray.forEach((layer) => {
+            layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) =>
+              txtBox.setText(data[key])
+            );
+          });
+        }
+
+        function registerResultClcikEvent(layerArray, key, data) {
+          layerArray.forEach((layer) => {
+            layer.on(CerosSDK.EVENTS.CLICKED, () => {
+              openAndTrackLink(data[key]);
+            });
+          });
+        }
+
+        function openAndTrackLink(url) {
+          if (!isDoubleClickBug()) {
+            if (isPreview) {
+              openRequestedSingleTab(url);
+            } else {
+              sendUAEvent(url);
+            }
+          }
+        }
+
+        function isDoubleClickBug() {
+          if (Date.now() - clickTime < 200) {
+            clickTime = Date.now();
+            return true;
+          } else {
+            clickTime = Date.now();
+            return false;
+          }
+        }
+
+        function updateModuleResults(type) {
           nextNode.children.forEach((node, index) => {
             const moduleTag =
               type > 1 ? `${type}-module-${index + 1}` : `${type}-module`;
@@ -127,35 +219,31 @@
             const data = node.data;
 
             layersDict.images &&
-              layersDict.images.forEach((layer) => {
-                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
-                  const images = group.findAllComponents();
-                  images.layers.forEach((img) => handleModuleImage(img, data));
-                });
-              });
+              showResultImage(data, handleModuleImage, layersDict.images);
 
             layersDict.icons &&
-              layersDict.icons.forEach((layer) => {
-                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
-                  const icons = group.findAllComponents();
-                  icons.layers.forEach((icon) => handleModuleIcon(icon, data));
-                });
-              });
+              showResultImage(data, handleModuleIcon, layersDict.icons);
 
             layersDict.part &&
-              layersDict.part.forEach((layer) => {
-                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (partNumber) =>
-                  partNumber.setText(data["part"])
-                );
-              });
+              updateResultTextbox("part", data, layersDict.part);
 
             layersDict.features &&
-              layersDict.features.forEach((layer) => {
-                layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (feature) => {
-                  feature.setText(data["features"]);
-                });
-              });
+              updateResultTextbox("features", data, layersDict.features);
+
+            layersDict.datasheet &&
+              registerResultClcikEvent(layersDict.datasheet, "datasheet", data);
+
+            layersDict["buy-now"] &&
+              registerResultClcikEvent(
+                layersDict["buy-now"],
+                distributor,
+                data
+              );
           });
+        }
+
+        function showModule(type) {
+          updateModuleResults(type);
 
           const moduleResultHotspot = experience.findComponentsByTag(
             `module-${type}`
@@ -179,12 +267,7 @@
           });
         }
 
-        function Node(name, value = "") {
-          this.name = name;
-          this.value = value;
-          this.children = [];
-          this.data = {};
-        }
+
 
         function depthFirstSearch(node, targetValue, targetName) {
           if (
@@ -209,7 +292,7 @@
         function handleNewNode(val, name, parent, obj = {}) {
           const foundNode = parent.children.find((node) => node.value === val);
           if (!foundNode) {
-            const node = new Node(name, val);
+            const node = new Node(name, val, parent);
             node.data = obj;
             parent.children.push(node);
             return node;
@@ -245,55 +328,32 @@
 
         // send UA event with outbound link info
         function sendUAEvent(link) {
-          dataLayer.push({
-            event: "outbound-link-click",
-            eventCategory: "CEROS",
-            eventAction: "ceros-click",
-            eventLabel: link,
-          });
-        }
-
-        // update description
-        function updateResultDescription(comp) {
-          const text = `Contura ${dict.type}, Black, ${dict.number} Lens, SP, ${dict.switch}, 20A 12V, 250 TAB (QC), ${dict.lamps}`;
-          comp.setText(text);
-        }
-
-        function updateDict(qNum) {
-          switch (qNum) {
-            case "q-1":
-              dict.type = answers[qNum].toUpperCase();
-              break;
-            case "q-2":
-              dict.number = capitalize(answers[qNum]);
-              if (dict.number === "No") {
-                dict.lamps = "No Lamps";
-              }
-              break;
-            case "q-3":
-              dict.lamps = `${dict.number} ${capitalize(answers[qNum])} ${
-                dict.number === "One" ? "Lamp" : "Lamps"
-              }`;
-            case "q-4":
-              dict.switch = answers[qNum].toUpperCase();
-            default:
-              break;
+          if (window.self !== window.top) {
+            const data = {
+              event_category: "CEROS",
+              event_label: link,
+              event_action: "outbound_link_click",
+            };
+            parent.postMessage(JSON.stringify(data), "*");
+          } else {
+            dataLayer.push({
+              event: "ceros-event",
+              cerosAction: "ceros_outbound_link_click",
+              cerosCategory: "CEROS",
+              cerosLabel: link,
+            });
           }
         }
 
-        function capitalize(str) {
-          return str[0].toUpperCase() + str.slice(1).toLowerCase();
+        function handleBackNavigation() {
+          if (!isDoubleClickBug()) {
+            nextNode = nextNode.parent;
+            handleMasks(nextNode);
+            console.log(nextNode);
+          } else {
+            console.log("detected double click");
+          }
         }
-
-        descriptionCollection.on(
-          CerosSDK.EVENTS.ANIMATION_STARTED,
-          updateResultDescription
-        );
-
-        // handle back navigation
-        backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
-
-        let windowObjectReference = null; // global variable
 
         function openRequestedSingleTab(url) {
           if (windowObjectReference === null || windowObjectReference.closed) {
@@ -302,6 +362,10 @@
             windowObjectReference = window.open(url, "_blank");
             windowObjectReference.focus();
           }
+        }
+
+        function capitalize(str) {
+          return str[0].toUpperCase() + str.slice(1).toLowerCase();
         }
       })
       .fail(function (e) {
