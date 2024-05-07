@@ -58,7 +58,7 @@
           "coil-voltage": "Coil Voltage {{}}V",
           mounting: "{{}} Mount",
           "aux-contacts": "{{}} Aux Contacts",
-          "polarized": "{{}}"
+          polarized: "{{}}",
         };
 
         const isPreview =
@@ -112,6 +112,21 @@
           if (key === "polarized") {
             showModule(nextNode.children.length);
           }
+        });
+
+        navCollections.on(CerosSDK.EVENTS.CLICKED, (comp) => {
+          const name = comp.getPayload().toLowerCase();
+          let currentNode = nextNode;
+          let nodeFound = false;
+          while (currentNode.parent && !nodeFound) {
+            if (currentNode.name === name) {
+              nodeFound = true;
+            }
+            currentNode = currentNode.parent;
+          }
+          nextNode = currentNode;
+          handleMasks(nextNode)
+          console.log(nextNode);
         });
 
         function updateNavigation(nextNode) {
@@ -349,6 +364,7 @@
           if (!isDoubleClickBug()) {
             nextNode = nextNode.parent;
             handleMasks(nextNode);
+            // updateNavigation(nextNode);
             console.log(nextNode);
           } else {
             console.log("detected double click");
