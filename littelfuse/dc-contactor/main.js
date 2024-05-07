@@ -18,6 +18,16 @@
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
+        class Node {
+          constructor(name, value = "", parent = null) {
+            this.name = name;
+            this.value = value;
+            this.children = [];
+            this.data = {};
+            this.parent = parent;
+          }
+        }
+        
         let clickTime = 0;
         let windowObjectReference = null; // global variable
         const root = new Node("Root");
@@ -257,15 +267,7 @@
           });
         }
 
-        class Node {
-          constructor(name, value = "", parent = null) {
-            this.name = name;
-            this.value = value;
-            this.children = [];
-            this.data = {};
-            this.parent = parent;
-          }
-        }
+
 
         function depthFirstSearch(node, targetValue, targetName) {
           if (
