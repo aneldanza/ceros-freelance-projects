@@ -10,9 +10,7 @@ window.addEventListener("message", function (event) {
       obj["event_category"] == "CEROS" &&
       obj["event_action"] === "outbound_link_click"
     ) {
-      console.log(obj);
       // Send a click event to Google Tag Manager
-
       try {
         openRequestedSingleTab(obj["event_label"]);
 
