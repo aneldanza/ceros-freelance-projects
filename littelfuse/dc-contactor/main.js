@@ -162,7 +162,7 @@
         }
 
         function getPolarizedValue(str) {
-          if (str.includes("non-")) {
+          if (str.includes("no")) {
             return "No";
           } else {
             return "Yes";
