@@ -107,6 +107,7 @@
               cerosCategory: "CEROS",
               cerosLabel: link,
             });
+            openRequestedSingleTab(link);
           }
         }
 
