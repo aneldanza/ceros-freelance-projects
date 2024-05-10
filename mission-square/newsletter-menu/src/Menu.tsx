@@ -8,19 +8,19 @@ import {
     MenuHeading,
   } from "@headlessui/react";
 
-import { YearMenu } from "./YearMenu";
+import { YearMenu  } from "./YearMenu";
 
 export const MainMenu = () => {
     return (
         <Menu>
-          <MenuButton className={"w-52 bg-blue-600 text-white text-left"}>
+          <MenuButton className={"w-full bg-blue-600 text-white text-left"}>
             Previous Issues
           </MenuButton>
           <MenuItems
-            className={` bg-slate-200 w-[var(--button-width)]`}
+            className={`bg-slate-200 w-[var(--button-width)] `}
             anchor="bottom"
           >
-            <MenuSection>
+            <MenuSection className={'max-h-64 overflow-y-scroll'}>
               <MenuHeading>Current Issue</MenuHeading>
               <MenuItem>
                 <YearMenu year={"2024"} />
