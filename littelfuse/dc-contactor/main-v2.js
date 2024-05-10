@@ -30,7 +30,7 @@
 
         let clickTime = 0;
         let windowObjectReference = null; // global variable
-        const description = `Application: Stationary   >   Max Voltage: 1000V   >   Current: 100A   >   Coil Voltage: 48V   >  Mounting: Bottom   >   Aux Contacts: No   >   Polarized: Yes`;
+        const modules = {};
         const root = new Node("Root");
         let nextNode = root;
 
@@ -212,27 +212,34 @@
           }
         }
 
-        function showResultImage(data, callback, imgArray) {
+        function showResultImage(moduleTag, callback, imgArray) {
           imgArray.forEach((layer) => {
             layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+              const type = moduleTag.split("-")[0];
+              const obj = modules[type][moduleTag];
               const images = group.findAllComponents();
-              images.layers.forEach((img) => callback(img, data));
+              images.layers.forEach((img) => callback(img, obj));
             });
           });
         }
 
-        function updateResultTextbox(key, data, txtboxArray) {
+        function updateResultTextbox(key, moduleTag, txtboxArray) {
           txtboxArray.forEach((layer) => {
-            layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) =>
-              txtBox.setText(data[key])
-            );
+            layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
+              const type = moduleTag.split("-")[0];
+              const obj = modules[type][moduleTag];
+              txtBox.setText(obj[key]);
+            });
           });
         }
 
-        function registerResultClcikEvent(layerArray, key, data) {
+        function registerResultClcikEvent(layerArray, key, moduleTag) {
           layerArray.forEach((layer) => {
-            layer.on(CerosSDK.EVENTS.CLICKED, () => {
-              openAndTrackLink(data[key]);
+            layer.on(CerosSDK.EVENTS.CLICKED, function () {
+              const type = moduleTag.split("-")[0];
+              const obj = modules[type][moduleTag];
+
+              openAndTrackLink(obj[key]);
             });
           });
         }
@@ -266,28 +273,46 @@
             const layersDict = collection.layersByTag;
 
             const data = node.data;
+            const size = type.toString();
+            if (Object.hasOwn(modules, size) && modules[size][moduleTag]) {
+              modules[size] = modules[size] || {};
+              modules[size][moduleTag] = data;
+            } else {
+              modules[size] = modules[size] || {};
+              modules[size][moduleTag] = data;
 
-            layersDict.images &&
-              showResultImage(data, handleModuleImage, layersDict.images);
+              layersDict.images &&
+                showResultImage(
+                  moduleTag,
+                  handleModuleImage,
+                  layersDict.images
+                );
 
-            layersDict.icons &&
-              showResultImage(data, handleModuleIcon, layersDict.icons);
+              layersDict.icons &&
+                showResultImage(moduleTag, handleModuleIcon, layersDict.icons);
 
-            layersDict.part &&
-              updateResultTextbox("part", data, layersDict.part);
+              layersDict.part &&
+                updateResultTextbox("part", moduleTag, layersDict.part);
 
-            layersDict.features &&
-              updateResultTextbox("features", data, layersDict.features);
+              layersDict.features &&
+                updateResultTextbox("features", moduleTag, layersDict.features);
 
-            layersDict.datasheet &&
-              registerResultClcikEvent(layersDict.datasheet, "datasheet", data);
+              layersDict.datasheet &&
+                registerResultClcikEvent(
+                  layersDict.datasheet,
+                  "datasheet",
+                  moduleTag
+                );
 
-            layersDict["buy-now"] &&
-              registerResultClcikEvent(
-                layersDict["buy-now"],
-                distributor,
-                data
-              );
+              layersDict["buy-now"] &&
+                registerResultClcikEvent(
+                  layersDict["buy-now"],
+                  distributor,
+                  moduleTag
+                );
+            }
+
+            console.log(modules);
           });
         }
 
@@ -389,7 +414,7 @@
               cerosCategory: "CEROS",
               cerosLabel: link,
             });
-            openRequestedSingleTab(link)
+            openRequestedSingleTab(link);
           }
         }
 
