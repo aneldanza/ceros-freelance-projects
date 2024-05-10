@@ -3,6 +3,7 @@ import {
   DisclosureButton,
   DisclosurePanel,
   CloseButton,
+  MenuSeparator,
 } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
@@ -69,7 +70,8 @@ export const YearMenu: React.FC<YearMenuProps> = ({ year }) => {
       </DisclosureButton>
       {months.map((month) => {
         return (
-          <DisclosurePanel key={`item-${month.label}`}>
+          <DisclosurePanel key={`item-${month.label}`} className={'text-white'}>
+            <MenuSeparator className="my-1 h-px bg-white" />
             <CloseButton>{month.label}</CloseButton>
           </DisclosurePanel>
         );
