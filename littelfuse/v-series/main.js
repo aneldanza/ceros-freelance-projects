@@ -5,7 +5,6 @@
 
   const link = $script.attr("data-link");
   const distributor = $script.attr("data-distributor") || "";
-  const trackingId = $script.attr("data-tracking-id") || "";
 
   // load CerosSDK via requirejs
   require.config({
@@ -60,15 +59,8 @@
           download: true,
           header: true,
           complete: (result) => {
-            console.log(result.data);
             filterProducts(result.data);
-            console.log("unique products");
-            console.log("-----------------");
-            console.log(
-              "length of unique list is " + Object.keys(products).length
-            );
             handleAccessoriesButton();
-            console.log(products);
           },
         });
 
@@ -93,8 +85,6 @@
         notApplicableCollection.on(
           CerosSDK.EVENTS.ANIMATION_STARTED,
           (layer) => {
-            console.log("animation on n/a layer started");
-            console.log(`answers['q-2'] is ${answers["q-2"]}`);
             if (answers["q-2"] != "Two") {
               layer.hide();
             }
@@ -108,20 +98,16 @@
               event_category: "CEROS",
               event_label: link,
               event_action: "outbound_link_click",
-              tracking_id: trackingId,
             };
             parent.postMessage(JSON.stringify(data), "*");
           } else {
-            gtag("event", "ceros_click", {
-              event_category: "CEROS",
-              event_label: link,
-              transport_type: "beacon",
-              send_to: trackingId,
-              event_callback: function () {
-                console.log("event is succeessfully sent");
-                openRequestedSingleTab(link);
-              },
+            dataLayer.push({
+              event: "ceros-event",
+              cerosAction: "ceros_outbound_link_click",
+              cerosCategory: "CEROS",
+              cerosLabel: link,
             });
+            openRequestedSingleTab(link);
           }
         }
 
@@ -191,7 +177,7 @@
 
               updateResultDescription(descriptionCollection.components[0]);
             }
-            console.log(answers);
+           
           });
           i++;
         }
@@ -214,7 +200,7 @@
           const baseKey = answers["q-3"]
             ? `${baseType}${delimeter}${answers["q-2"]}${delimeter}${answers["q-3"]}${delimeter}${answers["q-4"]}`
             : `${baseType}${delimeter}${answers["q-2"]}${delimeter}${answers["q-4"]}`;
-          console.log(baseKey);
+      
           const rockerKey = `${answers["q-1"]}${delimeter}${answers["q-2"]}`;
           storeProductResults(baseKey, "base");
           storeProductResults(rockerKey, "rocker");
@@ -229,7 +215,7 @@
               results[`${product}Name`] = item;
               results[`${product}ImageTag`] = products[item]["img_tag"];
               results[`${product}Link`] = products[item][distributor];
-              console.log(results);
+           
             }
           }
         }

@@ -3,7 +3,7 @@
 
   const $script = $("#dc-contactor");
   const link = $script.attr("data-link");
-  const distributor = $script.attr("distributor") || "";
+  const distributor = $script.attr("data-distributor") || "";
 
   // load CerosSDK via requirejs
   require.config({
@@ -27,9 +27,10 @@
             this.parent = parent;
           }
         }
-        
+
         let clickTime = 0;
         let windowObjectReference = null; // global variable
+        const modules = {};
         const root = new Node("Root");
         let nextNode = root;
 
@@ -45,14 +46,24 @@
         ];
 
         const navDict = {
-          application: "{{}} Application",
-          "max-voltage": "Max Voltage {{}}V",
-          "current-rating": "Current {{}}A",
-          "coil-voltage": "Coil Voltage {{}}V",
-          mounting: "{{}} Mount",
-          "aux-contacts": "{{}} Aux Contacts",
-          polarized: "{{}}",
+          application: "Application: {{}}",
+          "max-voltage": "Max Voltage: {{}}V",
+          "current-rating": "Current: {{}}A",
+          "coil-voltage": "Coil Voltage: {{}}V",
+          mounting: "Mounting: {{}}",
+          "aux-contacts": "Aux Contacts: {{}}",
+          polarized: "Polarized: {{}}",
         };
+
+        // const navDict = {
+        //   application: "{{}} Application",
+        //   "max-voltage": "Max Voltage {{}}V",
+        //   "current-rating": "Current {{}}A",
+        //   "coil-voltage": "Coil Voltage {{}}V",
+        //   mounting: "{{}} Mount",
+        //   "aux-contacts": "{{}} Aux Contacts",
+        //   polarized: "{{}}",
+        // };
 
         const isPreview =
           window.self == window.top &&
@@ -68,6 +79,10 @@
 
         const navCollections = experience.findComponentsByTag("nav");
 
+        const pathCollection = experience.findComponentsByTag("path");
+
+        updatePath();
+
         PapaParse.parse(link, {
           download: true,
           header: true,
@@ -82,6 +97,7 @@
 
         resetCollection.on(CerosSDK.EVENTS.CLICKED, () => {
           nextNode = root;
+          updatePath();
           console.log(nextNode);
         });
 
@@ -99,7 +115,8 @@
           nextNode = depthFirstSearch(nextNode, val, key);
           console.log(nextNode);
           handleMasks(nextNode);
-          updateNavigation(nextNode);
+          updatePath();
+          // updateNavigation(nextNode);
           if (key === "polarized") {
             showModule(nextNode.children.length);
           }
@@ -117,30 +134,62 @@
           }
           nextNode = currentNode;
           handleMasks(nextNode);
+          updatePath();
           console.log(nextNode);
         });
 
-        function updateNavigation(nextNode) {
+        function updatePath() {
           let currentNode = nextNode;
-
+          const pathArray = [];
           while (currentNode.parent) {
-            const components = navCollections.components.filter((comp) => {
-              return currentNode.name === comp.getPayload().toLowerCase();
-            });
+            const template = navDict[currentNode.name];
+            const value =
+              currentNode.name === "polarized"
+                ? getPolarizedValue(currentNode.value.toLowerCase())
+                : capitalize(currentNode.value.split(" ").join(""));
 
-            components.forEach((comp) => {
-              const template = navDict[currentNode.name];
-              const value =
-                currentNode.name === "aux-contacts" &&
-                currentNode.value.toLowerCase() === "yes"
-                  ? ""
-                  : capitalize(currentNode.value.split(" ").join(""));
-              const text = template.replace("{{}}", value);
-              comp.setText(text);
-            });
+            const text = template.replace("{{}}", value);
+            pathArray.unshift(text);
+
             currentNode = currentNode.parent;
           }
+
+          pathArray.length
+            ? pathCollection.setText(pathArray.join("  >  "))
+            : pathCollection.setText("");
+
+          pathCollection.show();
         }
+
+        function getPolarizedValue(str) {
+          if (str.includes("no")) {
+            return "No";
+          } else {
+            return "Yes";
+          }
+        }
+
+        // function updateNavigation(nextNode) {
+        //   let currentNode = nextNode;
+
+        //   while (currentNode.parent) {
+        //     const components = navCollections.components.filter((comp) => {
+        //       return currentNode.name === comp.getPayload().toLowerCase();
+        //     });
+
+        //     components.forEach((comp) => {
+        //       const template = navDict[currentNode.name];
+        //       const value =
+        //         currentNode.name === "aux-contacts" &&
+        //         currentNode.value.toLowerCase() === "yes"
+        //           ? ""
+        //           : capitalize(currentNode.value.split(" ").join(""));
+        //       const text = template.replace("{{}}", value);
+        //       comp.setText(text);
+        //     });
+        //     currentNode = currentNode.parent;
+        //   }
+        // }
 
         function handleModuleImage(img, data) {
           const tag = data["image"].split(".")[0].trim();
@@ -163,27 +212,34 @@
           }
         }
 
-        function showResultImage(data, callback, imgArray) {
+        function showResultImage(moduleTag, callback, imgArray) {
           imgArray.forEach((layer) => {
             layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
+              const type = moduleTag.split("-")[0];
+              const obj = modules[type][moduleTag];
               const images = group.findAllComponents();
-              images.layers.forEach((img) => callback(img, data));
+              images.layers.forEach((img) => callback(img, obj));
             });
           });
         }
 
-        function updateResultTextbox(key, data, txtboxArray) {
+        function updateResultTextbox(key, moduleTag, txtboxArray) {
           txtboxArray.forEach((layer) => {
-            layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) =>
-              txtBox.setText(data[key])
-            );
+            layer.on(CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
+              const type = moduleTag.split("-")[0];
+              const obj = modules[type][moduleTag];
+              txtBox.setText(obj[key]);
+            });
           });
         }
 
-        function registerResultClcikEvent(layerArray, key, data) {
+        function registerResultClcikEvent(layerArray, key, moduleTag) {
           layerArray.forEach((layer) => {
-            layer.on(CerosSDK.EVENTS.CLICKED, () => {
-              openAndTrackLink(data[key]);
+            layer.on(CerosSDK.EVENTS.CLICKED, function () {
+              const type = moduleTag.split("-")[0];
+              const obj = modules[type][moduleTag];
+
+              openAndTrackLink(obj[key]);
             });
           });
         }
@@ -217,28 +273,46 @@
             const layersDict = collection.layersByTag;
 
             const data = node.data;
+            const size = type.toString();
+            if (Object.hasOwn(modules, size) && modules[size][moduleTag]) {
+              modules[size] = modules[size] || {};
+              modules[size][moduleTag] = data;
+            } else {
+              modules[size] = modules[size] || {};
+              modules[size][moduleTag] = data;
 
-            layersDict.images &&
-              showResultImage(data, handleModuleImage, layersDict.images);
+              layersDict.images &&
+                showResultImage(
+                  moduleTag,
+                  handleModuleImage,
+                  layersDict.images
+                );
 
-            layersDict.icons &&
-              showResultImage(data, handleModuleIcon, layersDict.icons);
+              layersDict.icons &&
+                showResultImage(moduleTag, handleModuleIcon, layersDict.icons);
 
-            layersDict.part &&
-              updateResultTextbox("part", data, layersDict.part);
+              layersDict.part &&
+                updateResultTextbox("part", moduleTag, layersDict.part);
 
-            layersDict.features &&
-              updateResultTextbox("features", data, layersDict.features);
+              layersDict.features &&
+                updateResultTextbox("features", moduleTag, layersDict.features);
 
-            layersDict.datasheet &&
-              registerResultClcikEvent(layersDict.datasheet, "datasheet", data);
+              layersDict.datasheet &&
+                registerResultClcikEvent(
+                  layersDict.datasheet,
+                  "datasheet",
+                  moduleTag
+                );
 
-            layersDict["buy-now"] &&
-              registerResultClcikEvent(
-                layersDict["buy-now"],
-                distributor,
-                data
-              );
+              layersDict["buy-now"] &&
+                registerResultClcikEvent(
+                  layersDict["buy-now"],
+                  distributor,
+                  moduleTag
+                );
+            }
+
+            console.log(modules);
           });
         }
 
@@ -266,8 +340,6 @@
             }
           });
         }
-
-
 
         function depthFirstSearch(node, targetValue, targetName) {
           if (
@@ -342,6 +414,7 @@
               cerosCategory: "CEROS",
               cerosLabel: link,
             });
+            openRequestedSingleTab(link);
           }
         }
 
@@ -349,6 +422,7 @@
           if (!isDoubleClickBug()) {
             nextNode = nextNode.parent;
             handleMasks(nextNode);
+            updatePath();
             console.log(nextNode);
           } else {
             console.log("detected double click");
