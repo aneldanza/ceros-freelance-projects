@@ -1,89 +1,58 @@
 import { YearMenu } from "./YearMenu";
 import { useEffect, useState } from "react";
+import { usePapaParse } from "react-papaparse";
+import { type Row, Data, MonthData } from "./types";
 
-type Row = {
-  year: string;
-  month: string;
-  url: string;
-};
-
-type Data = {
-  [key: string]: {
-    [key: string]: string;
-  };
-};
-
-const rows: Row[] = [
-  {
-    year: "2024",
-    month: "April",
-    url: "https://explore.missionsq.org/realize-april2024)/p/1?_ga=2.140966834.1274526521.1715200289-1693120239.1703012616",
-  },
-  {
-    year: "2024",
-    month: "March",
-    url: "https://explore.missionsq.org/realize-april2024)/p/1?_ga=2.140966834.1274526521.1715200289-1693120239.1703012616",
-  },
-  {
-    year: "2024",
-    month: "February",
-    url: "https://explore.missionsq.org/realize-april2024)/p/1?_ga=2.140966834.1274526521.1715200289-1693120239.1703012616",
-  },
-  {
-    year: "2024",
-    month: "January",
-    url: "https://explore.missionsq.org/realize-april2024)/p/1?_ga=2.140966834.1274526521.1715200289-1693120239.1703012616",
-  },
-  {
-    year: "2023",
-    month: "December",
-    url: "https://explore.missionsq.org/realize-april2024)/p/1?_ga=2.140966834.1274526521.1715200289-1693120239.1703012616",
-  },
-  {
-    year: "2023",
-    month: "November",
-    url: "https://explore.missionsq.org/realize-april2024)/p/1?_ga=2.140966834.1274526521.1715200289-1693120239.1703012616",
-  },
-  {
-    year: "2023",
-    month: "October",
-    url: "https://explore.missionsq.org/realize-april2024)/p/1?_ga=2.140966834.1274526521.1715200289-1693120239.1703012616",
-  },
-  {
-    year: "2023",
-    month: "September",
-    url: "https://explore.missionsq.org/realize-april2024)/p/1?_ga=2.140966834.1274526521.1715200289-1693120239.1703012616",
-  },
-];
-
-function mapData(rows: Row[]) {
+function mapData(rows: unknown) {
   const result: Data = {};
-  rows.forEach((obj) => {
+  rows.forEach((obj: Row) => {
     result[obj.year] = result[obj.year] || {};
-    result[obj.year][obj.month] = obj.url;
+    result[obj.year].months = result[obj.year].months || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const monthObj: MonthData = {
+      label: obj.month,
+      url: obj.url,
+    };
+
+    result[obj.year].months.push(monthObj);
   });
   return result;
 }
 
+const link: string =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5dslnjB6l5rk9gqR-5v-kL0bOSReczrPAZb-JnRzp24u7v1AZZuxoZPEvisgR-ZCIG_veGTSSGr40/pub?gid=0&single=true&output=csv";
+
 export const List = () => {
   const [data, setData] = useState<Data>();
   const [current, setCurrent] = useState<string>("Current Issue");
+  const { readRemoteFile } = usePapaParse();
 
   useEffect(() => {
-    const result = mapData(rows);
-    setData(result);
+    readRemoteFile(link, {
+      header: true,
+      download: true,
+      complete: (rows) => {
+        const result = mapData(rows.data);
+        console.log(result);
+        setData(result);
+      },
+    });
   }, []);
 
   return (
     <>
       <div className=" bg-slate-200">
         <ul className="divide-y divide-black bg-slate-200">
-          <li key={'current'}>{current}</li>
+          <li key={"current"}>{current}</li>
           {data &&
             Object.keys(data).map((year) => {
               return (
                 <li key={`item-${year}`}>
-                  <YearMenu year={year} setCurrent={setCurrent} />
+                  <YearMenu
+                    year={year}
+                    setCurrent={setCurrent}
+                    months={data[year].months}
+                  />
                 </li>
               );
             })}
