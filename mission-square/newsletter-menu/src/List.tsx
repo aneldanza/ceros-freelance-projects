@@ -67,7 +67,7 @@ function mapData(rows: Row[]) {
 
 export const List = () => {
   const [data, setData] = useState<Data>();
-  const [current, setCurrent] = useState<string>("Current Issue")
+  const [current, setCurrent] = useState<string>("Current Issue");
 
   useEffect(() => {
     const result = mapData(rows);
@@ -78,12 +78,12 @@ export const List = () => {
     <>
       <div className=" bg-slate-200">
         <ul className="divide-y divide-black bg-slate-200">
-          <li>{current}</li>
+          <li key={'current'}>{current}</li>
           {data &&
             Object.keys(data).map((year) => {
               return (
                 <li key={`item-${year}`}>
-                  <YearMenu year={year} />
+                  <YearMenu year={year} setCurrent={setCurrent} />
                 </li>
               );
             })}

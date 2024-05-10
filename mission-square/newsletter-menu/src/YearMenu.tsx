@@ -9,6 +9,7 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 interface YearMenuProps {
   year: string;
+  setCurrent: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const months = [
@@ -61,7 +62,12 @@ const months = [
     url: "/December",
   },
 ];
-export const YearMenu: React.FC<YearMenuProps> = ({ year }) => {
+export const YearMenu: React.FC<YearMenuProps> = ({ year, setCurrent }) => {
+  const handlePanelClick = (label: string) => {
+    console.log("clicked panel");
+    console.log(label);
+    setCurrent(`${label} ${year}`);
+  };
   return (
     <Disclosure>
       <DisclosureButton className={"group flex items-center gap-2"}>
@@ -70,9 +76,11 @@ export const YearMenu: React.FC<YearMenuProps> = ({ year }) => {
       </DisclosureButton>
       {months.map((month) => {
         return (
-          <DisclosurePanel key={`item-${month.label}`} className={'text-white'}>
+          <DisclosurePanel key={`item-${month.label}`} className={"text-white"}>
             <MenuSeparator className="my-1 h-px bg-white" />
-            <CloseButton>{month.label}</CloseButton>
+            <CloseButton onClick={handlePanelClick.bind(this, month.label)}>
+              {month.label}
+            </CloseButton>
           </DisclosurePanel>
         );
       })}
