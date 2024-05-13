@@ -41,13 +41,13 @@ export const List = () => {
 
   return (
     <>
-      <div className=" bg-slate-200">
-        <ul className="divide-y divide-black bg-slate-200">
-          <li key={"current"}>{current}</li>
+      <div className=" bg-primary">
+        <ul className="divide-y divide-white">
+          <li className="text-secondary font-bold" key={"current"}>{current}</li>
           {data &&
             Object.keys(data).sort((a, b) => Number(b) - Number(a)).map((year) => {
               return (
-                <li key={`item-${year}`}>
+                <li key={`item-${year}`} >
                   <YearMenu
                     year={year}
                     setCurrent={setCurrent}
