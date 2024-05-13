@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { usePapaParse } from "react-papaparse";
 import { type Row, Data, MonthData } from "./types";
 
-function mapData(rows: unknown) {
+function mapData(rows: Row[]) {
   const result: Data = {};
   rows.forEach((obj: Row) => {
     result[obj.year] = result[obj.year] || {};
@@ -31,13 +31,13 @@ export const List = () => {
     readRemoteFile(link, {
       header: true,
       download: true,
-      complete: (rows) => {
+      complete: (rows: {data: Row[]}) => {
         const result = mapData(rows.data);
         console.log(result);
         setData(result);
       },
     });
-  }, []);
+  }, [readRemoteFile]);
 
   return (
     <>
