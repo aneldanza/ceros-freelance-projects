@@ -3,8 +3,16 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --color-primary: 217 217 217;
-        --color-secondary: 47 77 178
-    }
+  :root {
+    --color-primary: 217 217 217;
+    --color-secondary: 47 77 178;
+  }
+
+  @font-face {
+    font-family: "AvenirNextLTPro-Regular";
+    font-style: normal;
+    font-weight: 400;
+    src: url(/public/avenir-next-lt-pro/AvenirNextLTPro-Regular.otf)
+      format("otf");
+  }
 }

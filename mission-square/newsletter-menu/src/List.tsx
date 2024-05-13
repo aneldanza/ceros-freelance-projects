@@ -41,7 +41,7 @@ export const List = () => {
 
   return (
     <>
-      <div className=" bg-primary">
+      <div className=" bg-primary font-body">
         <ul className="divide-y divide-white">
           <li className="text-secondary font-bold" key={"current"}>{current}</li>
           {data &&

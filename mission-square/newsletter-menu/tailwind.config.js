@@ -7,6 +7,9 @@ export default {
         primary: "rgb(var(--color-primary) / <alpha-value>)",
         secondary: "rgb(var(--color-secondary) / <alpha-value>)",
       },
+      fontFamily: {
+        body: ["AvenirNextLTPro-Regular", "sans-serif"],
+      },
     },
   },
   plugins: [],
