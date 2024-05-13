@@ -8,7 +8,7 @@ function mapData(rows: Row[]) {
   rows.forEach((obj: Row) => {
     result[obj.year] = result[obj.year] || {};
     result[obj.year].months = result[obj.year].months || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const monthObj: MonthData = {
       label: obj.month,
       url: obj.url,
@@ -45,7 +45,7 @@ export const List = () => {
         <ul className="divide-y divide-black bg-slate-200">
           <li key={"current"}>{current}</li>
           {data &&
-            Object.keys(data).map((year) => {
+            Object.keys(data).sort((a, b) => Number(b) - Number(a)).map((year) => {
               return (
                 <li key={`item-${year}`}>
                   <YearMenu
