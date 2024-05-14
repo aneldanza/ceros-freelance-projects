@@ -37,7 +37,7 @@ export const YearMenu: React.FC<YearMenuProps> = ({
   };
 
   return (
-    <Disclosure as="li">
+    <Disclosure as="li" className={"p-2"}>
       {(panel) => {
         return (
           <>
