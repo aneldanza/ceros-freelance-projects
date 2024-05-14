@@ -1,7 +1,7 @@
-import { YearMenu } from "./YearMenu";
 import { useEffect, useState } from "react";
 import { usePapaParse } from "react-papaparse";
-import { type Row, Data, MonthData } from "./types";
+import { type Row, Data, MonthData, PanelData } from "./types";
+import { YearMenu } from "./YearMenu";
 
 function mapData(rows: Row[]) {
   const result: Data = {};
@@ -24,17 +24,36 @@ const link: string =
 
 export const List = () => {
   const [data, setData] = useState<Data>();
+  const [years, setYears] = useState<string[]>([]);
   const [current, setCurrent] = useState<string>("Current Issue");
   const { readRemoteFile } = usePapaParse();
+  const [activeDisclosurePanel, setActiveDisclosurePanel] =
+    useState<PanelData>();
+
+  function togglePanels(newPanel: PanelData) {
+    if (activeDisclosurePanel) {
+      if (
+        activeDisclosurePanel.key !== newPanel.key &&
+        activeDisclosurePanel.open
+      ) {
+        activeDisclosurePanel.close();
+      }
+    }
+
+    setActiveDisclosurePanel({
+      ...newPanel,
+      open: !newPanel.open,
+    });
+  }
 
   useEffect(() => {
     readRemoteFile(link, {
       header: true,
       download: true,
-      complete: (rows: {data: Row[]}) => {
+      complete: (rows: { data: Row[] }) => {
         const result = mapData(rows.data);
-        console.log(result);
         setData(result);
+        setYears(Object.keys(result).sort((a, b) => Number(b) - Number(a)));
       },
     });
   }, [readRemoteFile]);
@@ -43,17 +62,19 @@ export const List = () => {
     <>
       <div className=" bg-primary font-body">
         <ul className="divide-y divide-white">
-          <li className="text-secondary font-bold" key={"current"}>{current}</li>
+          <li className="text-secondary font-bold p-2" key={"current"}>
+            {current}
+          </li>
           {data &&
-            Object.keys(data).sort((a, b) => Number(b) - Number(a)).map((year) => {
+            years.map((year) => {
               return (
-                <li key={`item-${year}`} >
-                  <YearMenu
-                    year={year}
-                    setCurrent={setCurrent}
-                    months={data[year].months}
-                  />
-                </li>
+                <YearMenu
+                  key={`${year}`}
+                  togglePanels={togglePanels}
+                  year={year}
+                  setCurrent={setCurrent}
+                  months={data[year].months}
+                />
               );
             })}
         </ul>

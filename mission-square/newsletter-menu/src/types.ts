@@ -14,3 +14,14 @@ export type Row = {
       months: MonthData[];
     };
   };
+
+  export type PanelData = {
+    open: boolean;
+    close: (
+          focusableElement?:
+            | HTMLElement
+            | React.MutableRefObject<HTMLElement | null>
+            | undefined
+        ) => void;
+    key: string;
+  } 
