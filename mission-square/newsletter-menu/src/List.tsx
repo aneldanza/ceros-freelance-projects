@@ -60,7 +60,7 @@ export const List = () => {
 
   return (
     <>
-      <div className=" bg-primary font-body">
+      <div className=" bg-primary font-body border-2 border-white border-t-0">
         <ul className="divide-y divide-white">
           <li className="text-secondary font-bold p-2" key={"current"}>
             {current}
