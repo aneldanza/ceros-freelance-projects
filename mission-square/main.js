@@ -28,12 +28,11 @@
 
         const callback = (mutationList, observer) => {
           for (const mutation of mutationList) {
-            if (mutation.type === "childList") {
-              console.log("A child node has been added or removed.");
-            } else if (mutation.type === "attributes") {
+          if (mutation.type === "attributes" && mutation.attributeName === "style") {
               console.log(
                 `The ${mutation.attributeName} attribute was modified.`
               );
+              monitoredScrollingVariable.value = monitoredScrollingVariable.value;
             }
           }
         };
@@ -86,11 +85,7 @@
           "resize",
           _.debounce(function () {
             console.log("resized");
-            if (monitoredScrollingVariable.value) {
-              disableScrolling();
-            } else {
-              enableScrolling();
-            }
+            monitoredScrollingVariable.value = monitoredScrollingVariable.value;
           }, 100)
         );
       })
