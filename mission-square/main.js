@@ -9,26 +9,90 @@
   require.config({
     paths: {
       CerosSDK: "//sdk.ceros.com/standalone-player-sdk-v5.min",
+      lodash:
+        "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min",
     },
   });
 
-  require(["CerosSDK"], function (CerosSDK) {
+  require(["CerosSDK", "lodash"], function (CerosSDK, _) {
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
+        console.log(_);
         const menuButton = experience.findComponentsByTag("menu");
         let disableParentScrolling = false;
         const pageContainers = $(".page-container");
+        const zoomControls = document.getElementsByClassName("zoom-controls");
+
+        const config = { attributes: true };
+
+        const callback = (mutationList, observer) => {
+          for (const mutation of mutationList) {
+            if (mutation.type === "childList") {
+              console.log("A child node has been added or removed.");
+            } else if (mutation.type === "attributes") {
+              console.log(
+                `The ${mutation.attributeName} attribute was modified.`
+              );
+            }
+          }
+        };
+
+        const observer = new MutationObserver(callback);
+
+        for (let i = 0; i < zoomControls.length; i++) {
+          const zoomControl = zoomControls[i];
+          observer.observe(zoomControl, config);
+        }
+
+        const scrollingHandler = {
+          set(target, property, value) {
+            console.log(
+              `Variable "${property}" changed from ${target[property]} to ${value}`
+            );
+            target[property] = value;
+            if (value) {
+              disableScrolling();
+            } else {
+              enableScrolling();
+            }
+          },
+        };
+
+        const monitoredScrollingVariable = new Proxy(
+          { value: disableParentScrolling },
+          scrollingHandler
+        );
+
+        function disableScrolling() {
+          //   disableParentScrolling = true;
+          pageContainers.css({ height: "3000px", overflow: "hidden" });
+        }
+
+        function enableScrolling() {
+          //   disableParentScrolling = false;
+          pageContainers.css({ height: "100%", overflow: "auto" });
+        }
 
         menuButton.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           if (comp.getPayload() == "open") {
-            disableParentScrolling = true;
-            pageContainers.css({ height: "3000px", overflow: "hidden" });
+            monitoredScrollingVariable.value = true;
           } else {
-            disableParentScrolling = false;
-            pageContainers.css({ height: "100%", overflow: "auto" });
+            monitoredScrollingVariable.value = false;
           }
         });
+
+        $(window).on(
+          "resize",
+          _.debounce(function () {
+            console.log("resized");
+            if (monitoredScrollingVariable.value) {
+              disableScrolling();
+            } else {
+              enableScrolling();
+            }
+          }, 100)
+        );
       })
       .fail(function (e) {
         console.log(e);
