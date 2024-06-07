@@ -6,7 +6,7 @@ import {
   MenuSeparator,
 } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { MonthData, PanelData } from "./types";
+import { MonthData, PanelData } from "../types";
 
 interface YearMenuProps {
   year: string;
@@ -42,7 +42,7 @@ export const YearMenu: React.FC<YearMenuProps> = ({
         return (
           <>
             <DisclosureButton
-              className={"group flex items-center gap-2 text-white"}
+              className={"group flex items-center gap-2 text-blue-800"}
               onClick={() => {
                 handleDisclosureClick({ ...panel, key: year });
               }}
