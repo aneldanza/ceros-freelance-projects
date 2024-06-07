@@ -28,11 +28,15 @@
 
         const callback = (mutationList, observer) => {
           for (const mutation of mutationList) {
-          if (mutation.type === "attributes" && mutation.attributeName === "style") {
+            if (
+              mutation.type === "attributes" &&
+              mutation.attributeName === "style"
+            ) {
               console.log(
                 `The ${mutation.attributeName} attribute was modified.`
               );
-              monitoredScrollingVariable.value = monitoredScrollingVariable.value;
+              monitoredScrollingVariable.value =
+                monitoredScrollingVariable.value;
             }
           }
         };
@@ -88,6 +92,16 @@
             monitoredScrollingVariable.value = monitoredScrollingVariable.value;
           }, 100)
         );
+
+        window.addEventListener("message", (e) => {
+          if (typeof e.data === "string" && e.data === "menu is ready") {
+            const menuIframes =
+              document.getElementsByClassName("newsletter-menu");
+            menuIframes.forEach((iframe) => {
+              iframe.contentWindow.postMessage(JSON.stringify({ "csv": link }), "*");
+            });
+          }
+        });
       })
       .fail(function (e) {
         console.log(e);
