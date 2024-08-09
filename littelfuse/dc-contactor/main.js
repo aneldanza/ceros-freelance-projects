@@ -63,8 +63,6 @@
 
         const backCollection = experience.findLayersByTag("back");
 
-        const resultsCollection = experience.findLayersByTag("results");
-
         const answerCollection = experience.findComponentsByTag("answer");
 
         const navCollections = experience.findComponentsByTag("nav");
@@ -89,13 +87,6 @@
           nextNode = root;
           updatePath();
           console.log(nextNode);
-        });
-
-        resultsCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, () => {
-          if (nextNode.children.length === 3) {
-            const threeModuleResult = experience.findLayersByTag(`module-3`);
-            threeModuleResult.click();
-          }
         });
 
         answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
@@ -144,15 +135,6 @@
           });
           i++;
         }
-
-        masksCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-          const payload = layer.getPayload();
-          if (nextNode.children.find((node) => node.value === payload)) {
-            layer.show();
-          } else {
-            layer.hide();
-          }
-        });
 
         function updatePath() {
           let currentNode = nextNode;
@@ -304,6 +286,9 @@
                   distributor,
                   moduleTag
                 );
+
+              layersDict.specs &&
+                updateResultTextbox("specs", moduleTag, layersDict.specs);
             }
 
             console.log(modules);
