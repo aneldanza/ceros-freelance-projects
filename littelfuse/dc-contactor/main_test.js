@@ -25,6 +25,7 @@
             this.children = [];
             this.data = {};
             this.parent = parent;
+            this.elementId = "";
           }
         }
 
@@ -89,23 +90,6 @@
           console.log(nextNode);
         });
 
-        function handleEvenNumberOfOptions(options) {
-          const collection = options.layers[0].findAllComponents();
-          console.log(collection);
-          const max = collection.layersByTag.answer.length;
-          const elements = collection.layersByTag.answer;
-          const first = (max - nextNode.children.length) / 2;
-          for (let i = 0; i < max; i++) {
-            if (i < first) {
-              elements[i].hide();
-            } else if (i >= first && i - first < nextNode.children.length) {
-              elements[i].setText(nextNode.children[i - first].value);
-            } else {
-              elements[i].hide();
-            }
-          }
-        }
-
         function handleTextOptions(options, nodes) {
           const collection = options.layers[0].findAllComponents();
           console.log(collection);
@@ -117,6 +101,7 @@
               elements[i].hide();
             } else if (i >= first && i - first < nodes.length) {
               elements[i].setText(nodes[i - first].value);
+              nodes[i - first].elementId = elements[i].id;
             } else {
               elements[i].hide();
             }
@@ -126,10 +111,19 @@
         answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const tag = comp.getTags().find((tag) => tag.includes("q:"));
           const key = tag.split(":")[1];
-          const val = comp.getPayload().trim();
-          nextNode = depthFirstSearch(nextNode, val, key);
+          if (key === "current-rating" || key === "coil-voltage") {
+            nextNode = nextNode.children.find(
+              (node) => node.elementId === comp.id
+            );
+          } else {
+            const val = comp.getPayload().trim();
+            nextNode = depthFirstSearch(nextNode, val, key);
+          }
           console.log(nextNode);
-          if (nextNode.name === "max-voltage") {
+          if (
+            nextNode.name === "max-voltage" ||
+            nextNode.name === "current-rating"
+          ) {
             const sortedNodes = nextNode.children.sort(
               (a, b) => a.value - b.value
             );
