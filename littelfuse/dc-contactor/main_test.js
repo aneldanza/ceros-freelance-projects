@@ -89,13 +89,68 @@
           console.log(nextNode);
         });
 
+        function handleEvenNumberOfOptions(options) {
+          const collection = options.layers[0].findAllComponents();
+          console.log(collection);
+          const max = collection.layersByTag.answer.length;
+          const elements = collection.layersByTag.answer;
+          const first = (max - nextNode.children.length) / 2;
+          for (let i = 0; i < max; i++) {
+            if (i < first) {
+              elements[i].hide();
+            } else if (i >= first && i - first < nextNode.children.length) {
+              elements[i].setText(nextNode.children[i - first].value);
+            } else {
+              elements[i].hide();
+            }
+          }
+        }
+
+        function handleTextOptions(options, nodes) {
+          const collection = options.layers[0].findAllComponents();
+          console.log(collection);
+          const max = collection.layersByTag.answer.length;
+          const elements = collection.layersByTag.answer;
+          const first = Math.floor((max - nodes.length) / 2);
+          for (let i = 0; i < max; i++) {
+            if (i < first) {
+              elements[i].hide();
+            } else if (i >= first && i - first < nodes.length) {
+              elements[i].setText(nodes[i - first].value);
+            } else {
+              elements[i].hide();
+            }
+          }
+        }
+
         answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const tag = comp.getTags().find((tag) => tag.includes("q:"));
           const key = tag.split(":")[1];
           const val = comp.getPayload().trim();
           nextNode = depthFirstSearch(nextNode, val, key);
           console.log(nextNode);
-          handleMasks(nextNode);
+          if (nextNode.name === "max-voltage") {
+            const sortedNodes = nextNode.children.sort(
+              (a, b) => a.value - b.value
+            );
+            const evenOptions = experience.findLayersByTag(
+              `${nextNode.children[0].name}_even`
+            );
+            const oddOptions = experience.findLayersByTag(
+              `${nextNode.children[0].name}_odd`
+            );
+            if (nextNode.children.length % 2 === 0) {
+              oddOptions.hide();
+              evenOptions.show();
+              handleTextOptions(evenOptions, sortedNodes);
+            } else {
+              oddOptions.show();
+              evenOptions.hide();
+              handleTextOptions(oddOptions, sortedNodes);
+            }
+          } else {
+            handleMasks(nextNode);
+          }
           updatePath();
 
           if (key === "polarized") {
