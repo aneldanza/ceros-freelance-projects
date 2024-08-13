@@ -60,6 +60,10 @@
           window.self == window.top &&
           window.location.hostname.includes(".preview.ceros");
 
+        const isMobile =
+          experience.findComponentsByTag("mobile").components.length;
+        console.log(`this is mobile layout - ${isMobile}`);
+
         const resetCollection = experience.findLayersByTag("reset");
 
         const backCollection = experience.findLayersByTag("back");
@@ -108,6 +112,47 @@
           }
         }
 
+        function handleMobileTextOptions(options, nodes) {
+          const collection = options.layers[0].findAllComponents();
+          const elements = collection.layersByTag.answer;
+          if (nodes.length === 1) {
+            elements.forEach((comp, i) => {
+              if (i === 1) {
+                comp.setText(nodes[0].value);
+              } else {
+                comp.hide();
+              }
+            });
+          } else {
+            elements.forEach((comp, i) => {
+              if (i < nodes.length) {
+                comp.setText(nodes[i].value);
+              } else {
+                comp.hide();
+              }
+            });
+          }
+        }
+
+        function displayMobileLayoutOptions(
+          oddOptions,
+          evenOptions,
+
+          sortedNodes
+        ) {
+          if (sortedNodes.length % 2 === 0) {
+            oddOptions.hide();
+            evenOptions.show();
+
+            handleMobileTextOptions(evenOptions, sortedNodes);
+          } else {
+            oddOptions.show();
+            evenOptions.hide();
+
+            handleMobileTextOptions(oddOptions, sortedNodes);
+          }
+        }
+
         answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const tag = comp.getTags().find((tag) => tag.includes("q:"));
           const key = tag.split(":")[1];
@@ -133,14 +178,19 @@
             const oddOptions = experience.findLayersByTag(
               `${nextNode.children[0].name}_odd`
             );
-            if (nextNode.children.length % 2 === 0) {
-              oddOptions.hide();
-              evenOptions.show();
-              handleTextOptions(evenOptions, sortedNodes);
+
+            if (isMobile) {
+              displayMobileLayoutOptions(oddOptions, evenOptions, sortedNodes);
             } else {
-              oddOptions.show();
-              evenOptions.hide();
-              handleTextOptions(oddOptions, sortedNodes);
+              if (nextNode.children.length % 2 === 0) {
+                oddOptions.hide();
+                evenOptions.show();
+                handleTextOptions(evenOptions, sortedNodes);
+              } else {
+                oddOptions.show();
+                evenOptions.hide();
+                handleTextOptions(oddOptions, sortedNodes);
+              }
             }
           } else {
             handleMasks(nextNode);
