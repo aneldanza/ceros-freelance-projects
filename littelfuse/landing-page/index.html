@@ -3,51 +3,54 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://sdk.ceros.com/embedded-player-sdk-v5.min.js"></script>
     <title>Document</title>
   </head>
   <body>
-    <div
-      style="
-        position: relative;
-        width: auto;
-        padding: 0 0 20.39%;
-        height: 0;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        margin: 0;
-        border: 0 none;
-      "
-      id="experience-66bbcde6ae8b7"
-      data-aspectRatio="4.90421456"
-    >
-      <iframe
-        allowfullscreen
-        src="https://view.ceros.com/littelfuse/header"
+    <div style="position: sticky; top: 0; width: 100%; z-index: 1000">
+      <div
         style="
-          position: absolute;
+          position: relative;
+          width: auto;
+          padding: 0 0 20.39%;
+          height: 0;
           top: 0;
           left: 0;
           bottom: 0;
           right: 0;
           margin: 0;
-          padding: 0;
           border: 0 none;
-          height: 1px;
-          width: 1px;
-          min-height: 100%;
-          min-width: 100%;
         "
-        frameborder="0"
-        class="ceros-experience"
-        title="Header"
-        scrolling="no"
-      ></iframe>
+        id="experience-66bbcde6ae8b7"
+        data-aspectRatio="4.90421456"
+      >
+        <iframe
+          allowfullscreen
+          src="https://view.ceros.com/littelfuse/header?v=2"
+          style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            border: 0 none;
+            height: 1px;
+            width: 1px;
+            min-height: 100%;
+            min-width: 100%;
+          "
+          frameborder="0"
+          class="ceros-experience"
+          title="Header"
+          scrolling="no"
+        ></iframe>
+      </div>
     </div>
 
     <!-- Start of the Body experience -->
-
+    <!-- <div style="position: fixed"> -->
     <div
       style="
         position: relative;
@@ -67,7 +70,7 @@
     >
       <iframe
         allowfullscreen
-        src="https://view.ceros.com/littelfuse/carling-aftermarket-products-2?heightOverride=3616&mobileHeightOverride=4800"
+        src="https://view.ceros.com/littelfuse/body?heightOverride=3616&mobileHeightOverride=4800?v=2"
         style="
           position: absolute;
           top: 0;
@@ -88,10 +91,19 @@
         scrolling="no"
       ></iframe>
     </div>
+    <!-- </div> -->
+
     <script
       type="text/javascript"
       src="https://view.ceros.com/scroll-proxy.min.js"
       data-ceros-origin-domains="view.ceros.com"
+    ></script>
+
+    <script
+      id="page-header"
+      data-body-id="experience-66bbc7f7aa6fb"
+      data-header-id="experience-66bbcde6ae8b7"
+      src="http://127.0.0.1:8080/landing.js"
     ></script>
   </body>
 </html>
