@@ -5,9 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://sdk.ceros.com/embedded-player-sdk-v5.min.js"></script>
     <title>Document</title>
+    <style>
+      .body-container {
+        background-color: azure;
+      }
+
+      .sticky-header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        background-color: aqua; /* Ensure background color covers sticky area */
+      }
+    </style>
   </head>
+
   <body>
-    <div style="position: sticky; top: 0; width: 100%; z-index: 1000">
+    <div class="sticky-header">
       <div
         style="
           position: relative;
@@ -20,6 +34,7 @@
           right: 0;
           margin: 0;
           border: 0 none;
+          background-color: aqua;
         "
         id="experience-66bbcde6ae8b7"
         data-aspectRatio="4.90421456"
@@ -40,6 +55,7 @@
             width: 1px;
             min-height: 100%;
             min-width: 100%;
+            background-color: bisque;
           "
           frameborder="0"
           class="ceros-experience"
@@ -50,49 +66,53 @@
     </div>
 
     <!-- Start of the Body experience -->
-    <!-- <div style="position: fixed"> -->
-    <div
-      style="
-        position: relative;
-        width: auto;
-        padding: 0 0 282.5%;
-        height: 0;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        margin: 0;
-        border: 0 none;
-      "
-      id="experience-66bbc7f7aa6fb"
-      data-aspectRatio="0.3539823"
-      data-mobile-aspectRatio="0.1125"
-    >
-      <iframe
-        allowfullscreen
-        src="https://view.ceros.com/littelfuse/body?heightOverride=3616&mobileHeightOverride=4800?v=2"
+
+    <!-- with added canvas on top to account for the header height -->
+
+    <div class="body-container">
+      <div
         style="
-          position: absolute;
+          position: relative;
+          width: auto;
+          padding: 0 0 302.89%;
+          height: 0;
           top: 0;
           left: 0;
           bottom: 0;
           right: 0;
           margin: 0;
-          padding: 0;
           border: 0 none;
-          height: 1px;
-          width: 1px;
-          min-height: 100%;
-          min-width: 100%;
         "
-        frameborder="0"
-        class="ceros-experience"
-        title="BODY - Carling Aftermarket Products"
-        scrolling="no"
-      ></iframe>
+        id="experience-66bbc7f7aa6fb"
+        data-aspectRatio="0.33015218"
+        data-mobile-aspectRatio="0.1125"
+      >
+        <iframe
+          allowfullscreen
+          src="https://view.ceros.com/littelfuse/body?heightOverride=3877&mobileHeightOverride=4800"
+          style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            border: 0 none;
+            height: 1px;
+            width: 1px;
+            min-height: 100%;
+            min-width: 100%;
+          "
+          frameborder="0"
+          class="ceros-experience"
+          title="BODY - Carling Aftermarket Products"
+          scrolling="no"
+        ></iframe>
+      </div>
     </div>
-    <!-- </div> -->
 
+    <!-- start of scripts -->
     <script
       type="text/javascript"
       src="https://view.ceros.com/scroll-proxy.min.js"
