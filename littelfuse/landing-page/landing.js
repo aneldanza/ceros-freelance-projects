@@ -9,6 +9,7 @@
   const headerExperienceId = script.getAttribute("data-header-id");
 
   var EVENT_NAMESPACE = "ceros-embedded-viewport:";
+  const CUSTOM_EVENT_NAMESPACE = "custom-ceros-embedded-viewport:";
   var CEROS_EXPERIENCE_CLASS_NAME = "ceros-experience"; // the class that every ceros iframe should have on it
   var SCROLL_PROXY_ORIGIN_DOMAINS_ATTRIBUTE = "data-ceros-origin-domains";
 
@@ -19,6 +20,8 @@
 
     // The player sends this event when it's loaded.  This lets us know to set up the scroll proxy for that frame.
     READY: "ready",
+
+    NAV: "page-nav",
   };
 
   // The ceros frames.  We populate this in response to the ready event.
@@ -124,7 +127,7 @@
    * @param object      data
    */
   var sendEvent = function (targetFrame, event, data = {}) {
-    var eventData = { event: EVENT_NAMESPACE + event, ...data };
+    var eventData = { event: event, ...data };
 
     var payload = JSON.stringify(eventData);
     targetFrame.contentWindow.postMessage(payload, "*");
@@ -145,7 +148,7 @@
     if (!frameAlreadyRegistered && frameCanPostMessages) {
       // Ping frame in case it has a ceros experience that wants to participate in the scroll proxy action.
       // The frames will respond with the READY event.
-      sendEvent(frame, EVENTS.PING);
+      sendEvent(frame, EVENT_NAMESPACE + EVENTS.PING);
 
       registeredFrames.push(frame);
       console.log(registeredFrames);
@@ -286,25 +289,10 @@
         pageNavCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const payload = comp.getPayload();
 
-          console.log(payload);
-          sendMessageToBody("page-nav", payload);
+          sendEvent(cerosFrames.body, CUSTOM_EVENT_NAMESPACE + EVENTS.NAV, {
+            section: payload,
+          });
         });
-
-        function sendMessageToBody(type, payload) {
-          const iframes = document.querySelectorAll("iframe");
-          for (let i = 0; i < iframes.length; i++) {
-            const iframe = iframes[i];
-            if (iframe.parentNode.id === bodyExperienceId) {
-              iframe.contentWindow.postMessage(
-                JSON.stringify({
-                  name: "page-header",
-                  payload: { type, section: payload },
-                }),
-                iframe.src
-              );
-            }
-          }
-        }
       })
       .fail(function (e) {
         console.log(e);
