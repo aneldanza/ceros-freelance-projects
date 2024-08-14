@@ -1,6 +1,9 @@
 (function ($) {
   "use strict";
 
+  var EVENT_NAMESPACE = "ceros-embedded-viewport:";
+  const CUSTOM_EVENT_NAMESPACE = "custom-ceros-embedded-viewport:";
+
   // load CerosSDK via requirejs
   require.config({
     paths: {
@@ -19,12 +22,16 @@
           if (typeof event.data === "string") {
             try {
               const data = JSON.parse(event.data);
-              if (data.name === "page-header") {
+              if (
+                data.event &&
+                data.event.indexOf(CUSTOM_EVENT_NAMESPACE) === 0
+              ) {
+                const event = data.event.split(":")[1];
                 console.log(data);
 
-                switch (data.payload.type) {
+                switch (event) {
                   case "page-nav":
-                    handlePageNav(data.payload.section);
+                    handlePageNav(data.section);
                     break;
 
                   default:
