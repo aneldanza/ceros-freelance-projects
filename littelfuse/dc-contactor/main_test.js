@@ -96,20 +96,36 @@
 
         function handleTextOptions(options, nodes) {
           const collection = options.layers[0].findAllComponents();
-          console.log(collection);
+          // console.log(collection);
           const max = collection.layersByTag.answer.length;
-          const elements = collection.layersByTag.answer;
           const first = Math.floor((max - nodes.length) / 2);
-          for (let i = 0; i < max; i++) {
-            if (i < first) {
-              elements[i].hide();
-            } else if (i >= first && i - first < nodes.length) {
-              elements[i].setText(nodes[i - first].value);
-              nodes[i - first].elementId = elements[i].id;
-            } else {
-              elements[i].hide();
+          let answerIndex = 0;
+
+          collection.layers.forEach((layer, i) => {
+            if (layer.type === "text") {
+              if (answerIndex >= first && answerIndex - first < nodes.length) {
+                layer.setText(nodes[answerIndex - first].value);
+                nodes[answerIndex - first].elementId = layer.id;
+              } else {
+                layer.hide();
+              }
+              answerIndex++;
+            } else if (layer.type === "line") {
+              const position = !isNaN(layer.getPayload())
+                ? Number(layer.getPayload())
+                : null;
+              if (position) {
+                if (!(position > first && position - first < nodes.length)) {
+                  layer.hide();
+                  console.log(`line position - ${position}`);
+                }
+              } else {
+                console.error(
+                  `there is no position number in payload of divider line with id ${layer.id} in question ${nodes[0].name}`
+                );
+              }
             }
-          }
+          });
         }
 
         function handleMobileTextOptions(options, nodes) {
