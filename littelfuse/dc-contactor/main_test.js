@@ -5,30 +5,49 @@
   const link = $script.attr("data-link");
   const distributor = $script.attr("data-distributor") || "";
 
+  // Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
+  let absUrl;
+  const srcAttribute = $script.attr("src");
+
+  // Check that a src attibute was defined, and code hasn't been inlined by third party
+  if (typeof srcAttribute !== "undefined" && new URL(srcAttribute)) {
+    const srcURL = new URL(srcAttribute);
+    const path = srcURL.pathname;
+    const projectDirectory = path.split("/").slice(0, -1).join("/") + "/";
+    absUrl = srcURL.origin + projectDirectory;
+  } else {
+    absUrl = "./";
+  }
+
+  // class Node {
+  //   constructor(name, value = "", parent = null) {
+  //     this.name = name;
+  //     this.value = value;
+  //     this.children = [];
+  //     this.data = {};
+  //     this.parent = parent;
+  //     this.elementId = "";
+  //   }
+  // }
+
   // load CerosSDK via requirejs
   require.config({
     paths: {
       CerosSDK: "//sdk.ceros.com/standalone-player-sdk-v5.min",
       PapaParse:
         "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min",
+      modules: absUrl + "modules",
     },
   });
 
-  require(["CerosSDK", "PapaParse"], function (CerosSDK, PapaParse) {
+  require(["CerosSDK", "PapaParse", "modules/Node"], function (
+    CerosSDK,
+    PapaParse,
+    Node
+  ) {
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
-        class Node {
-          constructor(name, value = "", parent = null) {
-            this.name = name;
-            this.value = value;
-            this.children = [];
-            this.data = {};
-            this.parent = parent;
-            this.elementId = "";
-          }
-        }
-
         let clickTime = 0;
         let windowObjectReference = null; // global variable
         const modules = {};
