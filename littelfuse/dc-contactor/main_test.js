@@ -137,15 +137,17 @@
                   handleTextOptions(oddOptions, sortedNodes);
                 }
               }
+            } else if (data.node.name === "polarized") {
+              showModule(data.node.children.length);
             } else {
               handleMasks(data.node);
             }
-            updatePath();
           }
         }
 
         // Register the handler
         nodeManager.addObserver(handleNodeChange);
+        nodeManager.addObserver(updatePath);
 
         function handleTextOptions(options, nodes) {
           const collection = options.layers[0].findAllComponents();
@@ -238,13 +240,6 @@
               ? nodeManager.setCurrentNode(node)
               : console.error(`coudn't find node with ${key} and value ${val}`);
           }
-
-          const currentNode = nodeManager.getCurrentNode();
-          updatePath();
-
-          if (key === "polarized") {
-            showModule(currentNode.children.length);
-          }
         });
 
         navCollections.on(CerosSDK.EVENTS.CLICKED, (comp) => {
@@ -277,9 +272,10 @@
           i++;
         }
 
-        function updatePath() {
-          let currentNode = nodeManager.getCurrentNode();
+        function updatePath(data) {
+          let currentNode = data.node;
           const pathArray = [];
+
           while (currentNode.parent) {
             const template = navDict[currentNode.name];
             const value =
