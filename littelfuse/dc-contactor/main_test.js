@@ -42,9 +42,9 @@
         let windowObjectReference = null; // global variable
         const modules = {};
         const root = new Node("Root");
-        let nextNode = root;
 
         const nodeManager = new NodeManager();
+        nodeManager.setCurrentNode(root);
 
         const keys = [
           "application",
@@ -85,8 +85,6 @@
 
         const pathCollection = experience.findComponentsByTag("path");
 
-        updatePath();
-
         PapaParse.parse(link, {
           download: true,
           header: true,
@@ -100,9 +98,7 @@
         backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
 
         resetCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-          nextNode = root;
-          updatePath();
-          console.log(nextNode);
+          nodeManager.setCurrentNode(root);
         });
 
         // Define a function to handle node changes
@@ -110,7 +106,41 @@
           if (data.action === "currentNodeChanged") {
             console.log(`Current node changed to: ${data.node.name}`);
             // Call your handleMasks function or other relevant code
-            handleMasks(data.node);
+            if (
+              data.node.name === "max-voltage" ||
+              data.node.name === "current-rating"
+            ) {
+              const sortedNodes = data.node.children.sort(
+                (a, b) => a.value - b.value
+              );
+              const evenOptions = experience.findLayersByTag(
+                `${data.node.children[0].name}_even`
+              );
+              const oddOptions = experience.findLayersByTag(
+                `${data.node.children[0].name}_odd`
+              );
+
+              if (isMobile) {
+                displayMobileLayoutOptions(
+                  oddOptions,
+                  evenOptions,
+                  sortedNodes
+                );
+              } else {
+                if (data.node.children.length % 2 === 0) {
+                  oddOptions.hide();
+                  evenOptions.show();
+                  handleTextOptions(evenOptions, sortedNodes);
+                } else {
+                  oddOptions.show();
+                  evenOptions.hide();
+                  handleTextOptions(oddOptions, sortedNodes);
+                }
+              }
+            } else {
+              handleMasks(data.node);
+            }
+            updatePath();
           }
         }
 
@@ -195,55 +225,31 @@
         answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const tag = comp.getTags().find((tag) => tag.includes("q:"));
           const key = tag.split(":")[1];
+          const parentNode = nodeManager.getCurrentNode();
           if (key === "current-rating" || key === "coil-voltage") {
-            nextNode = nextNode.children.find(
+            const node = parentNode.children.find(
               (node) => node.elementId === comp.id
             );
+            node && nodeManager.setCurrentNode(node);
           } else {
             const val = comp.getPayload().trim();
-            nextNode = depthFirstSearch(nextNode, val, key);
+            const node = depthFirstSearch(parentNode, val, key);
+            node
+              ? nodeManager.setCurrentNode(node)
+              : console.error(`coudn't find node with ${key} and value ${val}`);
           }
-          console.log(nextNode);
-          if (
-            nextNode.name === "max-voltage" ||
-            nextNode.name === "current-rating"
-          ) {
-            const sortedNodes = nextNode.children.sort(
-              (a, b) => a.value - b.value
-            );
-            const evenOptions = experience.findLayersByTag(
-              `${nextNode.children[0].name}_even`
-            );
-            const oddOptions = experience.findLayersByTag(
-              `${nextNode.children[0].name}_odd`
-            );
 
-            if (isMobile) {
-              displayMobileLayoutOptions(oddOptions, evenOptions, sortedNodes);
-            } else {
-              if (nextNode.children.length % 2 === 0) {
-                oddOptions.hide();
-                evenOptions.show();
-                handleTextOptions(evenOptions, sortedNodes);
-              } else {
-                oddOptions.show();
-                evenOptions.hide();
-                handleTextOptions(oddOptions, sortedNodes);
-              }
-            }
-          } else {
-            handleMasks(nextNode);
-          }
+          const currentNode = nodeManager.getCurrentNode();
           updatePath();
 
           if (key === "polarized") {
-            showModule(nextNode.children.length);
+            showModule(currentNode.children.length);
           }
         });
 
         navCollections.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const name = comp.getPayload().toLowerCase();
-          let currentNode = nextNode;
+          let currentNode = nodeManager.getCurrentNode();
           let nodeFound = false;
           while (currentNode.parent && !nodeFound) {
             if (currentNode.name === name) {
@@ -251,10 +257,7 @@
             }
             currentNode = currentNode.parent;
           }
-          nextNode = currentNode;
-          handleMasks(nextNode);
-          updatePath();
-          console.log(nextNode);
+          nodeManager.setCurrentNode(currentNode);
         });
 
         let i = 0;
@@ -263,9 +266,9 @@
           const masks = experience.findLayersByTag(`mask:${step}`);
           masks.on(CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
             const payload = layer.getPayload();
-            const foundChild = nextNode.children.find(
-              (node) => node.value === payload
-            );
+            const foundChild = nodeManager
+              .getCurrentNode()
+              .children.find((node) => node.value === payload);
             if (foundChild) {
               layer.hide();
               console.log(`show layer ${payload}`);
@@ -275,7 +278,7 @@
         }
 
         function updatePath() {
-          let currentNode = nextNode;
+          let currentNode = nodeManager.getCurrentNode();
           const pathArray = [];
           while (currentNode.parent) {
             const template = navDict[currentNode.name];
@@ -379,7 +382,7 @@
         }
 
         function updateModuleResults(type) {
-          nextNode.children.forEach((node, index) => {
+          nodeManager.getCurrentNode().children.forEach((node, index) => {
             const moduleTag =
               type > 1 ? `${type}-module-${index + 1}` : `${type}-module`;
             const module = experience.findLayersByTag(moduleTag);
@@ -537,10 +540,7 @@
 
         function handleBackNavigation() {
           if (!isDoubleClickBug()) {
-            nextNode = nextNode.parent;
-            handleMasks(nextNode);
-            updatePath();
-            console.log(nextNode);
+            nodeManager.setCurrentNode(nodeManager.getCurrentNode().parent);
           } else {
             console.log("detected double click");
           }
