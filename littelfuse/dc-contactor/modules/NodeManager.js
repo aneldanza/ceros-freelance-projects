@@ -1,4 +1,4 @@
-define(["modules/Observer"], function (Observer) {
+define(["modules/Observer", "modules/Node"], function (Observer, Node) {
   class NodeManager {
     constructor() {
       this.currentNode = null;

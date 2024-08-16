@@ -34,17 +34,20 @@
     "PapaParse",
     "modules/Node",
     "modules/NodeManager",
-  ], function (CerosSDK, PapaParse, Node, NodeManager) {
+    "modules/NodeTree",
+  ], function (CerosSDK, PapaParse, Node, NodeManager, NodeTree) {
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
-        let clickTime = 0;
-        let windowObjectReference = null; // global variable
-        const modules = {};
-        const root = new Node("Root");
-
-        const nodeManager = new NodeManager();
-        nodeManager.setCurrentNode(root);
+        const navDict = {
+          application: "Application: {{}}",
+          "max-voltage": "Max Voltage: {{}}V",
+          "current-rating": "Current: {{}}A",
+          "coil-voltage": "Coil Voltage: {{}}V",
+          mounting: "Mounting: {{}}",
+          "aux-contacts": "Aux Contacts: {{}}",
+          polarized: "Polarized: {{}}",
+        };
 
         const keys = [
           "application",
@@ -57,15 +60,15 @@
           "part",
         ];
 
-        const navDict = {
-          application: "Application: {{}}",
-          "max-voltage": "Max Voltage: {{}}V",
-          "current-rating": "Current: {{}}A",
-          "coil-voltage": "Coil Voltage: {{}}V",
-          mounting: "Mounting: {{}}",
-          "aux-contacts": "Aux Contacts: {{}}",
-          polarized: "Polarized: {{}}",
-        };
+        let clickTime = 0;
+        let windowObjectReference = null; // global variable
+        const modules = {};
+        const root = new Node("Root");
+
+        const nodeManager = new NodeManager();
+        nodeManager.setCurrentNode(root);
+
+        const nodeTree = new NodeTree(keys);
 
         const isPreview =
           window.self == window.top &&
@@ -89,8 +92,10 @@
           download: true,
           header: true,
           complete: (result) => {
-            filterProducts(result.data);
-            console.log(root);
+            // filterProducts(result.data);
+            // console.log(root);
+
+            nodeTree.buildTree(result.data, root);
           },
         });
 
@@ -235,7 +240,7 @@
             node && nodeManager.setCurrentNode(node);
           } else {
             const val = comp.getPayload().trim();
-            const node = depthFirstSearch(parentNode, val, key);
+            const node = nodeTree.depthFirstSearch(parentNode, val, key);
             node
               ? nodeManager.setCurrentNode(node)
               : console.error(`coudn't find node with ${key} and value ${val}`);
@@ -454,63 +459,6 @@
             } else {
               layer.show();
             }
-          });
-        }
-
-        function depthFirstSearch(node, targetValue, targetName) {
-          if (
-            node.value.toLowerCase() === targetValue.toLowerCase() &&
-            node.name.toLowerCase() === targetName.toLowerCase()
-          ) {
-            return node;
-          }
-
-          for (let i = 0; i < node.children.length; i++) {
-            let child = node.children[i];
-            let result = depthFirstSearch(child, targetValue, targetName);
-
-            if (result !== null) {
-              return result;
-            }
-          }
-
-          return null;
-        }
-
-        function handleNewNode(val, name, parent, obj = {}) {
-          const foundNode = parent.children.find((node) => node.value === val);
-          if (!foundNode) {
-            const node = new Node(name, val, parent);
-            node.data = obj;
-            parent.children.push(node);
-            return node;
-          } else {
-            return foundNode;
-          }
-        }
-
-        function addPath(node, obj) {
-          let parent = node;
-          for (let i = 1; i < keys.length; i++) {
-            const key = keys[i];
-            const val = obj[key].trim();
-            if (key === "part") {
-              parent = handleNewNode(val, key, parent, obj);
-            } else {
-              parent = handleNewNode(val, key, parent);
-            }
-          }
-        }
-
-        function filterProducts(data) {
-          data.forEach((obj) => {
-            const apps = obj[keys[0]].split("_");
-            apps.forEach((app) => {
-              const key = keys[0];
-              const value = app.trim().toLowerCase();
-              const node = handleNewNode(value, key, root);
-              addPath(node, obj);
-            });
           });
         }
 
