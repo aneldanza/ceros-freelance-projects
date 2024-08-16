@@ -93,6 +93,10 @@
           experience.findComponentsByTag("mobile").components.length;
         console.log(`this is mobile layout - ${isMobile}`);
 
+        const isTablet =
+          experience.findComponentsByTag("tablet").components.length;
+        console.log(`this is tablet layout - ${isTablet}`);
+
         const resetCollection = experience.findLayersByTag("reset");
 
         const backCollection = experience.findLayersByTag("back");
@@ -136,7 +140,7 @@
                 `${data.node.children[0].name}_odd`
               );
 
-              if (isMobile) {
+              if (isMobile || isTablet) {
                 displayMobileLayoutOptions(
                   oddOptions,
                   evenOptions,
@@ -195,23 +199,57 @@
           });
         }
 
+        function handleOneOptionInMobileView(nodes, collection) {
+          let answerIndex = 0;
+          collection.layers.forEach((layer) => {
+            if (layer.type === "text") {
+              if (answerIndex === 1) {
+                layer.setText(nodes[0].value);
+                nodes[0].elementId = layer.id;
+              } else {
+                layer.hide();
+              }
+              answerIndex++;
+            } else {
+              layer.hide();
+            }
+          });
+        }
+
         function handleMobileTextOptions(options, nodes) {
           const collection = options.layers[0].findAllComponents();
-          const elements = collection.layersByTag.answer;
+          // const elements = collection.layersByTag.answer;
+          let answerIndex = 0;
           if (nodes.length === 1) {
-            elements.forEach((comp, i) => {
-              if (i === 1) {
-                comp.setText(nodes[0].value);
-              } else {
-                comp.hide();
-              }
-            });
+            handleOneOptionInMobileView(nodes, collection);
           } else {
-            elements.forEach((comp, i) => {
-              if (i < nodes.length) {
-                comp.setText(nodes[i].value);
-              } else {
-                comp.hide();
+            collection.layers.forEach((layer, i) => {
+              if (layer.type === "text") {
+                if (answerIndex < nodes.length) {
+                  layer.setText(nodes[answerIndex].value);
+                  nodes[answerIndex].elementId = layer.id;
+                } else {
+                  layer.hide();
+                }
+                answerIndex++;
+              } else if (layer.type === "line") {
+                const position = !isNaN(layer.getPayload())
+                  ? Number(layer.getPayload())
+                  : null;
+                if (position) {
+                  if (
+                    position >= nodes.length ||
+                    ((nodes.length === 4 || position.length === 5) &&
+                      position > nodes.length - 2)
+                  ) {
+                    layer.hide();
+                    console.log(`line position - ${position}`);
+                  }
+                } else {
+                  console.error(
+                    `there is no position number in payload of divider line with id ${layer.id} in question ${nodes[0].name}`
+                  );
+                }
               }
             });
           }
