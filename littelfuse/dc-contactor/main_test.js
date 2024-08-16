@@ -35,7 +35,15 @@
     "modules/Node",
     "modules/NodeManager",
     "modules/NodeTree",
-  ], function (CerosSDK, PapaParse, Node, NodeManager, NodeTree) {
+    "modules/LandingPageProxy",
+  ], function (
+    CerosSDK,
+    PapaParse,
+    Node,
+    NodeManager,
+    NodeTree,
+    LandingPageProxy
+  ) {
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
@@ -61,18 +69,25 @@
         ];
 
         let clickTime = 0;
-        let windowObjectReference = null; // global variable
+
         const modules = {};
+
+        //Initiate root node
         const root = new Node("Root");
 
+        // Initiate NodeManager
         const nodeManager = new NodeManager();
         nodeManager.setCurrentNode(root);
 
+        // Register the handler
+        nodeManager.addObserver(handleNodeChange);
+        nodeManager.addObserver(updatePath);
+
+        // Initiate NodeTree
         const nodeTree = new NodeTree(keys);
 
-        const isPreview =
-          window.self == window.top &&
-          window.location.hostname.includes(".preview.ceros");
+        // Initiate LandingPageProxy
+        const landingPageProxy = new LandingPageProxy();
 
         const isMobile =
           experience.findComponentsByTag("mobile").components.length;
@@ -92,9 +107,6 @@
           download: true,
           header: true,
           complete: (result) => {
-            // filterProducts(result.data);
-            // console.log(root);
-
             nodeTree.buildTree(result.data, root);
           },
         });
@@ -110,7 +122,6 @@
         function handleNodeChange(data) {
           if (data.action === "currentNodeChanged") {
             console.log(`Current node changed to: ${data.node.name}`);
-            // Call your handleMasks function or other relevant code
             if (
               data.node.name === "max-voltage" ||
               data.node.name === "current-rating"
@@ -150,13 +161,9 @@
           }
         }
 
-        // Register the handler
-        nodeManager.addObserver(handleNodeChange);
-        nodeManager.addObserver(updatePath);
-
         function handleTextOptions(options, nodes) {
           const collection = options.layers[0].findAllComponents();
-          // console.log(collection);
+
           const max = collection.layersByTag.answer.length;
           const first = Math.floor((max - nodes.length) / 2);
           let answerIndex = 0;
@@ -357,19 +364,9 @@
               const type = moduleTag.split("-")[0];
               const obj = modules[type][moduleTag];
 
-              openAndTrackLink(obj[key]);
+              landingPageProxy.openAndTrackLink(obj[key], isDoubleClickBug);
             });
           });
-        }
-
-        function openAndTrackLink(url) {
-          if (!isDoubleClickBug()) {
-            if (isPreview) {
-              openRequestedSingleTab(url);
-            } else {
-              sendUAEvent(url);
-            }
-          }
         }
 
         function isDoubleClickBug() {
@@ -462,40 +459,11 @@
           });
         }
 
-        // send UA event with outbound link info
-        function sendUAEvent(link) {
-          if (window.self !== window.top) {
-            const data = {
-              event_category: "CEROS",
-              event_label: link,
-              event_action: "outbound_link_click",
-            };
-            parent.postMessage(JSON.stringify(data), "*");
-          } else {
-            dataLayer.push({
-              event: "ceros-event",
-              cerosAction: "ceros_outbound_link_click",
-              cerosCategory: "CEROS",
-              cerosLabel: link,
-            });
-            openRequestedSingleTab(link);
-          }
-        }
-
         function handleBackNavigation() {
           if (!isDoubleClickBug()) {
             nodeManager.setCurrentNode(nodeManager.getCurrentNode().parent);
           } else {
             console.log("detected double click");
-          }
-        }
-
-        function openRequestedSingleTab(url) {
-          if (windowObjectReference === null || windowObjectReference.closed) {
-            windowObjectReference = window.open(url, "_blank");
-          } else {
-            windowObjectReference = window.open(url, "_blank");
-            windowObjectReference.focus();
           }
         }
 
