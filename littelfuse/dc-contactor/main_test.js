@@ -19,17 +19,6 @@
     absUrl = "./";
   }
 
-  // class Node {
-  //   constructor(name, value = "", parent = null) {
-  //     this.name = name;
-  //     this.value = value;
-  //     this.children = [];
-  //     this.data = {};
-  //     this.parent = parent;
-  //     this.elementId = "";
-  //   }
-  // }
-
   // load CerosSDK via requirejs
   require.config({
     paths: {
@@ -40,11 +29,12 @@
     },
   });
 
-  require(["CerosSDK", "PapaParse", "modules/Node"], function (
-    CerosSDK,
-    PapaParse,
-    Node
-  ) {
+  require([
+    "CerosSDK",
+    "PapaParse",
+    "modules/Node",
+    "modules/NodeManager",
+  ], function (CerosSDK, PapaParse, Node, NodeManager) {
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
@@ -53,6 +43,8 @@
         const modules = {};
         const root = new Node("Root");
         let nextNode = root;
+
+        const nodeManager = new NodeManager();
 
         const keys = [
           "application",
@@ -112,6 +104,18 @@
           updatePath();
           console.log(nextNode);
         });
+
+        // Define a function to handle node changes
+        function handleNodeChange(data) {
+          if (data.action === "currentNodeChanged") {
+            console.log(`Current node changed to: ${data.node.name}`);
+            // Call your handleMasks function or other relevant code
+            handleMasks(data.node);
+          }
+        }
+
+        // Register the handler
+        nodeManager.addObserver(handleNodeChange);
 
         function handleTextOptions(options, nodes) {
           const collection = options.layers[0].findAllComponents();
