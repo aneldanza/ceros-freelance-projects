@@ -55,16 +55,6 @@
           polarized: "Polarized: {{}}",
         };
 
-        // const navDict = {
-        //   application: "{{}} Application",
-        //   "max-voltage": "Max Voltage {{}}V",
-        //   "current-rating": "Current {{}}A",
-        //   "coil-voltage": "Coil Voltage {{}}V",
-        //   mounting: "{{}} Mount",
-        //   "aux-contacts": "{{}} Aux Contacts",
-        //   polarized: "{{}}",
-        // };
-
         const isPreview =
           window.self == window.top &&
           window.location.hostname.includes(".preview.ceros");
@@ -72,8 +62,6 @@
         const resetCollection = experience.findLayersByTag("reset");
 
         const backCollection = experience.findLayersByTag("back");
-
-        const resultsCollection = experience.findLayersByTag("results");
 
         const answerCollection = experience.findComponentsByTag("answer");
 
@@ -101,13 +89,6 @@
           console.log(nextNode);
         });
 
-        resultsCollection.on(CerosSDK.EVENTS.ANIMATION_STARTED, () => {
-          if (nextNode.children.length === 3) {
-            const threeModuleResult = experience.findLayersByTag(`module-3`);
-            threeModuleResult.click();
-          }
-        });
-
         answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const tag = comp.getTags().find((tag) => tag.includes("q:"));
           const key = tag.split(":")[1];
@@ -116,7 +97,7 @@
           console.log(nextNode);
           handleMasks(nextNode);
           updatePath();
-          // updateNavigation(nextNode);
+
           if (key === "polarized") {
             showModule(nextNode.children.length);
           }
@@ -137,6 +118,23 @@
           updatePath();
           console.log(nextNode);
         });
+
+        let i = 0;
+        while (i < 7) {
+          const step = keys[i];
+          const masks = experience.findLayersByTag(`mask:${step}`);
+          masks.on(CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+            const payload = layer.getPayload();
+            const foundChild = nextNode.children.find(
+              (node) => node.value === payload
+            );
+            if (foundChild) {
+              layer.hide();
+              console.log(`show layer ${payload}`);
+            }
+          });
+          i++;
+        }
 
         function updatePath() {
           let currentNode = nextNode;
@@ -168,28 +166,6 @@
             return "Yes";
           }
         }
-
-        // function updateNavigation(nextNode) {
-        //   let currentNode = nextNode;
-
-        //   while (currentNode.parent) {
-        //     const components = navCollections.components.filter((comp) => {
-        //       return currentNode.name === comp.getPayload().toLowerCase();
-        //     });
-
-        //     components.forEach((comp) => {
-        //       const template = navDict[currentNode.name];
-        //       const value =
-        //         currentNode.name === "aux-contacts" &&
-        //         currentNode.value.toLowerCase() === "yes"
-        //           ? ""
-        //           : capitalize(currentNode.value.split(" ").join(""));
-        //       const text = template.replace("{{}}", value);
-        //       comp.setText(text);
-        //     });
-        //     currentNode = currentNode.parent;
-        //   }
-        // }
 
         function handleModuleImage(img, data) {
           const tag = data["image"].split(".")[0].trim();
@@ -310,6 +286,9 @@
                   distributor,
                   moduleTag
                 );
+
+              layersDict.specs &&
+                updateResultTextbox("specs", moduleTag, layersDict.specs);
             }
 
             console.log(modules);
