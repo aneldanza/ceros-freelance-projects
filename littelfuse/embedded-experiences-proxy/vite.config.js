@@ -4,6 +4,9 @@ export default defineConfig({
   root: "src",
   build: {
     minify: "terser",
-    outDir: "dist",
+    outDir: "../dist",
+    rollupOptions: {
+      input: "src/main.js",
+    },
   },
 });
