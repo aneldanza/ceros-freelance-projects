@@ -7,11 +7,12 @@ import {
 } from "../constants";
 
 export class Register {
-  constructor(bodyExperienceId, headerExperienceId) {
+  constructor(bodyExperienceId, headerExperienceId, onExperiencesReady) {
     this.registeredFrames = [];
     this.bodyExperienceId = bodyExperienceId;
     this.headerExperienceId = headerExperienceId;
     this.cerosFrames = {};
+    this.onExperiencesReady = onExperiencesReady;
     this.init();
   }
 
@@ -36,16 +37,16 @@ export class Register {
     var foundFrame = this.findFrameWithWindow(sourceWindow);
 
     if (foundFrame) {
-      console.log("Received ready event from frame", foundFrame);
-
       if (foundFrame.parentNode.id === this.bodyExperienceId) {
         this.cerosFrames.body = foundFrame;
       } else if (foundFrame.parentNode.id === this.headerExperienceId) {
         this.cerosFrames.header = foundFrame;
       }
 
-      console.log("ceros frames");
-      console.log(this.cerosFrames);
+      // Check if both header and body experiences are ready
+      if (this.cerosFrames.body && this.cerosFrames.header) {
+        this.onExperiencesReady(this.cerosFrames);
+      }
     }
   };
 
@@ -111,7 +112,6 @@ export class Register {
       );
 
       this.registeredFrames.push(frame);
-      console.log(this.registeredFrames);
     }
   };
 

@@ -8,7 +8,6 @@ export class Messenger {
   constructor(register) {
     this.originWhitelist = [];
     this.createOriginWhitelist();
-    this.responseCallbacks = {};
     this.register = register;
 
     window.addEventListener("message", this.processMessage.bind(this));
@@ -34,9 +33,7 @@ export class Messenger {
    * @param MessageEvent message
    * @returns void
    */
-  processMessage = function (message) {
-    var data, isValidMessage;
-
+  processMessage(message) {
     if (
       !this.isMessageOriginValid(message.origin) ||
       !this.isMessageSourceValid(message.source)
@@ -44,29 +41,37 @@ export class Messenger {
       return;
     }
 
+    let data;
     try {
       data = JSON.parse(message.data);
-
-      // leave this in the try-catch block in case data.event is present but not a string
-      isValidMessage =
-        data &&
-        data.event &&
-        data.event.substr(0, EVENT_NAMESPACE.length) === EVENT_NAMESPACE;
-    } catch (e) {
-      // this could be a message from a different library so let's ignore it
-      return;
-    }
-
-    if (isValidMessage) {
-      switch (data.event.substr(EVENT_NAMESPACE.length)) {
-        case EVENTS.READY:
-          this.register.handleReadyEvent(message.source);
-          break;
-
-        default:
+      if (data && data.event && data.event.startsWith(EVENT_NAMESPACE)) {
+        this.dispatchEvent(
+          data.event.substr(EVENT_NAMESPACE.length),
+          message.source,
+          data
+        );
       }
+    } catch (e) {
+      // Ignore messages that are not JSON or are from different libraries
     }
-  };
+  }
+
+  /**
+   * Dispatches an event based on the event type.
+   *
+   * @param {string} eventType - The type of event.
+   * @param {Window} sourceWindow - The source window of the message.
+   */
+  dispatchEvent(eventType, sourceWindow, data) {
+    switch (eventType) {
+      case EVENTS.READY:
+        this.register.handleReadyEvent(sourceWindow);
+        break;
+
+      default:
+        break;
+    }
+  }
 
   /**
    * Does this message source match one of the registered frames?
