@@ -103,36 +103,37 @@ export class Messenger {
   };
 
   /**
-   * Return a list of domains that we will accept messages from
-   * @returns {string[]}
+   * Creates a whitelist of origins based on the script tag's attribute.
+   *
+   * @returns {string[]} - Array of whitelisted origins.
    */
-  createOriginWhitelist = function () {
+  createOriginWhitelist() {
     const scriptTags = document.querySelectorAll(
-      "script[" + SCROLL_PROXY_ORIGIN_DOMAINS_ATTRIBUTE + "]"
+      `script[${SCROLL_PROXY_ORIGIN_DOMAINS_ATTRIBUTE}]`
     );
-    for (let i = 0; i < scriptTags.length; i++) {
-      const originAttribute = scriptTags[i].getAttribute(
+    let whitelist = [];
+    scriptTags.forEach((script) => {
+      const originAttribute = script.getAttribute(
         SCROLL_PROXY_ORIGIN_DOMAINS_ATTRIBUTE
       );
-      this.originWhitelist = this.originWhitelist.concat(
+      whitelist = whitelist.concat(
         this.parseOriginDomainsAttribute(originAttribute)
       );
-    }
-  };
+    });
+    return whitelist;
+  }
 
   /**
-   * Parse the origin domains comma-separated list into an array of domains
-   * @param {string} originDomainsAttribute
-   * @returns {string[]}
+   * Parses the origin domains comma-separated list into an array.
+   *
+   * @param {string} originDomainsAttribute - The comma-separated list of origin domains.
+   * @returns {string[]} - Array of origin domains.
    */
-  parseOriginDomainsAttribute = function (originDomainsAttribute) {
-    const origins = [];
-    if (originDomainsAttribute) {
-      const originValues = originDomainsAttribute.split(",");
-      for (let i = 0; i < originValues.length; i++) {
-        origins.push(originValues[i].trim().toLowerCase());
-      }
-    }
-    return origins;
-  };
+  parseOriginDomainsAttribute(originDomainsAttribute) {
+    return originDomainsAttribute
+      ? originDomainsAttribute
+          .split(",")
+          .map((origin) => origin.trim().toLowerCase())
+      : [];
+  }
 }
