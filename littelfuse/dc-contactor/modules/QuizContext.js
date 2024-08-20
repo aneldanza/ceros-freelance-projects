@@ -3,7 +3,8 @@ define(["modules/MaskingStrategy", "modules/HidingStrategy"], function (
   HidingStrategy
 ) {
   class QuizContext {
-    constructor(questionNames, nodeTree, nodeManager, root) {
+    constructor(experience, questionNames, nodeTree, nodeManager, root) {
+      this.experience = experience;
       this.nodeManager = nodeManager;
       this.nodeTree = nodeTree;
       this.root = root;
@@ -19,9 +20,9 @@ define(["modules/MaskingStrategy", "modules/HidingStrategy"], function (
       this.questionNames.forEach((name) => {
         let strategy;
         if (name === "coil-voltage" || name === "current-rating") {
-          strategy = new HidingStrategy();
+          strategy = new HidingStrategy(this.experience);
         } else {
-          strategy = new MaskingStrategy();
+          strategy = new MaskingStrategy(this.experience);
         }
         this.setStrategy(strategy, name);
       });
@@ -41,6 +42,31 @@ define(["modules/MaskingStrategy", "modules/HidingStrategy"], function (
       node
         ? this.nodeManager.setCurrentNode(node)
         : console.error(`coudn't find node with ${name} and value ${val}`);
+    }
+
+    /**
+     *
+     * @param { {action: string; data: Node } data
+     */
+    handleNodeChange(data) {
+      if (data.action === "currentNodeChanged") {
+        const name = data.node.children[0] ? data.node.children[0].name : "";
+
+        if (name === "polarized") {
+          this.showResultModule(data.node.children.length);
+        } else {
+          this.questions[name].displayAnswerOptions(data);
+        }
+      }
+    }
+
+    showResultModule(type) {
+      updateModuleResults(type);
+
+      const moduleResultHotspot = experience.findComponentsByTag(
+        `module-${type}`
+      );
+      moduleResultHotspot.click();
     }
   }
 
