@@ -13,6 +13,18 @@ define([], function () {
         return false;
       }
     }
+
+    getPolarizedValue(str) {
+      if (str.includes("no")) {
+        return "No";
+      } else {
+        return "Yes";
+      }
+    }
+
+    capitalize(str) {
+      return str[0].toUpperCase() + str.slice(1).toLowerCase();
+    }
   }
 
   return Utils;
