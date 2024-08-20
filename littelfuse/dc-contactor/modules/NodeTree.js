@@ -41,17 +41,42 @@ define(["modules/Node"], function (Node) {
       }
     }
 
-    depthFirstSearch(node, targetValue, targetName) {
-      if (
-        node.value.toLowerCase() === targetValue.toLowerCase() &&
-        node.name.toLowerCase() === targetName.toLowerCase()
-      ) {
+    findChildByOptions(parentNode, options) {
+      for (let i = 0; i < parentNode.children.length; i++) {
+        const node = parentNode.children[i];
+        let isMatch = true;
+
+        for (let key in options) {
+          if (node[key].toLowerCase() !== options[key].toLowerCase()) {
+            isMatch = false;
+            break;
+          }
+        }
+
+        if (isMatch) {
+          return node; // Return the node if a match is found
+        }
+      }
+
+      return null; // Return null if no match is found
+    }
+
+    depthFirstSearch(node, options) {
+      let foundNode = true;
+      for (let key in options) {
+        if (node[key].toLowerCase() !== options[key].toLowerCase()) {
+          foundNode = false;
+          break;
+        }
+      }
+
+      if (foundNode) {
         return node;
       }
 
       for (let i = 0; i < node.children.length; i++) {
         let child = node.children[i];
-        let result = this.depthFirstSearch(child, targetValue, targetName);
+        let result = this.depthFirstSearch(child, options);
 
         if (result !== null) {
           return result;
