@@ -106,8 +106,6 @@
 
         const navCollections = experience.findComponentsByTag("nav");
 
-        // const pathCollection = experience.findComponentsByTag("path");
-
         /**
          * Parse the csv link passed through data attribute on the script. Pass the parsed result to NodeTree
          */
@@ -136,18 +134,10 @@
           quizContext.onAnswerClick.bind(quizContext)
         );
 
-        navCollections.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          const name = comp.getPayload().toLowerCase();
-          let currentNode = nodeManager.getCurrentNode();
-          let nodeFound = false;
-          while (currentNode.parent && !nodeFound) {
-            if (currentNode.name === name) {
-              nodeFound = true;
-            }
-            currentNode = currentNode.parent;
-          }
-          nodeManager.setCurrentNode(currentNode);
-        });
+        navCollections.on(
+          CerosSDK.EVENTS.CLICKED,
+          quizContext.handleRandomNavigation.bind(quizContext)
+        );
 
         let i = 0;
         while (i < 7) {

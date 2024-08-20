@@ -91,6 +91,19 @@ define([
       }
     }
 
+    handleRandomNavigation(comp) {
+      const name = comp.getPayload().toLowerCase();
+      let currentNode = this.nodeManager.getCurrentNode();
+      let nodeFound = false;
+      while (currentNode.parent && !nodeFound) {
+        if (currentNode.name === name) {
+          nodeFound = true;
+        }
+        currentNode = currentNode.parent;
+      }
+      this.nodeManager.setCurrentNode(currentNode);
+    }
+
     updatePath(data) {
       let currentNode = data.node;
       const pathArray = [];
