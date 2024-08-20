@@ -36,13 +36,15 @@
     "modules/NodeManager",
     "modules/NodeTree",
     "modules/LandingPageProxy",
+    "modules/QuizContext",
   ], function (
     CerosSDK,
     PapaParse,
     Node,
     NodeManager,
     NodeTree,
-    LandingPageProxy
+    LandingPageProxy,
+    QuizContext
   ) {
     // find experience to interact with
     CerosSDK.findExperience()
@@ -79,7 +81,7 @@
         const nodeManager = new NodeManager();
         nodeManager.setCurrentNode(root);
 
-        // Register the handler
+        // Register the handlers on current node change
         nodeManager.addObserver(handleNodeChange);
         nodeManager.addObserver(updatePath);
 
@@ -89,13 +91,19 @@
         // Initiate LandingPageProxy
         const landingPageProxy = new LandingPageProxy();
 
+        const quizContext = new QuizContext(keys, nodeTree, nodeManager, root);
+
+        /**
+         * Check for mobile tag on mobile layout canvas
+         */
         const isMobile =
           experience.findComponentsByTag("mobile").components.length;
-        console.log(`this is mobile layout - ${isMobile}`);
 
+        /**
+         * Check for tablet tag on tablet layout canvas
+         */
         const isTablet =
           experience.findComponentsByTag("tablet").components.length;
-        console.log(`this is tablet layout - ${isTablet}`);
 
         const resetCollection = experience.findLayersByTag("reset");
 
@@ -107,6 +115,9 @@
 
         const pathCollection = experience.findComponentsByTag("path");
 
+        /**
+         * Parse the csv link passed through data attribute on the script. Pass the parsed result to NodeTree
+         */
         PapaParse.parse(link, {
           download: true,
           header: true,
@@ -115,6 +126,8 @@
           },
         });
 
+        quizContext.setStrategiesBasedOnQuestionName();
+
         // handle back navigation
         backCollection.on(CerosSDK.EVENTS.CLICKED, handleBackNavigation);
 
@@ -122,10 +135,12 @@
           nodeManager.setCurrentNode(root);
         });
 
-        // Define a function to handle node changes
+        /**
+         *
+         * @param { {action: string; data: Node } data
+         */
         function handleNodeChange(data) {
           if (data.action === "currentNodeChanged") {
-            console.log(`Current node changed to: ${data.node.name}`);
             if (
               data.node.name === "max-voltage" ||
               data.node.name === "current-rating"
@@ -274,23 +289,28 @@
           }
         }
 
-        answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
-          const tag = comp.getTags().find((tag) => tag.includes("q:"));
-          const key = tag.split(":")[1];
-          const parentNode = nodeManager.getCurrentNode();
-          if (key === "current-rating" || key === "coil-voltage") {
-            const node = parentNode.children.find(
-              (node) => node.elementId === comp.id
-            );
-            node && nodeManager.setCurrentNode(node);
-          } else {
-            const val = comp.getPayload().trim();
-            const node = nodeTree.depthFirstSearch(parentNode, val, key);
-            node
-              ? nodeManager.setCurrentNode(node)
-              : console.error(`coudn't find node with ${key} and value ${val}`);
-          }
-        });
+        answerCollection.on(
+          CerosSDK.EVENTS.CLICKED,
+          quizContext.onAnswerClick.bind(quizContext)
+        );
+
+        // answerCollection.on(CerosSDK.EVENTS.CLICKED, (comp) => {
+        //   const tag = comp.getTags().find((tag) => tag.includes("q:"));
+        //   const key = tag.split(":")[1];
+        //   const parentNode = nodeManager.getCurrentNode();
+        //   const options = { name: key };
+
+        //   if (key === "current-rating" || key === "coil-voltage") {
+        //     options.elementId = comp.id;
+        //   } else {
+        //     const val = comp.getPayload().trim();
+        //     options.value = val;
+        //   }
+        //   const node = nodeTree.depthFirstSearch(parentNode, options);
+        //   node
+        //     ? nodeManager.setCurrentNode(node)
+        //     : console.error(`coudn't find node with ${key} and value ${val}`);
+        // });
 
         navCollections.on(CerosSDK.EVENTS.CLICKED, (comp) => {
           const name = comp.getPayload().toLowerCase();
