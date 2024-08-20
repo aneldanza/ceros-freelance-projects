@@ -8,6 +8,7 @@ define([
       CerosSDK,
       experience,
       questionNames,
+      navDict,
       distributor,
       utils,
       nodeTree,
@@ -20,6 +21,7 @@ define([
       this.nodeTree = nodeTree;
       this.root = root;
       this.questionNames = questionNames;
+      this.navDict = navDict;
       this.distributor = distributor;
       this.utils = utils;
       this.questions = {};
@@ -30,6 +32,8 @@ define([
         this.distributor,
         this.utils
       );
+
+      this.pathCollection = experience.findComponentsByTag("path");
     }
 
     setStrategy(strategy, name) {
@@ -85,6 +89,30 @@ define([
       } else {
         console.log("detected double click");
       }
+    }
+
+    updatePath(data) {
+      let currentNode = data.node;
+      const pathArray = [];
+
+      while (currentNode.parent) {
+        const template = this.navDict[currentNode.name];
+        const value =
+          currentNode.name === "polarized"
+            ? this.utils.getPolarizedValue(currentNode.value.toLowerCase())
+            : this.utils.capitalize(currentNode.value.split(" ").join(""));
+
+        const text = template.replace("{{}}", value);
+        pathArray.unshift(text);
+
+        currentNode = currentNode.parent;
+      }
+
+      pathArray.length
+        ? this.pathCollection.setText(pathArray.join("  >  "))
+        : this.pathCollection.setText("");
+
+      this.pathCollection.show();
     }
   }
 
