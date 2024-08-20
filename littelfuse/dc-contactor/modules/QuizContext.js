@@ -1,15 +1,35 @@
-define(["modules/MaskingStrategy", "modules/HidingStrategy"], function (
-  MaskingStrategy,
-  HidingStrategy
-) {
+define([
+  "modules/MaskingStrategy",
+  "modules/HidingStrategy",
+  "modules/ResultHandler",
+], function (MaskingStrategy, HidingStrategy, ResultHandler) {
   class QuizContext {
-    constructor(experience, questionNames, nodeTree, nodeManager, root) {
+    constructor(
+      CerosSDK,
+      experience,
+      questionNames,
+      distributor,
+      utils,
+      nodeTree,
+      nodeManager,
+      root
+    ) {
+      this.CerosSDK = CerosSDK;
       this.experience = experience;
       this.nodeManager = nodeManager;
       this.nodeTree = nodeTree;
       this.root = root;
       this.questionNames = questionNames;
+      this.distributor = distributor;
+      this.utils = utils;
       this.questions = {};
+      this.resultHandler = new ResultHandler(
+        this.experience,
+        this.CerosSDK,
+        this.nodeManager,
+        this.distributor,
+        this.utils
+      );
     }
 
     setStrategy(strategy, name) {
@@ -26,10 +46,6 @@ define(["modules/MaskingStrategy", "modules/HidingStrategy"], function (
         }
         this.setStrategy(strategy, name);
       });
-    }
-
-    handleQuestion(question) {
-      this.strategy.handleQuestion(question);
     }
 
     onAnswerClick(comp) {
@@ -50,23 +66,25 @@ define(["modules/MaskingStrategy", "modules/HidingStrategy"], function (
      */
     handleNodeChange(data) {
       if (data.action === "currentNodeChanged") {
+        console.log(data.node);
         const name = data.node.children[0] ? data.node.children[0].name : "";
 
-        if (name === "polarized") {
-          this.showResultModule(data.node.children.length);
+        if (name === "part") {
+          this.resultHandler.showResultModule(data.node.children.length);
         } else {
           this.questions[name].displayAnswerOptions(data);
         }
       }
     }
 
-    showResultModule(type) {
-      updateModuleResults(type);
-
-      const moduleResultHotspot = experience.findComponentsByTag(
-        `module-${type}`
-      );
-      moduleResultHotspot.click();
+    handleBackNavigation() {
+      if (!this.utils.isDoubleClickBug()) {
+        this.nodeManager.setCurrentNode(
+          this.nodeManager.getCurrentNode().parent
+        );
+      } else {
+        console.log("detected double click");
+      }
     }
   }
 
