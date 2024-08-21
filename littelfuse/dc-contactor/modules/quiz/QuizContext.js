@@ -1,7 +1,7 @@
 define([
-  "modules/MaskingStrategy",
-  "modules/HidingStrategy",
-  "modules/ResultHandler",
+  "modules/quiz/MaskingStrategy",
+  "modules/quiz/HidingStrategy",
+  "modules/quiz/ResultHandler",
 ], function (MaskingStrategy, HidingStrategy, ResultHandler) {
   class QuizContext {
     constructor(

@@ -1,4 +1,4 @@
-define(["modules/QuestionStrategy"], function (QuestionStrategy) {
+define(["modules/quiz/QuestionStrategy"], function (QuestionStrategy) {
   class MaskingStrategy extends QuestionStrategy {
     constructor(experience, name, CerosSDK, nodeManager) {
       super(experience, name);

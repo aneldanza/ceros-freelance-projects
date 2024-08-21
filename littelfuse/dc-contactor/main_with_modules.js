@@ -35,7 +35,7 @@
     "modules/Node",
     "modules/NodeManager",
     "modules/NodeTree",
-    "modules/QuizContext",
+    "modules/quiz/QuizContext",
     "modules/Utils",
   ], function (
     CerosSDK,
