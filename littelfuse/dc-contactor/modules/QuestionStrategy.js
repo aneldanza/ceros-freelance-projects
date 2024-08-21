@@ -4,7 +4,7 @@ define([], function () {
    * @class QuestionStrategy
    */
   class QuestionStrategy {
-    constructor(experience, name) {
+    constructor(experience, name, CerosSDK) {
       this.experience = experience;
       this.name = name;
     }
