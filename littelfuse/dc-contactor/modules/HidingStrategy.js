@@ -87,7 +87,6 @@ define(["modules/QuestionStrategy"], function (QuestionStrategy) {
                   position > nodes.length - 2)
               ) {
                 layer.hide();
-                console.log(`line position - ${position}`);
               }
             } else {
               console.error(
