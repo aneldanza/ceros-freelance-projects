@@ -57,6 +57,10 @@ define([
       });
     }
 
+    resetQuiz() {
+      this.nodeManager.setCurrentNode(this.root);
+    }
+
     onAnswerClick(comp) {
       const tag = comp.getTags().find((tag) => tag.includes("q:"));
       const name = tag.split(":")[1];

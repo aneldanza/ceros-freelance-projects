@@ -125,9 +125,10 @@
           quizContext.handleBackNavigation.bind(quizContext)
         );
 
-        resetCollection.on(CerosSDK.EVENTS.CLICKED, () => {
-          nodeManager.setCurrentNode(root);
-        });
+        resetCollection.on(
+          CerosSDK.EVENTS.CLICKED,
+          quizContext.resetQuiz.bind(quizContext)
+        );
 
         answerCollection.on(
           CerosSDK.EVENTS.CLICKED,
