@@ -17,7 +17,7 @@ define(["modules/Node"], function (Node) {
     }
 
     addNewNode(val, name, parent, obj = {}) {
-      const foundNode = parent.children.find((node) => node.value === val);
+      const foundNode = parent.findChildByStringProperty("value", val);
       if (!foundNode) {
         const node = new Node(name, val, parent);
         node.data = obj;
