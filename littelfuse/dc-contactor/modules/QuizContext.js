@@ -44,9 +44,9 @@ define([
       this.questionNames.forEach((name) => {
         let strategy;
         if (name === "coil-voltage" || name === "current-rating") {
-          strategy = new HidingStrategy(this.experience);
+          strategy = new HidingStrategy(this.experience, name);
         } else {
-          strategy = new MaskingStrategy(this.experience);
+          strategy = new MaskingStrategy(this.experience, name);
         }
         this.setStrategy(strategy, name);
       });
