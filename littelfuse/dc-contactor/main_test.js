@@ -70,6 +70,8 @@
           "part",
         ];
 
+        const hidingQuestions = ["coil-voltage", "current-rating"];
+
         //Initiate Utils
         const utils = new Utils();
 
@@ -86,7 +88,6 @@
         const quizContext = new QuizContext(
           CerosSDK,
           experience,
-          keys,
           navDict,
           distributor,
           utils,
@@ -94,9 +95,6 @@
           nodeManager,
           root
         );
-        // Register the handlers on current node change
-        nodeManager.addObserver(quizContext.handleNodeChange.bind(quizContext));
-        nodeManager.addObserver(quizContext.updatePath.bind(quizContext));
 
         const resetCollection = experience.findLayersByTag("reset");
 
@@ -117,7 +115,7 @@
           },
         });
 
-        quizContext.setStrategiesBasedOnQuestionName();
+        quizContext.setStrategiesBasedOnQuestionName(keys, hidingQuestions);
 
         // handle back navigation
         backCollection.on(
