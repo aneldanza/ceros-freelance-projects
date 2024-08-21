@@ -138,23 +138,6 @@
           CerosSDK.EVENTS.CLICKED,
           quizContext.handleRandomNavigation.bind(quizContext)
         );
-
-        let i = 0;
-        while (i < 7) {
-          const step = keys[i];
-          const masks = experience.findLayersByTag(`mask:${step}`);
-          masks.on(CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-            const payload = layer.getPayload();
-            const foundChild = nodeManager
-              .getCurrentNode()
-              .children.find((node) => node.value === payload);
-            if (foundChild) {
-              layer.hide();
-              console.log(`show layer ${payload}`);
-            }
-          });
-          i++;
-        }
       })
       .fail(function (e) {
         console.log(e);
