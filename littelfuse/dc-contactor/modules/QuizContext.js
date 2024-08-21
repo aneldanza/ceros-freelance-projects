@@ -46,7 +46,12 @@ define([
         if (name === "coil-voltage" || name === "current-rating") {
           strategy = new HidingStrategy(this.experience, name);
         } else {
-          strategy = new MaskingStrategy(this.experience, name);
+          strategy = new MaskingStrategy(
+            this.experience,
+            name,
+            this.CerosSDK,
+            this.nodeManager
+          );
         }
         this.setStrategy(strategy, name);
       });
