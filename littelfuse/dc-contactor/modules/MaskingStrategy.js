@@ -1,5 +1,11 @@
 define(["modules/QuestionStrategy"], function (QuestionStrategy) {
   class MaskingStrategy extends QuestionStrategy {
+    constructor(experience, name) {
+      super(experience, name);
+      this.masksCollection = this.experience.findLayersByTag(
+        `mask:${this.name}`
+      );
+    }
     modifySearchOptions(options, comp) {
       const val = comp.getPayload().trim();
       options.value = val;
@@ -11,10 +17,7 @@ define(["modules/QuestionStrategy"], function (QuestionStrategy) {
     }
 
     handleMasks(node) {
-      const masksCollection = this.experience.findLayersByTag(
-        `mask:${node.children[0].name}`
-      );
-      masksCollection.layers.forEach((layer) => {
+      this.masksCollection.layers.forEach((layer) => {
         const val = layer.getPayload().toLowerCase();
         if (node.children.find((node) => node.value.toLowerCase() === val)) {
           layer.hide();
@@ -23,6 +26,8 @@ define(["modules/QuestionStrategy"], function (QuestionStrategy) {
         }
       });
     }
+
+    registerMaskAnimations() {}
   }
 
   return MaskingStrategy;
