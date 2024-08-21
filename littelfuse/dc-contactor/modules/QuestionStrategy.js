@@ -4,8 +4,9 @@ define([], function () {
    * @class QuestionStrategy
    */
   class QuestionStrategy {
-    constructor(experience) {
+    constructor(experience, name) {
       this.experience = experience;
+      this.name = name;
     }
 
     modifySearchOptions(options, comp) {
