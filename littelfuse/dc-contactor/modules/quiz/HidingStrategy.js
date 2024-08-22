@@ -14,39 +14,32 @@ define(["modules/quiz/QuestionStrategy"], function (QuestionStrategy) {
         `${data.node.children[0].name}_odd`
       );
 
-      /**
-       * Check for mobile tag on mobile layout canvas
-       */
       const isMobile =
         this.experience.findComponentsByTag("mobile").components.length;
 
-      /**
-       * Check for tablet tag on tablet layout canvas
-       */
       const isTablet =
         this.experience.findComponentsByTag("tablet").components.length;
 
       if (isMobile || isTablet) {
         this.displayMobileLayoutOptions(oddOptions, evenOptions, sortedNodes);
       } else {
-        if (data.node.children.length % 2 === 0) {
-          oddOptions.hide();
-          evenOptions.show();
-          handleTextOptions(evenOptions, sortedNodes);
-        } else {
-          oddOptions.show();
-          evenOptions.hide();
-          handleTextOptions(oddOptions, sortedNodes);
-        }
+        this.displayDesktopLayoutOptions(oddOptions, evenOptions, sortedNodes);
       }
     }
 
-    displayMobileLayoutOptions(
-      oddOptions,
-      evenOptions,
+    displayDesktopLayoutOptions(oddOptions, evenOptions, sortedNodes) {
+      if (sortedNodes.length % 2 === 0) {
+        oddOptions.hide();
+        evenOptions.show();
+        this.handleTextOptions(evenOptions, sortedNodes);
+      } else {
+        oddOptions.show();
+        evenOptions.hide();
+        this.handleTextOptions(oddOptions, sortedNodes);
+      }
+    }
 
-      sortedNodes
-    ) {
+    displayMobileLayoutOptions(oddOptions, evenOptions, sortedNodes) {
       if (sortedNodes.length % 2 === 0) {
         oddOptions.hide();
         evenOptions.show();
@@ -58,6 +51,39 @@ define(["modules/quiz/QuestionStrategy"], function (QuestionStrategy) {
 
         this.handleMobileTextOptions(oddOptions, sortedNodes);
       }
+    }
+
+    handleTextOptions(options, nodes) {
+      const collection = options.layers[0].findAllComponents();
+
+      const max = collection.layersByTag.answer.length;
+      const first = Math.floor((max - nodes.length) / 2);
+      let answerIndex = 0;
+
+      collection.layers.forEach((layer, i) => {
+        if (layer.type === "text") {
+          if (answerIndex >= first && answerIndex - first < nodes.length) {
+            layer.setText(nodes[answerIndex - first].value);
+            nodes[answerIndex - first].elementId = layer.id;
+          } else {
+            layer.hide();
+          }
+          answerIndex++;
+        } else if (layer.type === "line") {
+          const position = !isNaN(layer.getPayload())
+            ? Number(layer.getPayload())
+            : null;
+          if (position) {
+            if (!(position > first && position - first < nodes.length)) {
+              layer.hide();
+            }
+          } else {
+            console.error(
+              `there is no position number in payload of divider line with id ${layer.id} in question ${nodes[0].name}`
+            );
+          }
+        }
+      });
     }
 
     handleMobileTextOptions(options, nodes) {
