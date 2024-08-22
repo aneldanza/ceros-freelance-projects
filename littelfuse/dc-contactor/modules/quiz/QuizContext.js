@@ -11,14 +11,12 @@ define([
       distributor,
       utils,
       nodeTree,
-      nodeManager,
-      root
+      nodeManager
     ) {
       this.CerosSDK = CerosSDK;
       this.experience = experience;
       this.nodeManager = nodeManager;
       this.nodeTree = nodeTree;
-      this.root = root;
       this.navDict = navDict;
       this.distributor = distributor;
       this.utils = utils;
@@ -61,7 +59,7 @@ define([
     }
 
     resetQuiz() {
-      this.nodeManager.setCurrentNode(this.root);
+      this.nodeManager.setCurrentNode(this.nodeTree.getRoot());
     }
 
     onAnswerClick(comp) {
@@ -82,7 +80,6 @@ define([
      */
     handleNodeChange(data) {
       if (data.action === "currentNodeChanged") {
-        console.log(data.node);
         const name = data.node.children[0] ? data.node.children[0].name : "";
 
         if (name === "part") {
