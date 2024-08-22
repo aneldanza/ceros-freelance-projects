@@ -21,9 +21,13 @@ define(["modules/LandingPageProxy"], function (LandingPageProxy) {
 
     updateModuleResults(type) {
       this.nodeManager.getCurrentNode().children.forEach((node, index) => {
-        const moduleTag =
-          type > 1 ? `${type}-module-${index + 1}` : `${type}-module`;
+        const moduleTag = this.getModuleTag(type, index);
         const module = this.experience.findLayersByTag(moduleTag);
+        if (!module.layers.length) {
+          console.error(`No module found with tag: ${moduleTag}`);
+          return;
+        }
+
         const collection = module.layers[0].findAllComponents();
         const layersDict = collection.layersByTag;
 
@@ -39,50 +43,54 @@ define(["modules/LandingPageProxy"], function (LandingPageProxy) {
           this.resultModules[size] = this.resultModules[size] || {};
           this.resultModules[size][moduleTag] = data;
 
-          layersDict.images &&
-            this.showResultImage(
-              moduleTag,
-              this.handleModuleImage,
-              layersDict.images
-            );
-
-          layersDict.icons &&
-            this.showResultImage(
-              moduleTag,
-              this.handleModuleIcon,
-              layersDict.icons
-            );
-
-          layersDict.part &&
-            this.updateResultTextbox("part", moduleTag, layersDict.part);
-
-          layersDict.features &&
-            this.updateResultTextbox(
-              "features",
-              moduleTag,
-              layersDict.features
-            );
-
-          layersDict.datasheet &&
-            this.registerResultClcikEvent(
-              layersDict.datasheet,
-              "datasheet",
-              moduleTag
-            );
-
-          layersDict["buy-now"] &&
-            this.registerResultClcikEvent(
-              layersDict["buy-now"],
-              this.distributor,
-              moduleTag
-            );
-
-          layersDict.specs &&
-            this.updateResultTextbox("specs", moduleTag, layersDict.specs);
+          this.processLayers(layersDict, moduleTag, data);
         }
 
         console.log(this.resultModules);
       });
+    }
+
+    getModuleTag(type, index) {
+      return type > 1 ? `${type}-module-${index + 1}` : `${type}-module`;
+    }
+
+    processLayers(layersDict, moduleTag, data) {
+      layersDict.images &&
+        this.showResultImage(
+          moduleTag,
+          this.handleModuleImage,
+          layersDict.images
+        );
+
+      layersDict.icons &&
+        this.showResultImage(
+          moduleTag,
+          this.handleModuleIcon,
+          layersDict.icons
+        );
+
+      layersDict.part &&
+        this.updateResultTextbox("part", moduleTag, layersDict.part);
+
+      layersDict.features &&
+        this.updateResultTextbox("features", moduleTag, layersDict.features);
+
+      layersDict.datasheet &&
+        this.registerResultClcikEvent(
+          layersDict.datasheet,
+          "datasheet",
+          moduleTag
+        );
+
+      layersDict["buy-now"] &&
+        this.registerResultClcikEvent(
+          layersDict["buy-now"],
+          this.distributor,
+          moduleTag
+        );
+
+      layersDict.specs &&
+        this.updateResultTextbox("specs", moduleTag, layersDict.specs);
     }
 
     showResultImage(moduleTag, callback, imgArray) {

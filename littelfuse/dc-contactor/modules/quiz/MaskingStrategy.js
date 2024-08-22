@@ -23,9 +23,9 @@ define(["modules/quiz/QuestionStrategy"], function (QuestionStrategy) {
     }
 
     handleMasks(node, layer) {
-      const val = layer.getPayload().toLowerCase();
-      const foundNode = node.children.find(
-        (node) => node.value.toLowerCase() === val
+      const foundNode = node.findChildByStringProperty(
+        "value",
+        layer.getPayload().trim()
       );
       if (foundNode) {
         layer.hide();
@@ -38,10 +38,10 @@ define(["modules/quiz/QuestionStrategy"], function (QuestionStrategy) {
       this.masksCollection.on(
         this.CerosSDK.EVENTS.ANIMATION_STARTED,
         (layer) => {
-          const val = layer.getPayload().toLowerCase();
           const parentNode = this.nodeManager.getCurrentNode();
-          const foundNode = parentNode.children.find(
-            (node) => node.value.toLowerCase() === val
+          const foundNode = parentNode.findChildByStringProperty(
+            "value",
+            layer.getPayload().trim()
           );
           if (foundNode) {
             layer.hide();
