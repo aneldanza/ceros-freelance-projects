@@ -1,13 +1,13 @@
 (function ($) {
   "use strict";
 
-  const $script = $("#dc-contactor");
-  const link = $script.attr("data-link");
-  const distributor = $script.attr("data-distributor") || "";
+  const script = document.getElementById("dc-contactor");
+  const link = script.getAttribute("data-link") || "";
+  const distributor = script.getAttribute("data-distributor") || "";
 
   // Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
-  let absUrl;
-  const srcAttribute = $script.attr("src");
+  let absUrl = "./";
+  const srcAttribute = script.getAttribute("src");
 
   // Check that a src attibute was defined, and code hasn't been inlined by third party
   if (typeof srcAttribute !== "undefined" && new URL(srcAttribute)) {
@@ -15,37 +15,29 @@
     const path = srcURL.pathname;
     const projectDirectory = path.split("/").slice(0, -1).join("/") + "/";
     absUrl = srcURL.origin + projectDirectory;
-  } else {
-    absUrl = "./";
   }
 
-  // load CerosSDK via requirejs
-  require.config({
-    paths: {
-      CerosSDK: "//sdk.ceros.com/standalone-player-sdk-v5.min",
-      PapaParse:
-        "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min",
-      modules: absUrl + "modules",
-    },
-  });
+  // Only run this at runtime
+  if (typeof require !== "undefined") {
+    // load CerosSDK via requirejs
+    require.config({
+      paths: {
+        CerosSDK: "//sdk.ceros.com/standalone-player-sdk-v5.min",
+        PapaParse:
+          "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min",
+        modules: absUrl + "modules",
+      },
+    });
+  }
 
   require([
     "CerosSDK",
     "PapaParse",
-    "modules/Node",
     "modules/NodeManager",
     "modules/NodeTree",
     "modules/quiz/QuizContext",
     "modules/Utils",
-  ], function (
-    CerosSDK,
-    PapaParse,
-    Node,
-    NodeManager,
-    NodeTree,
-    QuizContext,
-    Utils
-  ) {
+  ], function (CerosSDK, PapaParse, NodeManager, NodeTree, QuizContext, Utils) {
     // find experience to interact with
     CerosSDK.findExperience()
       .done(function (experience) {
@@ -75,15 +67,12 @@
         //Initiate Utils
         const utils = new Utils();
 
-        //Initiate root node
-        const root = new Node("Root");
-
         // Initiate NodeTree
         const nodeTree = new NodeTree(keys);
 
         // Initiate NodeManager
         const nodeManager = new NodeManager();
-        nodeManager.setCurrentNode(root);
+        nodeManager.setCurrentNode(nodeTree.getRoot());
 
         const quizContext = new QuizContext(
           CerosSDK,
@@ -92,8 +81,7 @@
           distributor,
           utils,
           nodeTree,
-          nodeManager,
-          root
+          nodeManager
         );
 
         const resetCollection = experience.findLayersByTag("reset");
@@ -111,7 +99,7 @@
           download: true,
           header: true,
           complete: (result) => {
-            nodeTree.buildTree(result.data, root);
+            nodeTree.buildTree(result.data);
           },
         });
 

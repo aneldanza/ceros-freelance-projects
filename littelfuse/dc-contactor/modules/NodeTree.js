@@ -2,22 +2,27 @@ define(["modules/Node"], function (Node) {
   class NodeTree {
     constructor(keys) {
       this.keys = keys;
+      this.root = new Node("Root");
     }
 
-    buildTree(data, root) {
+    getRoot() {
+      return this.root;
+    }
+
+    buildTree(data) {
       data.forEach((obj) => {
         const apps = obj[this.keys[0]].split("_");
         apps.forEach((app) => {
           const key = this.keys[0];
           const value = app.trim().toLowerCase();
-          const node = this.addNewNode(value, key, root);
+          const node = this.addNewNode(value, key, this.root);
           this.addBranch(node, obj);
         });
       });
     }
 
     addNewNode(val, name, parent, obj = {}) {
-      const foundNode = parent.children.find((node) => node.value === val);
+      const foundNode = parent.findChildByStringProperty("value", val);
       if (!foundNode) {
         const node = new Node(name, val, parent);
         node.data = obj;

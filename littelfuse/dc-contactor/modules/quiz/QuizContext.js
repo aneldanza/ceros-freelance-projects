@@ -11,14 +11,12 @@ define([
       distributor,
       utils,
       nodeTree,
-      nodeManager,
-      root
+      nodeManager
     ) {
       this.CerosSDK = CerosSDK;
       this.experience = experience;
       this.nodeManager = nodeManager;
       this.nodeTree = nodeTree;
-      this.root = root;
       this.navDict = navDict;
       this.distributor = distributor;
       this.utils = utils;
@@ -61,7 +59,7 @@ define([
     }
 
     resetQuiz() {
-      this.nodeManager.setCurrentNode(this.root);
+      this.nodeManager.setCurrentNode(this.nodeTree.getRoot());
     }
 
     onAnswerClick(comp) {
@@ -82,7 +80,6 @@ define([
      */
     handleNodeChange(data) {
       if (data.action === "currentNodeChanged") {
-        console.log(data.node);
         const name = data.node.children[0] ? data.node.children[0].name : "";
 
         if (name === "part") {
@@ -119,19 +116,33 @@ define([
     updatePath(data) {
       let currentNode = data.node;
       const pathArray = [];
+      const nodePath = currentNode.getPath();
 
-      while (currentNode && currentNode.parent) {
-        const template = this.navDict[currentNode.name];
-        const value =
-          currentNode.name === "polarized"
-            ? this.utils.getPolarizedValue(currentNode.value.toLowerCase())
-            : this.utils.capitalize(currentNode.value.split(" ").join(""));
+      nodePath.forEach(({ name, value }) => {
+        if (name === "Root") {
+          return;
+        }
+        const template = this.navDict[name];
+        const formattedValue =
+          name === "polarized"
+            ? this.utils.getPolarizedValue(value.toLowerCase())
+            : this.utils.capitalize(value.split(" ").join(""));
+        const text = template.replace("{{}}", formattedValue);
+        pathArray.push(text);
+      });
 
-        const text = template.replace("{{}}", value);
-        pathArray.unshift(text);
+      // while (currentNode && currentNode.parent) {
+      //   const template = this.navDict[currentNode.name];
+      //   const value =
+      //     currentNode.name === "polarized"
+      //       ? this.utils.getPolarizedValue(currentNode.value.toLowerCase())
+      //       : this.utils.capitalize(currentNode.value.split(" ").join(""));
 
-        currentNode = currentNode.parent;
-      }
+      //   const text = template.replace("{{}}", value);
+      //   pathArray.unshift(text);
+
+      //   currentNode = currentNode.parent;
+      // }
 
       pathArray.length
         ? this.pathCollection.setText(pathArray.join("  >  "))
