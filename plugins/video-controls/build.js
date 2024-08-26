@@ -5,12 +5,8 @@
   paths: {
     // your paths configuration
     CerosSDK: "//sdk.ceros.com/standalone-player-sdk-v5.min",
-    PapaParse:
-      "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min",
-    NodeManager: "modules/NodeManager",
-    NodeTree: "modules/NodeTree",
-    QuizContext: "modules/quiz/QuizContext",
-    Utils: "modules/Utils",
+    videoController: "modules/videoController",
+    EventHandler: "modules/eventHandler",
   },
   optimize: "none",
   findNestedDependencies: true,
