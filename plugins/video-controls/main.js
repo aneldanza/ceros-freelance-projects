@@ -2,17 +2,17 @@
   var scriptTag = document.getElementById("ceros-video-plugin");
 
   // Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
-  var absUrl,
-    srcAttribute = scriptTag.getAttribute("src");
+  var absUrl = "./";
+  var srcAttribute = scriptTag.getAttribute("src");
 
   // Check that a src attibute was defined, and code hasn't been inlined by third party
-  if (typeof srcAttribute !== "undefined" && new URL(srcAttribute)) {
-    var srcURL = new URL(srcAttribute);
-    var path = srcURL.pathname;
-    var projectDirectory = path.split("/").slice(0, -1).join("/") + "/";
-    var absUrl = srcURL.origin + projectDirectory;
-  } else {
-    absUrl = "./";
+  if (srcAttribute) {
+    if (new URL(srcAttribute)) {
+      var srcURL = new URL(srcAttribute);
+      var path = srcURL.pathname;
+      var projectDirectory = path.split("/").slice(0, -1).join("/") + "/";
+      absUrl = srcURL.origin + projectDirectory;
+    }
   }
 
   require.config({
@@ -22,7 +22,11 @@
     },
   });
 
-  require(["CerosSDK", "modules/videoController", "modules/eventHandler"], function (CerosSDK, videoController, EventHandler) {
+  require([
+    "CerosSDK",
+    "modules/videoController",
+    "modules/eventHandler",
+  ], function (CerosSDK, videoController, EventHandler) {
     CerosSDK.findExperience()
       .fail(function (error) {
         console.error(error);
@@ -32,7 +36,8 @@
         var videoCollection = experience.findComponentsByTag("video");
 
         // find all hotspots over video control buttons
-        var videoControlsCollection = experience.findComponentsByTag("video-control");
+        var videoControlsCollection =
+          experience.findComponentsByTag("video-control");
 
         var vc,
           DEBUGGER_PARAM_KEY = "ceros-debug";
@@ -54,7 +59,9 @@
          * @param {CerosPage} page
          */
         function setVideoController(page) {
-          vc = vc || new videoController(videoCollection, page.experience, EventHandler);
+          vc =
+            vc ||
+            new videoController(videoCollection, page.experience, EventHandler);
 
           if (isDebuggerMode()) {
             logVideoControllerConfig();
