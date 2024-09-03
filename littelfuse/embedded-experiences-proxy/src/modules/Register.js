@@ -50,25 +50,6 @@ export class Register {
     }
   };
 
-  /**
-   * Responds to the "VIEW" event by showing the active section title in the header experience
-   * @param Window sourceWindow
-   * @param Object data
-   * @returns void
-   */
-  handleViewEvent = function (sourceWindow, data) {
-    var foundFrame = this.findFrameWithWindow(sourceWindow);
-
-    if (foundFrame) {
-      if (foundFrame === this.cerosFrames.body) {
-        this.cerosFrames.header.contentWindow.postMessage(
-          JSON.stringify(data),
-          "*"
-        );
-      }
-    }
-  };
-
   // Callback is fired when DOMContentLoaded is fired, or immediately if document is "ready" now
   whenDOMIsReady = function (callback) {
     if (
