@@ -2,13 +2,15 @@ import {
   SCROLL_PROXY_ORIGIN_DOMAINS_ATTRIBUTE,
   EVENTS,
   EVENT_NAMESPACE,
+  CUSTOM_EVENT_NAMESPACE,
 } from "../constants";
 
 export class Messenger {
-  constructor(register) {
+  constructor(register, observer) {
     this.originWhitelist = [];
     this.createOriginWhitelist();
     this.register = register;
+    this.observer = observer;
 
     window.addEventListener("message", this.processMessage.bind(this));
   }
@@ -44,12 +46,15 @@ export class Messenger {
     let data;
     try {
       data = JSON.parse(message.data);
-      if (data && data.event && data.event.startsWith(EVENT_NAMESPACE)) {
-        this.dispatchEvent(
-          data.event.substr(EVENT_NAMESPACE.length),
-          message.source,
-          data
-        );
+      if (data && data.event) {
+        const length = data.event.startsWith(EVENT_NAMESPACE)
+          ? EVENT_NAMESPACE.length
+          : data.event.startsWith(CUSTOM_EVENT_NAMESPACE)
+          ? CUSTOM_EVENT_NAMESPACE.length
+          : 0;
+        if (length) {
+          this.dispatchEvent(data.event.substr(length), message.source, data);
+        }
       }
     } catch (e) {
       // Ignore messages that are not JSON or are from different libraries
@@ -66,6 +71,10 @@ export class Messenger {
     switch (eventType) {
       case EVENTS.READY:
         this.register.handleReadyEvent(sourceWindow);
+        break;
+
+      case EVENTS.VIEW:
+        this.observer.notify(EVENTS.VIEW, data.payload);
         break;
 
       default:
