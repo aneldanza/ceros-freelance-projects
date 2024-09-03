@@ -16,41 +16,48 @@
     CerosSDK.findExperience()
       .done(function (experience) {
         window.experience = experience;
-        const navCollection = experience.findComponentsByTag("nav");
 
-        window.addEventListener("message", (event) => {
-          if (typeof event.data === "string") {
-            try {
-              const data = JSON.parse(event.data);
+        const sectionTtitleCollection = experience.findComponentsByTag("title");
+
+        const targetAreaCollection =
+          experience.findComponentsByTag("target-area");
+
+        const pageContainer = document.querySelector(".page-container");
+
+        const getHTMLElement = (layer) => {
+          return document.getElementById(layer.id);
+        };
+
+        const sendEvent = (eventType, data) => {
+          const eventData = { event: eventType, ...data };
+          const payload = JSON.stringify(eventData);
+          window.parent.postMessage(payload, "*");
+        };
+
+        pageContainer.addEventListener("scroll", () => {
+          // console.log("scrolling page container");
+          sectionTtitleCollection.components.forEach((sectionTitle) => {
+            const sectionTitleElement = getHTMLElement(sectionTitle);
+            const sectionTitleRect =
+              sectionTitleElement.getBoundingClientRect();
+
+            const area = targetAreaCollection.components[0];
+            if (area && getHTMLElement(area)) {
+              const areaRect = getHTMLElement(area).getBoundingClientRect();
               if (
-                data.event &&
-                data.event.indexOf(CUSTOM_EVENT_NAMESPACE) === 0
+                sectionTitleRect.top >= areaRect.top &&
+                sectionTitleRect.bottom <= areaRect.bottom
               ) {
-                const event = data.event.split(":")[1];
-                console.log(data);
-
-                switch (event) {
-                  case "page-nav":
-                    handlePageNav(data.section);
-                    break;
-
-                  default:
-                    break;
-                }
+                // Section title is in view
+                // console.log(sectionTitle.getPayload());
+                sendEvent(CUSTOM_EVENT_NAMESPACE + "view", {
+                  payload: sectionTitle.getPayload(),
+                });
               }
-            } catch (e) {
-              console.log(e);
+            } else {
+              console.log("No target area found");
             }
-          }
-
-          function handlePageNav(payload) {
-            const hotspot = navCollection.components.find(
-              (comp) => comp.getPayload() === payload
-            );
-            if (hotspot) {
-              hotspot.click();
-            }
-          }
+          });
         });
       })
       .fail(function (e) {
