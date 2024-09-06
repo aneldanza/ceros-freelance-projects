@@ -77,6 +77,10 @@ export class Messenger {
         this.observer.notify(EVENTS.VIEW, data.payload);
         break;
 
+      case EVENTS.SCROLL_TO:
+        this.register.handleScrollTo(sourceWindow, data);
+        break;
+
       default:
         break;
     }
