@@ -15,42 +15,40 @@
       }
 
       .site-header {
-        position: fixed;
+        position: sticky;
         width: 100%;
-        top: 0;
+        top: 0px;
         background-color: #fff;
         z-index: 1000;
         height: 80px;
         border-bottom: 1px solid #ccc;
         display: block;
+        display: none;
       }
 
       .iframes-container {
-        position: fixed;
+        position: relative;
         width: 100%;
         height: 100%;
-        margin-top: var(--site-header-height);
+        /* margin-top: var(--site-header-height); */
       }
 
       .header-container {
-        position: fixed;
+        position: sticky;
         width: 100%;
         z-index: 900;
-        top: 0px;
-        top: var(--site-header-height, 0);
+        top: 0;
+        /* top: var(--site-header-height, 0); */
       }
 
       .body-container {
-        height: calc(100vh - var(--site-header-height));
+        /* height: calc(100vh - var(--site-header-height)); */
         display: block;
       }
     </style>
   </head>
 
   <body>
-    <div class="site-header">
-      <h1>Website Header</h1>
-    </div>
     <div class="iframes-container" id="iframes-container">
       <!-- Start of the Header experience -->
 
@@ -86,10 +84,8 @@
               margin: 0;
               padding: 0;
               border: 0 none;
-              height: 1px;
-              width: 1px;
-              min-height: 100%;
-              min-width: 100%;
+              height: 100%;
+              width: 100%;
             "
             frameborder="0"
             class="ceros-experience"
@@ -97,16 +93,9 @@
             scrolling="no"
           ></iframe>
         </div>
-        <script
-          type="text/javascript"
-          src="https://view.ceros.com/scroll-proxy.min.js"
-          data-ceros-origin-domains="view.ceros.com"
-        ></script>
       </div>
 
       <!-- Start of the Body experience -->
-
-      <!-- with added canvas on top to account for the header height -->
 
       <div class="body-container">
         <!-- Start of scale-to-fold experience (scrolling) -->
@@ -115,7 +104,7 @@
           style="
             position: relative;
             width: auto;
-            padding: 0 0 50%;
+            padding: 0 0 282.5%;
             height: 0;
             top: 0;
             left: 0;
@@ -125,13 +114,12 @@
             border: 0 none;
           "
           id="experience-66bbc7f7aa6fb"
-          data-aspectRatio="2"
-          data-mobile-aspectRatio="0.5625"
+          data-aspectRatio="0.3539823"
+          data-mobile-aspectRatio="0.11366028"
         >
           <iframe
             allowfullscreen
-            id="body-iframe"
-            src="https://view.ceros.com/littelfuse/body"
+            src="https://view.ceros.com/littelfuse/body?heightOverride=3616&mobileHeightOverride=4751"
             style="
               position: absolute;
               top: 0;
@@ -141,15 +129,22 @@
               margin: 0;
               padding: 0;
               border: 0 none;
-              height: 100%;
-              min-height: calc(100vh - var(--site-header-height));
-              width: 100%;
+              height: 1px;
+              width: 1px;
+              min-height: 100%;
+              min-width: 100%;
             "
             frameborder="0"
             class="ceros-experience"
             title="BODY - Carling Aftermarket Products"
+            scrolling="no"
           ></iframe>
         </div>
+        <script
+          type="text/javascript"
+          src="https://view.ceros.com/scroll-proxy.min.js"
+          data-ceros-origin-domains="view.ceros.com"
+        ></script>
       </div>
     </div>
 
@@ -160,12 +155,6 @@
     ></script>
 
     <!-- start of scripts -->
-    <!-- <script
-      <!-- type="text/javascript"
-      src="ceros-scroll-proxy.js"
-      data-ceros-origin-domains="view.ceros.com"
-    ></script> -->
-    -->
 
     <script
       id="page-header"
@@ -174,12 +163,12 @@
       src="http://localhost:5173/main.js"
       type="module"
     ></script>
-    <!-- 
-    <script
+
+    <!-- <script
       id="page-header"
       data-body-id="experience-66bbc7f7aa6fb"
       data-header-id="experience-66bbcde6ae8b7"
-      src="https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/embedded-experiences-proxy/assets/main-g2V5jm0f.js"
+      src="https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/embedded-experiences-proxy/assets/main-DJjYKbbF.js"
     ></script> -->
   </body>
 </html>
