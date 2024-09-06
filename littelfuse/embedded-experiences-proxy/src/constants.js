@@ -15,4 +15,6 @@ export const EVENTS = {
   NAV: "page-nav",
 
   VIEW: "view",
+
+  SCROLL_TO: "scroll-to",
 };
