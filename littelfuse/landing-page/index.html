@@ -14,23 +14,10 @@
         padding: 0;
       }
 
-      .site-header {
-        position: sticky;
-        width: 100%;
-        top: 0px;
-        background-color: #fff;
-        z-index: 1000;
-        height: 80px;
-        border-bottom: 1px solid #ccc;
-        display: block;
-        display: none;
-      }
-
       .iframes-container {
         position: relative;
         width: 100%;
         height: 100%;
-        /* margin-top: var(--site-header-height); */
       }
 
       .header-container {
@@ -38,11 +25,9 @@
         width: 100%;
         z-index: 900;
         top: 0;
-        /* top: var(--site-header-height, 0); */
       }
 
       .body-container {
-        /* height: calc(100vh - var(--site-header-height)); */
         display: block;
       }
     </style>
@@ -140,21 +125,16 @@
             scrolling="no"
           ></iframe>
         </div>
-        <script
-          type="text/javascript"
-          src="https://view.ceros.com/scroll-proxy.min.js"
-          data-ceros-origin-domains="view.ceros.com"
-        ></script>
       </div>
     </div>
 
+    <!-- start of scripts -->
+
     <script
       type="text/javascript"
-      src="https://view.ceros.com/scroll-proxy.min.js"
+      src="./ceros-scroll-proxy.js"
       data-ceros-origin-domains="view.ceros.com"
     ></script>
-
-    <!-- start of scripts -->
 
     <script
       id="page-header"
