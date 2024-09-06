@@ -5,7 +5,7 @@ export const initHeaderExperienceProxy = (observer, headerExperienceId) => {
     .done(function (experience) {
       console.log("header experience is found");
 
-      const activeHeaders = {};
+      let currentHighlightedSection = null; // Track the currently highlighted section
 
       const pageNavCollection = experience.findComponentsByTag(EVENTS.NAV);
       const activeSectionTitleCollection = experience.findLayersByTag(
@@ -13,20 +13,23 @@ export const initHeaderExperienceProxy = (observer, headerExperienceId) => {
       );
 
       const highlightActiveSectionTitle = (payload) => {
+        if (currentHighlightedSection === payload.toLowerCase()) {
+          // If the current section is already highlighted, do nothing
+          return;
+        }
+
+        // Loop through the section title elements
         activeSectionTitleCollection.layers.forEach((sectionTitleElement) => {
-          if (sectionTitleElement.getPayload() === payload) {
-            if (!activeHeaders[payload]) {
-              sectionTitleElement.show();
-              activeHeaders[payload] = true;
-              console.log("highlighting active section title " + payload);
-            }
+          if (
+            sectionTitleElement.getPayload().toLowerCase() ===
+            payload.toLowerCase()
+          ) {
+            // Highlight the new section and store it as the current section
+            sectionTitleElement.show();
+            currentHighlightedSection = payload.toLowerCase(); // Update current highlighted section
           } else {
+            // Hide all other sections
             sectionTitleElement.hide();
-            activeHeaders[sectionTitleElement.getPayload()] = false;
-            console.log(
-              "unhighlighting active section title " +
-                sectionTitleElement.getPayload()
-            );
           }
         });
       };
