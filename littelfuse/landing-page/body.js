@@ -78,7 +78,7 @@
         }
 
         // Use throttled function for checking view
-        const throttledCheckView = throttle(checkAndUpdateNavigation, 200); // adjust the limit (ms) to your preference
+        const throttledCheckView = throttle(checkAndUpdateNavigation, 100); // adjust the limit (ms) to your preference
 
         const dispatchEvent = (eventType, sourceWindow, data) => {
           switch (eventType) {
