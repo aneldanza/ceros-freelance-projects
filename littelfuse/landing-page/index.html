@@ -30,6 +30,28 @@
       .body-container {
         display: block;
       }
+
+      .scroll-to-top-arrow {
+        position: fixed;
+        bottom: 20px; /* Adjust as needed */
+        right: 20px; /* Adjust as needed */
+        width: 50px; /* Adjust as needed */
+        height: 50px; /* Adjust as needed */
+        background: #eeeeee; /* Adjust as needed */
+        color: #838383;
+        border: 1px solid #dedede;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+        z-index: 1000; /* Ensure it's above other content */
+      }
+
+      .scroll-to-top-arrow:hover {
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+      }
     </style>
   </head>
 
@@ -83,7 +105,7 @@
       <!-- Start of the Body experience -->
 
       <div class="body-container">
-        <!-- Start of scale-to-fold experience (scrolling) -->
+        <!-- Start of scale-to-fold experience (full-height) -->
 
         <div
           style="
@@ -100,11 +122,11 @@
           "
           id="experience-66bbc7f7aa6fb"
           data-aspectRatio="0.3539823"
-          data-mobile-aspectRatio="0.11366028"
+          data-mobile-aspectRatio="0.11787819"
         >
           <iframe
             allowfullscreen
-            src="https://view.ceros.com/littelfuse/body?heightOverride=3616&mobileHeightOverride=4751"
+            src="https://view.ceros.com/littelfuse/body?heightOverride=3616&mobileHeightOverride=4581"
             style="
               position: absolute;
               top: 0;
@@ -125,16 +147,38 @@
             scrolling="no"
           ></iframe>
         </div>
+        <script
+          type="text/javascript"
+          src="https://view.ceros.com/scroll-proxy.min.js"
+          data-ceros-origin-domains="view.ceros.com"
+        ></script>
       </div>
+    </div>
+
+    <div class="scroll-to-top-arrow" id="scrollToTopArrow">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="{1.5}"
+        stroke="currentColor"
+        style="height: 30px; width: 30px; color: #838383"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="m4.5 15.75 7.5-7.5 7.5 7.5"
+        />
+      </svg>
     </div>
 
     <!-- start of scripts -->
 
-    <script
+    <!-- <script
       type="text/javascript"
       src="./ceros-scroll-proxy.js"
       data-ceros-origin-domains="view.ceros.com"
-    ></script>
+    ></script> -->
 
     <script
       id="page-header"
@@ -148,7 +192,7 @@
       id="page-header"
       data-body-id="experience-66bbc7f7aa6fb"
       data-header-id="experience-66bbcde6ae8b7"
-      src="https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/embedded-experiences-proxy/assets/main-DJjYKbbF.js"
+      src="https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/embedded-experiences-proxy/assets/main-DvPQuvRT.js"
     ></script> -->
   </body>
 </html>
