@@ -12,6 +12,7 @@ export class Register {
     this.bodyExperienceId = bodyExperienceId;
     this.headerExperienceId = headerExperienceId;
     this.cerosFrames = {};
+    this.bodyFrameData = {};
     this.onExperiencesReady = onExperiencesReady;
     this.init();
   }
@@ -42,34 +43,44 @@ export class Register {
 
     // check if sourcewindow is the body frame
     if (frame === this.cerosFrames.body) {
-      // Calculate the position of the scroll target in the iframe
-      var positionInFrame = Math.max(
-        0,
-        data.scrollPosition - data.pageHeight + data.visibleHeight
+      this.bodyFrameData = data;
+      this.scrollPageToFramePosition(frame);
+    }
+  };
+
+  scrollPageToFramePosition = function (frame, scrollBehavior) {
+    var positionInFrame = Math.max(
+      0,
+      this.bodyFrameData.scrollPosition -
+        this.bodyFrameData.pageHeight +
+        this.bodyFrameData.visibleHeight
+    );
+
+    var boundingRect = frame.getBoundingClientRect();
+    var frameTop = window.pageYOffset + boundingRect.top;
+    var frameBottom = window.pageYOffset + boundingRect.bottom;
+
+    var frameHeight = boundingRect.bottom - boundingRect.top;
+    var frameScrollPosition =
+      (positionInFrame * frameHeight) / this.bodyFrameData.visibleHeight;
+
+    var maxScroll = frameBottom - window.innerHeight;
+
+    // Get the height of the sticky header (adjust this selector as needed)
+    if (this.cerosFrames.header) {
+      var headerHeight = this.cerosFrames.header.getBoundingClientRect().height;
+
+      // Adjust the scroll position to account for the sticky header
+      var scrollTarget = Math.min(
+        frameScrollPosition + frameTop - headerHeight,
+        maxScroll
       );
 
-      var boundingRect = frame.getBoundingClientRect();
-      var frameTop = window.pageYOffset + boundingRect.top;
-      var frameBottom = window.pageYOffset + boundingRect.bottom;
-
-      var frameHeight = boundingRect.bottom - boundingRect.top;
-      var frameScrollPosition =
-        (positionInFrame * frameHeight) / data.visibleHeight;
-
-      var maxScroll = frameBottom - window.innerHeight;
-
-      // Get the height of the sticky header (adjust this selector as needed)
-      if (this.cerosFrames.header) {
-        var headerHeight =
-          this.cerosFrames.header.getBoundingClientRect().height;
-        // Adjust the scroll position to account for the sticky header
-        var scrollTarget = Math.min(
-          frameScrollPosition + frameTop - headerHeight,
-          maxScroll
-        );
-
-        window.scroll(0, scrollTarget);
-      }
+      // Use smooth scrolling
+      window.scrollTo({
+        top: scrollTarget,
+        behavior: scrollBehavior, // This makes the scrolling smooth
+      });
     }
   };
 
