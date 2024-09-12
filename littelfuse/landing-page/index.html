@@ -2,127 +2,197 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
     <script src="https://sdk.ceros.com/embedded-player-sdk-v5.min.js"></script>
     <title>Document</title>
     <style>
-      .body-container {
-        background-color: azure;
+      body {
+        margin: 0;
+        padding: 0;
       }
 
-      .sticky-header {
-        position: fixed;
-        top: 0;
+      .iframes-container {
+        position: relative;
         width: 100%;
-        z-index: 1000;
-        background-color: aqua; /* Ensure background color covers sticky area */
+        height: 100%;
+      }
+
+      .header-container {
+        position: sticky;
+        width: 100%;
+        z-index: 900;
+        top: 0;
+      }
+
+      .body-container {
+        display: block;
+      }
+
+      .scroll-to-top-arrow {
+        position: fixed;
+        bottom: 20px; /* Adjust as needed */
+        right: 20px; /* Adjust as needed */
+        width: 50px; /* Adjust as needed */
+        height: 50px; /* Adjust as needed */
+        background: #eeeeee; /* Adjust as needed */
+        color: #838383;
+        border: 1px solid #dedede;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+        z-index: 1000; /* Ensure it's above other content */
+      }
+
+      .scroll-to-top-arrow:hover {
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
       }
     </style>
   </head>
 
   <body>
-    <div class="sticky-header">
-      <div
-        style="
-          position: relative;
-          width: auto;
-          padding: 0 0 20.39%;
-          height: 0;
-          top: 0;
-          left: 0;
-          bottom: 0;
-          right: 0;
-          margin: 0;
-          border: 0 none;
-        "
-        id="experience-66bbcde6ae8b7"
-        data-aspectRatio="4.90421456"
-        data-mobile-aspectRatio="2.06896552"
-      >
-        <iframe
-          allowfullscreen
-          src="https://view.ceros.com/littelfuse/header"
+    <div class="iframes-container" id="iframes-container">
+      <!-- Start of the Header experience -->
+
+      <!-- Header experience with scale-to-fold to make sure that there is no extra space around content in the iframe -->
+
+      <div class="header-container">
+        <div
           style="
-            position: absolute;
+            position: relative;
+            width: auto;
+            padding: 0 0 14.14%;
+            height: 0;
             top: 0;
             left: 0;
             bottom: 0;
             right: 0;
             margin: 0;
-            padding: 0;
             border: 0 none;
-            height: 1px;
-            width: 1px;
-            min-height: 100%;
-            min-width: 100%;
           "
-          frameborder="0"
-          class="ceros-experience"
-          title="Header"
-          scrolling="no"
-        ></iframe>
+          id="experience-66bbcde6ae8b7"
+          data-aspectRatio="7.0718232"
+          data-mobile-aspectRatio="3.17647059"
+        >
+          <iframe
+            allowfullscreen
+            src="https://view.ceros.com/littelfuse/header"
+            style="
+              position: absolute;
+              top: 0;
+              left: 0;
+              bottom: 0;
+              right: 0;
+              margin: 0;
+              padding: 0;
+              border: 0 none;
+              height: 100%;
+              width: 100%;
+            "
+            frameborder="0"
+            class="ceros-experience"
+            title="Header"
+            scrolling="no"
+          ></iframe>
+        </div>
+      </div>
+
+      <!-- Start of the Body experience -->
+
+      <div class="body-container">
+        <!-- Start of scale-to-fold experience (full-height) -->
+
+        <div
+          style="
+            position: relative;
+            width: auto;
+            padding: 0 0 282.5%;
+            height: 0;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            margin: 0;
+            border: 0 none;
+          "
+          id="experience-66bbc7f7aa6fb"
+          data-aspectRatio="0.3539823"
+          data-mobile-aspectRatio="0.11787819"
+        >
+          <iframe
+            allowfullscreen
+            src="https://view.ceros.com/littelfuse/body?heightOverride=3616&mobileHeightOverride=4581"
+            style="
+              position: absolute;
+              top: 0;
+              left: 0;
+              bottom: 0;
+              right: 0;
+              margin: 0;
+              padding: 0;
+              border: 0 none;
+              height: 1px;
+              width: 1px;
+              min-height: 100%;
+              min-width: 100%;
+            "
+            frameborder="0"
+            class="ceros-experience"
+            title="BODY - Carling Aftermarket Products"
+            scrolling="no"
+          ></iframe>
+        </div>
+        <script
+          type="text/javascript"
+          src="https://view.ceros.com/scroll-proxy.min.js"
+          data-ceros-origin-domains="view.ceros.com"
+        ></script>
       </div>
     </div>
 
-    <!-- Start of the Body experience -->
-
-    <!-- with added canvas on top to account for the header height -->
-
-    <div class="body-container">
-      <div
-        style="
-          position: relative;
-          width: auto;
-          padding: 0 0 302.89%;
-          height: 0;
-          top: 0;
-          left: 0;
-          bottom: 0;
-          right: 0;
-          margin: 0;
-          border: 0 none;
-        "
-        id="experience-66bbc7f7aa6fb"
-        data-aspectRatio="0.33015218"
-        data-mobile-aspectRatio="0.1125"
+    <div class="scroll-to-top-arrow" id="scrollToTopArrow">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="{1.5}"
+        stroke="currentColor"
+        style="height: 30px; width: 30px; color: #838383"
       >
-        <iframe
-          allowfullscreen
-          src="https://view.ceros.com/littelfuse/body?heightOverride=3877&mobileHeightOverride=4800"
-          style="
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            margin: 0;
-            padding: 0;
-            border: 0 none;
-            height: 1px;
-            width: 1px;
-            min-height: 100%;
-            min-width: 100%;
-          "
-          frameborder="0"
-          class="ceros-experience"
-          title="BODY - Carling Aftermarket Products"
-          scrolling="no"
-        ></iframe>
-      </div>
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="m4.5 15.75 7.5-7.5 7.5 7.5"
+        />
+      </svg>
     </div>
 
     <!-- start of scripts -->
-    <script
+
+    <!-- <script
       type="text/javascript"
-      src="https://view.ceros.com/scroll-proxy.min.js"
+      src="./ceros-scroll-proxy.js"
       data-ceros-origin-domains="view.ceros.com"
-    ></script>
+    ></script> -->
+
+    <!-- <script
+      id="page-header"
+      data-body-id="experience-66bbc7f7aa6fb"
+      data-header-id="experience-66bbcde6ae8b7"
+      src="http://localhost:5173/main.js"
+      type="module"
+    ></script> -->
 
     <script
       id="page-header"
       data-body-id="experience-66bbc7f7aa6fb"
       data-header-id="experience-66bbcde6ae8b7"
-      src="https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/embedded-experiences-proxy/assets/main-w2UW-SFs.js"
+      src="https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/embedded-experiences-proxy/assets/main-Bk6qN9TB.js"
     ></script>
   </body>
 </html>
