@@ -13,4 +13,8 @@ export const EVENTS = {
   READY: "ready",
 
   NAV: "page-nav",
+
+  VIEW: "view",
+
+  SCROLL_TO: "scroll-to",
 };
