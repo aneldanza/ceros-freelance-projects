@@ -1,0 +1,28 @@
+{
+  "name": "fuse-holders",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev:modules": "tsc --build tsconfig.json --watch",
+    "dev:main": "tsc --build tsconfig.main.json --watch",
+    "dev": "npm-run-all --parallel dev:modules dev:main",
+    "build:modules": "tsc --project tsconfig.json",
+    "build:main": "tsc --project tsconfig.main.json",
+    "build:bundle": "r.js -o build.js && esbuild dist/ceros-plugin.js --minify --outfile=dist/ceros-plugin.min.js",
+    "build": "npm run clean && npm run build:modules && npm run build:main && npm run build:bundle",
+    "clean": "rimraf ./public ./dist",
+    "serve": "http-server ./public -p 5173"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/requirejs": "^2.1.37",
+    "esbuild": "^0.25.5",
+    "npm-run-all": "^4.1.5",
+    "requirejs": "^2.3.7",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  }
+}
