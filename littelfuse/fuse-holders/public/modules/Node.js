@@ -9,6 +9,10 @@ define(["require", "exports"], function (require, exports) {
             this.parent = parent;
             this.children = [];
             this.elementId = "";
+            this.data = {};
+        }
+        findChildByValueProperty(value) {
+            return (this.children.find((child) => child.value.toLowerCase() === value.toLowerCase()) || null);
         }
     }
     exports.Node = Node;

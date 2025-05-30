@@ -35,12 +35,12 @@ if (typeof require !== "undefined" && typeof require === "function") {
         CerosSDK.findExperience()
             .done((experience) => {
             console.log(experience);
-            const nodeTree = new NodeTreeModule.NodeTree();
+            const nodeTree = new NodeTreeModule.NodeTree(constants.fields);
             PapaParse.parse(link, {
                 download: true,
                 header: true,
                 complete: (result) => {
-                    nodeTree.buildTree(result.data, constants.fields);
+                    nodeTree.buildTree(result.data);
                 },
             });
             const quiz = new QuizModule.QuizContext(CerosSDK, experience, nodeTree);

@@ -47,13 +47,13 @@ if (typeof require !== "undefined" && typeof require === "function") {
     CerosSDK.findExperience()
       .done((experience: Experience) => {
         console.log(experience);
-        const nodeTree = new NodeTreeModule.NodeTree();
+        const nodeTree = new NodeTreeModule.NodeTree(constants.fields);
 
         PapaParse.parse(link, {
           download: true,
           header: true,
           complete: (result: Papa.ParseResult<unknown>) => {
-            nodeTree.buildTree(result.data, constants.fields);
+            nodeTree.buildTree(result.data);
           },
         });
 
