@@ -1,0 +1,13 @@
+{
+  "files": ["src/main.ts", "types/CerosSDK.d.ts"],
+  "compilerOptions": {
+    "target": "ES6",
+    "lib": ["ES6", "DOM"],
+    "module": "none",
+    "outDir": "./public",
+    "rootDir": "./src",
+    "strict": true,
+    "types": ["requirejs"],
+    "typeRoots": ["./types", "./node_modules/@types"]
+  }
+}

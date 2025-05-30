@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "lib": ["ES6", "DOM"],
+    "module": "amd",
+    "outDir": "./public",
+    "rootDir": "./src",
+    "strict": true,
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/modules/**/*", "types/CerosSDK.d.ts"],
+  "exclude": ["public", "dist"]
+}
