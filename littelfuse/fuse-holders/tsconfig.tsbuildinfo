@@ -1,1 +1,1 @@
-{"root":["./src/modules/node.ts","./src/modules/nodemanager.ts","./src/modules/nodetree.ts","./src/modules/observer.ts","./src/modules/quizcontext.ts","./src/modules/constants.ts","./types/cerossdk.d.ts"],"version":"5.8.3"}
+{"root":["./src/modules/node.ts","./src/modules/nodetree.ts","./src/modules/observer.ts","./src/modules/quizcontext.ts","./src/modules/constants.ts","./types/cerossdk.d.ts"],"version":"5.8.3"}
