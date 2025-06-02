@@ -38,6 +38,10 @@ define(["require", "exports", "./Node"], function (require, exports, Node_1) {
                 }
             }
         }
+        findChild(parentNode, name, value) {
+            return parentNode.children.find((node) => node.name.toLocaleLowerCase() === name.toLocaleLowerCase().trim() &&
+                node.value.toLocaleLowerCase() === value.toLocaleLowerCase().trim());
+        }
     }
     exports.NodeTree = NodeTree;
 });

@@ -39,4 +39,12 @@ export class NodeTree {
       }
     }
   }
+
+  findChild(parentNode: Node, name: string, value: string) {
+    return parentNode.children.find(
+      (node) =>
+        node.name.toLocaleLowerCase() === name.toLocaleLowerCase().trim() &&
+        node.value.toLocaleLowerCase() === value.toLocaleLowerCase().trim()
+    );
+  }
 }

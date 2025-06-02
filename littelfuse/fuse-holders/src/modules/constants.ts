@@ -9,3 +9,7 @@ export const fields = [
   "Environmental Protection",
   "Fuse Holder Part Number",
 ];
+
+export const OPTION = "answer";
+export const QUESTION = "q";
+export const DELIMETER = ":";
