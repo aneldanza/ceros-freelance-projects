@@ -20,6 +20,15 @@ export class QuizContext {
   }
 
   init() {
+    this.subscribeCurrentNodeObserver();
+    this.subscribeToCerosEvents();
+  }
+
+  subscribeCurrentNodeObserver() {
+    this.currentNode.subscribe(this.handleNodeChange.bind(this));
+  }
+
+  subscribeToCerosEvents() {
     this.answerCollection.on(
       this.CerosSDK.EVENTS.CLICKED,
       this.handleAnswerClick.bind(this)
@@ -33,9 +42,24 @@ export class QuizContext {
 
     if (node) {
       this.currentNode.value = node;
-      console.log(this.currentNode);
     } else {
       console.error(`coudn't find node with ${qName} and value ${value}`);
     }
+  }
+
+  handleNodeChange(node: Node) {
+    if (node.children) {
+      if (this.isLastQuestion(node)) {
+        console.log("show results!");
+      } else {
+        console.log("display next question answer options");
+        console.log(this.currentNode);
+      }
+    }
+  }
+
+  isLastQuestion(node: Node) {
+    const childNode = node.children[0];
+    return Object.keys(childNode.data).length;
   }
 }

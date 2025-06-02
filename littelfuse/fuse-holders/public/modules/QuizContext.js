@@ -12,6 +12,13 @@ define(["require", "exports", "./constants", "./Observer", "./utils"], function 
             this.init();
         }
         init() {
+            this.subscribeCurrentNodeObserver();
+            this.subscribeToCerosEvents();
+        }
+        subscribeCurrentNodeObserver() {
+            this.currentNode.subscribe(this.handleNodeChange.bind(this));
+        }
+        subscribeToCerosEvents() {
             this.answerCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleAnswerClick.bind(this));
         }
         handleAnswerClick(comp) {
@@ -20,11 +27,25 @@ define(["require", "exports", "./constants", "./Observer", "./utils"], function 
             const node = this.nodeTree.findChild(this.currentNode.value, qName, value);
             if (node) {
                 this.currentNode.value = node;
-                console.log(this.currentNode);
             }
             else {
                 console.error(`coudn't find node with ${qName} and value ${value}`);
             }
+        }
+        handleNodeChange(node) {
+            if (node.children) {
+                if (this.isLastQuestion(node)) {
+                    console.log("show results!");
+                }
+                else {
+                    console.log("display next question answer options");
+                    console.log(this.currentNode);
+                }
+            }
+        }
+        isLastQuestion(node) {
+            const childNode = node.children[0];
+            return Object.keys(childNode.data).length;
         }
     }
     exports.QuizContext = QuizContext;
