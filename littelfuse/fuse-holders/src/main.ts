@@ -54,10 +54,13 @@ if (typeof require !== "undefined" && typeof require === "function") {
           header: true,
           complete: (result: Papa.ParseResult<unknown>) => {
             nodeTree.buildTree(result.data);
+            const quiz = new QuizModule.QuizContext(
+              CerosSDK,
+              experience,
+              nodeTree
+            );
           },
         });
-
-        const quiz = new QuizModule.QuizContext(CerosSDK, experience, nodeTree);
       })
       .fail((e: any) => {
         console.log(e);
