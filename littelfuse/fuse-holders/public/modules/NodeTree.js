@@ -28,15 +28,18 @@ define(["require", "exports", "./Node"], function (require, exports, Node_1) {
         addBranch(node, obj) {
             let parent = node;
             for (let i = 0; i < this.fields.length; i++) {
-                const key = this.fields[i];
+                const key = this.fields[i].trim();
                 const val = obj[key].trim();
-                if (key === "Fuse Holder Part Number") {
+                if (i === this.fields.length - 1) {
                     parent = this.addNewNode(val, key, parent, obj);
                 }
                 else {
                     parent = this.addNewNode(val, key, parent);
                 }
             }
+        }
+        findChild(parentNode, key, value) {
+            return parentNode.children.find((node) => node[key].toLowerCase() === value.toLowerCase().trim());
         }
     }
     exports.NodeTree = NodeTree;

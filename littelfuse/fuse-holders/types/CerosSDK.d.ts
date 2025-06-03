@@ -61,10 +61,20 @@ declare global {
   }
 
   interface CerosLayer {
+    id: string;
+    type: string;
+    tags: string[];
+    payload: string;
+    experience: Experience;
+    experienceId: string;
+    page: CerosPage;
+
     getPage(): CerosPage;
+    getPayload(): string;
+    getTags(): string[];
   }
 
-  interface CerosComponent {
+  class CerosComponent implements CerosLayer {
     id: string;
     on(
       event: CerosSDKEvent,
@@ -77,9 +87,7 @@ declare global {
     stopVideo(): void;
     isTextComponent(): boolean;
     setText(text: string): void;
-    getTags(): string[];
-    getPayload(): string;
-    getPage(): CerosPage;
+
     [key: string]: any; // For additional dynamic properties
   }
 
@@ -125,6 +133,7 @@ declare global {
   interface Experience {
     findPagesByTag(tag: string): CerosPageCollection;
     findComponentsByTag(tag: string): CerosComponentCollection;
+    findLayersByTag(tag: string): CerosLayerCollection;
     goToNextPage(): void;
     goToPage(pageNum: number): void;
 

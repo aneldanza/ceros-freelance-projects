@@ -1,7 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.fields = void 0;
+    exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.hidingStrategyQuestions = exports.maskingStrategyQuestions = exports.fields = void 0;
     exports.fields = [
         "Fuse Type",
         "Fuse Style",
@@ -13,4 +13,17 @@ define(["require", "exports"], function (require, exports) {
         "Environmental Protection",
         "Fuse Holder Part Number",
     ];
+    exports.maskingStrategyQuestions = [
+        "Fuse Holder Position",
+        "Fuse Holder Style",
+        "Fuse Holder Mounting Method",
+        "Environmental Protection",
+    ];
+    exports.hidingStrategyQuestions = [
+        "Fuse Holder Voltage",
+        "Fuse Holder Amps",
+    ];
+    exports.OPTION = "answer";
+    exports.QUESTION = "q";
+    exports.DELIMETER = ":";
 });

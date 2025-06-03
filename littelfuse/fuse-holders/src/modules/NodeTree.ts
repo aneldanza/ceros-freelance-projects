@@ -3,7 +3,7 @@ import { Node } from "./Node";
 export class NodeTree {
   public root: Node;
 
-  constructor(private fields: string[]) {
+  constructor(public fields: string[]) {
     this.root = new Node("Root");
   }
 
@@ -30,13 +30,19 @@ export class NodeTree {
   addBranch(node: Node, obj: Record<string, string>) {
     let parent = node;
     for (let i = 0; i < this.fields.length; i++) {
-      const key = this.fields[i];
+      const key = this.fields[i].trim();
       const val = obj[key].trim();
-      if (key === "Fuse Holder Part Number") {
+      if (i === this.fields.length - 1) {
         parent = this.addNewNode(val, key, parent, obj);
       } else {
         parent = this.addNewNode(val, key, parent);
       }
     }
+  }
+
+  findChild(parentNode: Node, key: "elementId" | "value", value: string) {
+    return parentNode.children.find(
+      (node) => node[key].toLowerCase() === value.toLowerCase().trim()
+    );
   }
 }
