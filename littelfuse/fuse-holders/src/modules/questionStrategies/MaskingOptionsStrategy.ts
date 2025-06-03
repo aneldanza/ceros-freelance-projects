@@ -15,7 +15,7 @@ export class MaskingOptionsStrategy extends QuestionStrategy {
   }
 
   displayAnswerOptions(node: Node): void {
-    this.maskCollection.components.forEach((comp: CerosComponent) => {
+    this.maskCollection.layers.forEach((comp: CerosComponent) => {
       this.handleMasks(comp, node);
     });
   }

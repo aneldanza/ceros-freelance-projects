@@ -14,6 +14,7 @@ import {
 } from "./utils";
 import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrategy";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
+import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -53,6 +54,17 @@ export class QuizContext {
     hidingStrategyQuestions.forEach((fieldName) => {
       const name = fieldName.toLowerCase();
       const strategy = new HidingOptionsStrategy(name, this.experience);
+      this.questions[name] = strategy;
+    });
+
+    maskingStrategyQuestions.forEach((fieldName) => {
+      const name = fieldName.toLowerCase();
+      const strategy = new MaskingOptionsStrategy(
+        name,
+        this.experience,
+        this.currentNode,
+        this.CerosSDK
+      );
       this.questions[name] = strategy;
     });
   }

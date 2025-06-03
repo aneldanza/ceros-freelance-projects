@@ -1,4 +1,4 @@
-define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1) {
+define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
@@ -28,6 +28,11 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             constants_1.hidingStrategyQuestions.forEach((fieldName) => {
                 const name = fieldName.toLowerCase();
                 const strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(name, this.experience);
+                this.questions[name] = strategy;
+            });
+            constants_1.maskingStrategyQuestions.forEach((fieldName) => {
+                const name = fieldName.toLowerCase();
+                const strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(name, this.experience, this.currentNode, this.CerosSDK);
                 this.questions[name] = strategy;
             });
         }
