@@ -10,6 +10,18 @@ export const fields = [
   "Fuse Holder Part Number",
 ];
 
+export const maskingStrategyQuestions = [
+  "Fuse Holder Position",
+  "Fuse Holder Style",
+  "Fuse Holder Mounting Method",
+  "Environmental Protection",
+];
+
+export const hidingStrategyQuestions = [
+  "Fuse Holder Voltage",
+  "Fuse Holder Amps",
+];
+
 export const OPTION = "answer";
 export const QUESTION = "q";
 export const DELIMETER = ":";

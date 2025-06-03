@@ -3,7 +3,7 @@ import { Node } from "./Node";
 export class NodeTree {
   public root: Node;
 
-  constructor(private fields: string[]) {
+  constructor(public fields: string[]) {
     this.root = new Node("Root");
   }
 
@@ -40,11 +40,9 @@ export class NodeTree {
     }
   }
 
-  findChild(parentNode: Node, name: string, value: string) {
+  findChild(parentNode: Node, key: "elementId" | "value", value: string) {
     return parentNode.children.find(
-      (node) =>
-        node.name.toLocaleLowerCase() === name.toLocaleLowerCase().trim() &&
-        node.value.toLocaleLowerCase() === value.toLocaleLowerCase().trim()
+      (node) => node[key].toLowerCase() === value.toLowerCase().trim()
     );
   }
 }
