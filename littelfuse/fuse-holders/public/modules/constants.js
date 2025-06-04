@@ -1,7 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.hidingStrategyQuestions = exports.maskingStrategyQuestions = exports.fields = void 0;
+    exports.DESCRIPTION = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.hidingStrategyQuestions = exports.maskingStrategyQuestions = exports.fields = void 0;
     exports.fields = [
         "Fuse Type",
         "Fuse Style",
@@ -26,4 +26,6 @@ define(["require", "exports"], function (require, exports) {
     exports.OPTION = "answer";
     exports.QUESTION = "q";
     exports.DELIMETER = ":";
+    exports.SPECS = "specs";
+    exports.DESCRIPTION = "description";
 });

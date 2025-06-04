@@ -25,3 +25,5 @@ export const hidingStrategyQuestions = [
 export const OPTION = "answer";
 export const QUESTION = "q";
 export const DELIMETER = ":";
+export const SPECS = "specs";
+export const DESCRIPTION = "description";

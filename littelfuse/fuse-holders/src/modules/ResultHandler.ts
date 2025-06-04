@@ -1,3 +1,4 @@
+import { DESCRIPTION, SPECS } from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
 
@@ -62,8 +63,8 @@ export class ResultHandler {
     layersDict.part &&
       this.updateResultTextbox("part", moduleTag, layersDict.part);
 
-    layersDict.features &&
-      this.updateResultTextbox("features", moduleTag, layersDict.features);
+    // layersDict.features &&
+    //   this.updateResultTextbox("features", moduleTag, layersDict.features);
 
     layersDict.datasheet &&
       this.registerResultClcikEvent(
@@ -79,8 +80,11 @@ export class ResultHandler {
         moduleTag
       );
 
-    layersDict.specs &&
-      this.updateResultTextbox("specs", moduleTag, layersDict.specs);
+    layersDict[SPECS] &&
+      this.updateResultTextbox(SPECS, moduleTag, layersDict[SPECS]);
+
+    layersDict[DESCRIPTION] &&
+      this.updateResultTextbox(DESCRIPTION, moduleTag, layersDict[DESCRIPTION]);
   }
 
   showResultImage(
