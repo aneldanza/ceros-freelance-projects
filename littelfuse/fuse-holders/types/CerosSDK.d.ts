@@ -78,6 +78,7 @@ declare global {
     show(): void;
     hide(): void;
     setText(textContent: string): void;
+    setUrl(url: string, useNewImageSize: boolean = false): void;
   }
 
   class CerosComponent implements CerosLayer {

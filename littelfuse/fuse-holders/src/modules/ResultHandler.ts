@@ -53,15 +53,11 @@ export class ResultHandler {
   }
 
   processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
-    layersDict.images &&
-      this.showResultImage(
-        moduleTag,
-        this.handleModuleImage,
-        layersDict.images
-      );
+    layersDict.img &&
+      this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict.img);
 
-    layersDict.icons &&
-      this.showResultImage(moduleTag, this.handleModuleIcon, layersDict.icons);
+    // layersDict.icons &&
+    //   this.showResultImage(moduleTag, this.handleModuleIcon, layersDict.icons);
 
     layersDict.part &&
       this.updateResultTextbox("part", moduleTag, layersDict.part);
@@ -98,6 +94,20 @@ export class ResultHandler {
         const obj = this.resultModules[type][moduleTag];
         const images = group.findAllComponents();
         images.layers.forEach((img) => callback(img, obj));
+      });
+    });
+  }
+
+  showImageFromUrl(
+    moduleTag: string,
+    callback: (img: CerosLayer, obj: object) => void,
+    imgArray: CerosLayer[]
+  ) {
+    imgArray.forEach((layer) => {
+      layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+        const type = moduleTag.split("-")[0];
+        const obj = this.resultModules[type][moduleTag];
+        callback(layer, obj);
       });
     });
   }
@@ -147,11 +157,11 @@ export class ResultHandler {
   }
 
   handleModuleImage(img: CerosLayer, data: any) {
-    const tag = data["image"].split(".")[0].trim();
-    if (tag.toLowerCase() === img.getPayload().toLowerCase()) {
-      img.show();
-    } else {
-      img.hide();
+    const imgStr = data.image;
+    const imgUrl = new URL(imgStr);
+
+    if (imgUrl) {
+      img.setUrl(imgStr);
     }
   }
 }
