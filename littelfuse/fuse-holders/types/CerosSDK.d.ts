@@ -69,9 +69,15 @@ declare global {
     experienceId: string;
     page: CerosPage;
 
+    on(event: CerosSDKEvent, callback: (layer: CerosLayer) => void): void;
+
     getPage(): CerosPage;
     getPayload(): string;
     getTags(): string[];
+    findAllComponents(): CerosComponentCollection;
+    show(): void;
+    hide(): void;
+    setText(textContent: string): void;
   }
 
   class CerosComponent implements CerosLayer {
@@ -94,25 +100,31 @@ declare global {
   interface CerosLayerCollection {
     // Assuming LayerCollection has some shared methods.
     // If not known, this can be left empty or removed.
+    layers: CerosLayer[];
+    layersByTag: Record<string, CerosLayer[]>;
+
     [key: string]: any;
   }
 
-  class CerosComponentCollection implements CerosLayerCollection {
+  class CerosComponentCollection extends CerosLayerCollection {
     components: CerosComponent[];
     messenger: CerosMessenger;
     componentsByTag: Record<string, CerosComponent[]>;
+    layers: CerosLayer[];
+    layersByTag: Record<string, CerosLayer[]>;
 
     constructor(components: CerosComponent[], messenger: CerosMessenger);
 
     findComponentsByTag(tag: string): CerosComponentCollection;
     click(): void;
-    show(): void;
-    hide(): void;
     reset(): void;
     startVideo(): void;
     stopVideo(): void;
     setText(textContent: string): void;
-    merge(otherCollections: CerosComponentCollection[]): CerosComponent[];
+
+    merge(
+      otherCollections: CerosComponentCollection[]
+    ): CerosComponentCollection;
     on(
       event: CerosSDKEvent,
       callback: (component: CerosComponent) => void

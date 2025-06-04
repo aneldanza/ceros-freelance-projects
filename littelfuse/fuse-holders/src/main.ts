@@ -57,7 +57,8 @@ if (typeof require !== "undefined" && typeof require === "function") {
             const quiz = new QuizModule.QuizContext(
               CerosSDK,
               experience,
-              nodeTree
+              nodeTree,
+              distributor
             );
           },
         });

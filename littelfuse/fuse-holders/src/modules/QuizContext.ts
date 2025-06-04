@@ -15,19 +15,28 @@ import {
 import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrategy";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
 import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
+import { ResultHandler } from "./ResultHandler";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
   private answerCollection: CerosComponentCollection;
   private questions: Record<string, QuestionStrategy> = {};
+  private resultHandler: ResultHandler;
 
   constructor(
     public CerosSDK: CerosSDK,
     public experience: Experience,
-    private nodeTree: NodeTree
+    private nodeTree: NodeTree,
+    private distributor: string
   ) {
     this.currentNode = new Observable<Node>(this.nodeTree.root);
     this.answerCollection = this.experience.findComponentsByTag(OPTION);
+    this.resultHandler = new ResultHandler(
+      experience,
+      CerosSDK,
+      this.currentNode,
+      distributor
+    );
 
     this.init();
 
@@ -98,6 +107,7 @@ export class QuizContext {
     if (node.children) {
       if (this.isLastQuestion(node)) {
         console.log("show results!");
+        this.resultHandler.showResultModule(node.children.length);
       } else {
         console.log("display next question answer options");
         console.log(this.currentNode);

@@ -41,7 +41,7 @@ if (typeof require !== "undefined" && typeof require === "function") {
                 header: true,
                 complete: (result) => {
                     nodeTree.buildTree(result.data);
-                    const quiz = new QuizModule.QuizContext(CerosSDK, experience, nodeTree);
+                    const quiz = new QuizModule.QuizContext(CerosSDK, experience, nodeTree, distributor);
                 },
             });
         })

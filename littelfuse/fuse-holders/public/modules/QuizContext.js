@@ -1,15 +1,17 @@
-define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1) {
+define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
     class QuizContext {
-        constructor(CerosSDK, experience, nodeTree) {
+        constructor(CerosSDK, experience, nodeTree, distributor) {
             this.CerosSDK = CerosSDK;
             this.experience = experience;
             this.nodeTree = nodeTree;
+            this.distributor = distributor;
             this.questions = {};
             this.currentNode = new Observer_1.Observable(this.nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
+            this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor);
             this.init();
             setTimeout(() => {
                 const result = (0, utils_1.calculateMaxNumberOfEvenAndOddChildrenAtPosition)("Fuse Holder Voltage", this.nodeTree);
@@ -57,6 +59,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             if (node.children) {
                 if (this.isLastQuestion(node)) {
                     console.log("show results!");
+                    this.resultHandler.showResultModule(node.children.length);
                 }
                 else {
                     console.log("display next question answer options");

@@ -11,7 +11,7 @@ define(["require", "exports"], function (require, exports) {
         "Fuse Holder Style",
         "Fuse Holder Mounting Method",
         "Environmental Protection",
-        "Fuse Holder Part Number",
+        "part",
     ];
     exports.maskingStrategyQuestions = [
         "Fuse Holder Position",

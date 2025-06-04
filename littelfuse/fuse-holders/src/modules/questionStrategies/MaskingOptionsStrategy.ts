@@ -15,12 +15,12 @@ export class MaskingOptionsStrategy extends QuestionStrategy {
   }
 
   displayAnswerOptions(node: Node): void {
-    this.maskCollection.layers.forEach((comp: CerosComponent) => {
+    this.maskCollection.layers.forEach((comp: CerosLayer) => {
       this.handleMasks(comp, node);
     });
   }
 
-  handleMasks(mask: CerosComponent, node: Node) {
+  handleMasks(mask: CerosLayer, node: Node) {
     const foundNode = node.findChildByValueProperty(mask.getPayload().trim());
 
     if (foundNode) {
@@ -33,7 +33,7 @@ export class MaskingOptionsStrategy extends QuestionStrategy {
   registerMaskAnimations() {
     this.maskCollection.on(
       this.CerosSDK.EVENTS.ANIMATION_STARTED,
-      (mask: CerosComponent) => {
+      (mask: CerosLayer) => {
         this.handleMasks(mask, this.currentNodeObservable.value);
       }
     );
