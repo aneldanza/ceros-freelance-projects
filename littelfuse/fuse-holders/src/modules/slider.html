@@ -1,0 +1,107 @@
+<style>
+  #customSlider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(to right, #008752 0%, #ccc 0%);
+    border-radius: 5px;
+    outline: none;
+    margin-top: 30px;
+  }
+
+  #customSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #008752;
+    cursor: pointer;
+    margin-top: -6px; /* center thumb */
+    border: none;
+  }
+
+  #customSlider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #008752;
+    cursor: pointer;
+    border: none;
+  }
+
+  #customSlider::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 5px;
+  }
+
+  #customSlider::-moz-range-track {
+    height: 6px;
+    border-radius: 5px;
+    background: #ccc;
+  }
+
+  #tick-marks {
+    position: relative;
+    height: 20px;
+    margin-top: 6px;
+    padding: 0 9px; /* pad to prevent label clipping */
+  }
+
+  .tick {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+</style>
+
+<div
+  id="slider-container"
+  style="width: 100%; max-width: 1500px; margin: 40px auto"
+>
+  <input type="range" id="customSlider" min="0" max="32" step="1" value="0" />
+  <div id="tick-marks"></div>
+  <div
+    id="slider-value"
+    style="text-align: center; margin-top: 10px; font-weight: bold"
+  >
+    Selected: 0.5
+  </div>
+</div>
+
+<script>
+  const sliderValues = [
+    0.5, 1.5, 2.25, 3, 3.75, 5.5, 7.5, 12, 15, 19, 23, 26, 30, 38, 45, 53, 60,
+    75, 94, 113, 131, 150, 169, 188, 206, 225, 263, 300, 319, 338, 375, 450,
+    488,
+  ];
+
+  const slider = document.getElementById("customSlider");
+  const output = document.getElementById("slider-value");
+  const tickMarks = document.getElementById("tick-marks");
+
+  sliderValues.forEach((value, index) => {
+    const tick = document.createElement("div");
+    tick.className = "tick";
+    tick.textContent = value;
+    tick.style.left = `${(index / (sliderValues.length - 1)) * 100}%`;
+    tickMarks.appendChild(tick);
+  });
+
+  function updateSliderBackground(index) {
+    const percent = (index / (sliderValues.length - 1)) * 100;
+    const trackStyle = `linear-gradient(to right, #008752 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
+    slider.style.background = trackStyle;
+  }
+
+  slider.addEventListener("input", () => {
+    const index = parseInt(slider.value, 10);
+    output.textContent = `Selected: ${sliderValues[index]}`;
+    updateSliderBackground(index);
+  });
+
+  // Initial state
+  output.textContent = `Selected: ${sliderValues[0]}`;
+  updateSliderBackground(0);
+</script>
