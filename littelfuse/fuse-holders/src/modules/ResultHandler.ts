@@ -1,16 +1,20 @@
 import { DESCRIPTION, SPECS } from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
+import { LandingPageProxy } from "./LandinPageProxy";
 
 export class ResultHandler {
   private resultModules: any = {};
+  private landingPageProxy: LandingPageProxy;
 
   constructor(
     private experience: Experience,
     private CerosSDK: CerosSDK,
     private currentNodeObservable: Observable<Node>,
     private distributor: string
-  ) {}
+  ) {
+    this.landingPageProxy = new LandingPageProxy();
+  }
 
   showResultModule(type: number) {
     this.updateModuleResults(type);
@@ -140,10 +144,7 @@ export class ResultHandler {
         const type = moduleTag.split("-")[0];
         const obj = this.resultModules[type][moduleTag];
 
-        //   this.landingPageProxy.openAndTrackLink(
-        //     obj[key],
-        //     this.utils.isDoubleClickBug.bind(this.utils)
-        //   );
+        this.landingPageProxy.openAndTrackLink(obj[key], layer.id);
       });
     });
   }
