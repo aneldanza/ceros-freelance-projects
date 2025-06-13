@@ -10,13 +10,10 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.questions = {};
             this.currentNode = new Observer_1.Observable(this.nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
+            this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
             this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.init();
-            setTimeout(() => {
-                const result = (0, utils_1.calculateMaxNumberOfEvenAndOddChildrenAtPosition)("Fuse Holder Voltage", this.nodeTree);
-                console.log(result); // { maxEven: X, maxOdd: Y }
-            }, 500);
         }
         init() {
             this.subscribeCurrentNodeObserver();
@@ -25,6 +22,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
         }
         subscribeCurrentNodeObserver() {
             this.currentNode.subscribe(this.handleNodeChange.bind(this));
+            this.currentNode.subscribe(this.updatePath.bind(this));
         }
         assignQuestionsStrategy() {
             constants_1.hidingStrategyQuestions.forEach((fieldName) => {
@@ -71,6 +69,24 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                         this.questions[childNodeName].displayAnswerOptions(node);
                 }
             }
+        }
+        updatePath(node) {
+            let currentNode = node;
+            const pathArray = [];
+            const nodePath = currentNode.getPath();
+            nodePath.forEach(({ name, value }) => {
+                if (name === "Root") {
+                    return;
+                }
+                const template = constants_1.pathMap[name];
+                const formattedValue = (0, utils_1.capitalize)(value.split(" ").join(""));
+                const text = template.replace("{{}}", formattedValue);
+                pathArray.push(text);
+            });
+            pathArray.length
+                ? this.pathTextCollection.setText(pathArray.join("  >  "))
+                : this.pathTextCollection.setText("");
+            this.pathTextCollection.show();
         }
         isLastQuestion(node) {
             const childNode = node.children[0];

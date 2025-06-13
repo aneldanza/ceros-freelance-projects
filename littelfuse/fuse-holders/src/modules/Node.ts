@@ -16,4 +16,16 @@ export class Node {
       ) || null
     );
   }
+
+  getPath() {
+    const path = [];
+    let currentNode: Node | null = this;
+
+    while (currentNode) {
+      path.unshift({ name: currentNode.name, value: currentNode.value });
+      currentNode = currentNode.parent;
+    }
+
+    return path;
+  }
 }

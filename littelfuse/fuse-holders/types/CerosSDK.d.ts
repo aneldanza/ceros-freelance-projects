@@ -122,6 +122,7 @@ declare global {
     startVideo(): void;
     stopVideo(): void;
     setText(textContent: string): void;
+    show(): void;
 
     merge(
       otherCollections: CerosComponentCollection[]

@@ -1,17 +1,15 @@
 import {
-  fields,
+  PATH,
   OPTION,
   QUESTION,
   maskingStrategyQuestions,
   hidingStrategyQuestions,
+  pathMap,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
 import { Node } from "./Node";
-import {
-  getValueFromTags,
-  calculateMaxNumberOfEvenAndOddChildrenAtPosition,
-} from "./utils";
+import { getValueFromTags, capitalize } from "./utils";
 import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrategy";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
 import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
@@ -21,6 +19,7 @@ import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 export class QuizContext {
   private currentNode: Observable<Node>;
   private answerCollection: CerosComponentCollection;
+  private pathTextCollection: CerosComponentCollection;
   private questions: Record<string, QuestionStrategy> = {};
   private resultHandler: ResultHandler;
   private doubleClickHandler: DoubleClickBugHandler;
@@ -33,6 +32,7 @@ export class QuizContext {
   ) {
     this.currentNode = new Observable<Node>(this.nodeTree.root);
     this.answerCollection = this.experience.findComponentsByTag(OPTION);
+    this.pathTextCollection = this.experience.findComponentsByTag(PATH);
     this.resultHandler = new ResultHandler(
       experience,
       CerosSDK,
@@ -43,14 +43,6 @@ export class QuizContext {
     this.doubleClickHandler = new DoubleClickBugHandler();
 
     this.init();
-
-    setTimeout(() => {
-      const result = calculateMaxNumberOfEvenAndOddChildrenAtPosition(
-        "Fuse Holder Voltage",
-        this.nodeTree
-      );
-      console.log(result); // { maxEven: X, maxOdd: Y }
-    }, 500);
   }
 
   init() {
@@ -61,6 +53,7 @@ export class QuizContext {
 
   subscribeCurrentNodeObserver() {
     this.currentNode.subscribe(this.handleNodeChange.bind(this));
+    this.currentNode.subscribe(this.updatePath.bind(this));
   }
 
   assignQuestionsStrategy() {
@@ -122,6 +115,28 @@ export class QuizContext {
           this.questions[childNodeName].displayAnswerOptions(node);
       }
     }
+  }
+
+  updatePath(node: Node) {
+    let currentNode = node;
+    const pathArray: string[] = [];
+    const nodePath = currentNode.getPath();
+
+    nodePath.forEach(({ name, value }) => {
+      if (name === "Root") {
+        return;
+      }
+      const template = pathMap[name];
+      const formattedValue = capitalize(value.split(" ").join(""));
+      const text = template.replace("{{}}", formattedValue);
+      pathArray.push(text);
+    });
+
+    pathArray.length
+      ? this.pathTextCollection.setText(pathArray.join("  >  "))
+      : this.pathTextCollection.setText("");
+
+    this.pathTextCollection.show();
   }
 
   isLastQuestion(node: Node) {

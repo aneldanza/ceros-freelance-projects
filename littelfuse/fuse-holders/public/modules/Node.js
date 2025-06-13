@@ -14,6 +14,15 @@ define(["require", "exports"], function (require, exports) {
         findChildByValueProperty(value) {
             return (this.children.find((child) => child.value.toLowerCase() === value.toLowerCase()) || null);
         }
+        getPath() {
+            const path = [];
+            let currentNode = this;
+            while (currentNode) {
+                path.unshift({ name: currentNode.name, value: currentNode.value });
+                currentNode = currentNode.parent;
+            }
+            return path;
+        }
     }
     exports.Node = Node;
 });
