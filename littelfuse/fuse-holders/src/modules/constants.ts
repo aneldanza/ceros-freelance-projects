@@ -39,3 +39,4 @@ export const DELIMETER = ":";
 export const SPECS = "specs";
 export const DESCRIPTION = "description";
 export const PATH = "path";
+export const BACK = "back";

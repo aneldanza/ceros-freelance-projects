@@ -5,6 +5,7 @@ import {
   maskingStrategyQuestions,
   hidingStrategyQuestions,
   pathMap,
+  BACK,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
@@ -19,6 +20,7 @@ import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 export class QuizContext {
   private currentNode: Observable<Node>;
   private answerCollection: CerosComponentCollection;
+  private backLayersCollection: CerosLayerCollection;
   private pathTextCollection: CerosComponentCollection;
   private questions: Record<string, QuestionStrategy> = {};
   private resultHandler: ResultHandler;
@@ -32,6 +34,7 @@ export class QuizContext {
   ) {
     this.currentNode = new Observable<Node>(this.nodeTree.root);
     this.answerCollection = this.experience.findComponentsByTag(OPTION);
+    this.backLayersCollection = this.experience.findLayersByTag(BACK);
     this.pathTextCollection = this.experience.findComponentsByTag(PATH);
     this.resultHandler = new ResultHandler(
       experience,
@@ -80,6 +83,11 @@ export class QuizContext {
       this.CerosSDK.EVENTS.CLICKED,
       this.handleAnswerClick.bind(this)
     );
+
+    this.backLayersCollection.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.handleBackNavigation.bind(this)
+    );
   }
 
   handleAnswerClick(comp: CerosComponent) {
@@ -102,13 +110,19 @@ export class QuizContext {
     }
   }
 
+  handleBackNavigation(layer: CerosLayer) {
+    if (!this.doubleClickHandler.isDoubleClickBug(layer.id)) {
+      if (this.currentNode.value.parent) {
+        this.currentNode.value = this.currentNode.value.parent;
+      }
+    }
+  }
+
   handleNodeChange(node: Node) {
     if (node.children) {
       if (this.isLastQuestion(node)) {
-        console.log("show results!");
         this.resultHandler.showResultModule(node.children.length);
       } else {
-        console.log("display next question answer options");
         console.log(this.currentNode.value);
         const childNodeName = node.children[0].name.toLowerCase();
         this.questions[childNodeName] &&
@@ -127,8 +141,7 @@ export class QuizContext {
         return;
       }
       const template = pathMap[name];
-      const formattedValue = capitalize(value.split(" ").join(""));
-      const text = template.replace("{{}}", formattedValue);
+      const text = template.replace("{{}}", capitalize(value));
       pathArray.push(text);
     });
 

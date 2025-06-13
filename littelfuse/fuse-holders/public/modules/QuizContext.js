@@ -10,6 +10,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.questions = {};
             this.currentNode = new Observer_1.Observable(this.nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
+            this.backLayersCollection = this.experience.findLayersByTag(constants_1.BACK);
             this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
             this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
@@ -38,6 +39,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
         }
         subscribeToCerosEvents() {
             this.answerCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleAnswerClick.bind(this));
+            this.backLayersCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleBackNavigation.bind(this));
         }
         handleAnswerClick(comp) {
             if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
@@ -55,14 +57,19 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                 }
             }
         }
+        handleBackNavigation(layer) {
+            if (!this.doubleClickHandler.isDoubleClickBug(layer.id)) {
+                if (this.currentNode.value.parent) {
+                    this.currentNode.value = this.currentNode.value.parent;
+                }
+            }
+        }
         handleNodeChange(node) {
             if (node.children) {
                 if (this.isLastQuestion(node)) {
-                    console.log("show results!");
                     this.resultHandler.showResultModule(node.children.length);
                 }
                 else {
-                    console.log("display next question answer options");
                     console.log(this.currentNode.value);
                     const childNodeName = node.children[0].name.toLowerCase();
                     this.questions[childNodeName] &&
@@ -79,8 +86,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                     return;
                 }
                 const template = constants_1.pathMap[name];
-                const formattedValue = (0, utils_1.capitalize)(value.split(" ").join(""));
-                const text = template.replace("{{}}", formattedValue);
+                const text = template.replace("{{}}", (0, utils_1.capitalize)(value));
                 pathArray.push(text);
             });
             pathArray.length
