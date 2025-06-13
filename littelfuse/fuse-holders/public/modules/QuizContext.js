@@ -1,4 +1,4 @@
-define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1) {
+define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
@@ -7,11 +7,11 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.CerosSDK = CerosSDK;
             this.experience = experience;
             this.nodeTree = nodeTree;
-            this.distributor = distributor;
             this.questions = {};
             this.currentNode = new Observer_1.Observable(this.nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
             this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor);
+            this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.init();
             setTimeout(() => {
                 const result = (0, utils_1.calculateMaxNumberOfEvenAndOddChildrenAtPosition)("Fuse Holder Voltage", this.nodeTree);
@@ -42,17 +42,19 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.answerCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleAnswerClick.bind(this));
         }
         handleAnswerClick(comp) {
-            const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
-            const question = this.questions[qName];
-            const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
-                ? { key: "elementId", value: comp.id }
-                : { key: "value", value: comp.getPayload() };
-            const node = this.nodeTree.findChild(this.currentNode.value, key, value);
-            if (node) {
-                this.currentNode.value = node;
-            }
-            else {
-                console.error(`coudn't find node with ${qName} and value ${value}`);
+            if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
+                const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
+                const question = this.questions[qName];
+                const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
+                    ? { key: "elementId", value: comp.id }
+                    : { key: "value", value: comp.getPayload() };
+                const node = this.nodeTree.findChild(this.currentNode.value, key, value);
+                if (node) {
+                    this.currentNode.value = node;
+                }
+                else {
+                    console.error(`coudn't find node with ${qName} and value ${value}`);
+                }
             }
         }
         handleNodeChange(node) {
@@ -63,7 +65,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                 }
                 else {
                     console.log("display next question answer options");
-                    console.log(this.currentNode);
+                    console.log(this.currentNode.value);
                     const childNodeName = node.children[0].name.toLowerCase();
                     this.questions[childNodeName] &&
                         this.questions[childNodeName].displayAnswerOptions(node);

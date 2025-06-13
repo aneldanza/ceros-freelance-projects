@@ -17,7 +17,7 @@ export class ResultHandler {
   }
 
   showResultModule(type: number) {
-    this.updateModuleResults(type);
+    this.updateResultModules(type);
 
     const moduleResultHotspot = this.experience.findComponentsByTag(
       `module-${type}`
@@ -25,32 +25,35 @@ export class ResultHandler {
     moduleResultHotspot.click();
   }
 
-  updateModuleResults(type: number) {
+  updateModule(type: number, index: number, node: Node) {
+    const moduleTag = this.getModuleTag(type, index);
+    const module = this.experience.findLayersByTag(moduleTag);
+    if (!module.layers.length) {
+      console.error(`No module found with tag: ${moduleTag}`);
+      return;
+    }
+
+    const collection = module.layers[0].findAllComponents();
+    const layersDict = collection.layersByTag;
+
+    const data = node.data;
+    const size = type.toString();
+    if (this.resultModules.size && this.resultModules[size][moduleTag]) {
+      this.resultModules[size] = this.resultModules[size] || {};
+      this.resultModules[size][moduleTag] = data;
+    } else {
+      this.resultModules[size] = this.resultModules[size] || {};
+      this.resultModules[size][moduleTag] = data;
+
+      this.processLayers(layersDict, moduleTag);
+    }
+  }
+
+  updateResultModules(type: number) {
     this.currentNodeObservable.value.children.forEach((node, index) => {
-      const moduleTag = this.getModuleTag(type, index);
-      const module = this.experience.findLayersByTag(moduleTag);
-      if (!module.layers.length) {
-        console.error(`No module found with tag: ${moduleTag}`);
-        return;
-      }
-
-      const collection = module.layers[0].findAllComponents();
-      const layersDict = collection.layersByTag;
-
-      const data = node.data;
-      const size = type.toString();
-      if (this.resultModules.size && this.resultModules[size][moduleTag]) {
-        this.resultModules[size] = this.resultModules[size] || {};
-        this.resultModules[size][moduleTag] = data;
-      } else {
-        this.resultModules[size] = this.resultModules[size] || {};
-        this.resultModules[size][moduleTag] = data;
-
-        this.processLayers(layersDict, moduleTag);
-      }
-
-      console.log(this.resultModules);
+      this.updateModule(type, index, node);
     });
+    console.log(this.resultModules);
   }
 
   getModuleTag(type: number, index: number) {
