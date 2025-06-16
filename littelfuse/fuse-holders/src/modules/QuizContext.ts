@@ -1,42 +1,51 @@
 import {
-  fields,
+  PATH,
   OPTION,
   QUESTION,
   maskingStrategyQuestions,
   hidingStrategyQuestions,
+  pathMap,
+  BACK,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
 import { Node } from "./Node";
-import {
-  getValueFromTags,
-  calculateMaxNumberOfEvenAndOddChildrenAtPosition,
-} from "./utils";
+import { getValueFromTags, capitalize } from "./utils";
 import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrategy";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
+import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
+import { ResultHandler } from "./ResultHandler";
+import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
   private answerCollection: CerosComponentCollection;
+  private backLayersCollection: CerosLayerCollection;
+  private pathTextCollection: CerosComponentCollection;
   private questions: Record<string, QuestionStrategy> = {};
+  private resultHandler: ResultHandler;
+  private doubleClickHandler: DoubleClickBugHandler;
 
   constructor(
     public CerosSDK: CerosSDK,
     public experience: Experience,
-    private nodeTree: NodeTree
+    private nodeTree: NodeTree,
+    distributor: string
   ) {
     this.currentNode = new Observable<Node>(this.nodeTree.root);
     this.answerCollection = this.experience.findComponentsByTag(OPTION);
+    this.backLayersCollection = this.experience.findLayersByTag(BACK);
+    this.pathTextCollection = this.experience.findComponentsByTag(PATH);
+    this.resultHandler = new ResultHandler(
+      experience,
+      CerosSDK,
+      this.currentNode,
+      distributor
+    );
+
+    this.doubleClickHandler = new DoubleClickBugHandler();
 
     this.init();
-
-    setTimeout(() => {
-      const result = calculateMaxNumberOfEvenAndOddChildrenAtPosition(
-        "Fuse Holder Voltage",
-        this.nodeTree
-      );
-      console.log(result); // { maxEven: X, maxOdd: Y }
-    }, 500);
   }
 
   init() {
@@ -47,12 +56,24 @@ export class QuizContext {
 
   subscribeCurrentNodeObserver() {
     this.currentNode.subscribe(this.handleNodeChange.bind(this));
+    this.currentNode.subscribe(this.updatePath.bind(this));
   }
 
   assignQuestionsStrategy() {
     hidingStrategyQuestions.forEach((fieldName) => {
       const name = fieldName.toLowerCase();
       const strategy = new HidingOptionsStrategy(name, this.experience);
+      this.questions[name] = strategy;
+    });
+
+    maskingStrategyQuestions.forEach((fieldName) => {
+      const name = fieldName.toLowerCase();
+      const strategy = new MaskingOptionsStrategy(
+        name,
+        this.experience,
+        this.currentNode,
+        this.CerosSDK
+      );
       this.questions[name] = strategy;
     });
   }
@@ -62,38 +83,73 @@ export class QuizContext {
       this.CerosSDK.EVENTS.CLICKED,
       this.handleAnswerClick.bind(this)
     );
+
+    this.backLayersCollection.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.handleBackNavigation.bind(this)
+    );
   }
 
   handleAnswerClick(comp: CerosComponent) {
-    const qName = getValueFromTags(comp.getTags(), QUESTION);
-    const question = this.questions[qName];
+    if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
+      const qName = getValueFromTags(comp.getTags(), QUESTION);
+      const question = this.questions[qName];
 
-    const { key, value }: { key: "elementId" | "value"; value: string } =
-      question instanceof HidingOptionsStrategy
-        ? { key: "elementId", value: comp.id }
-        : { key: "value", value: comp.getPayload() };
+      const { key, value }: { key: "elementId" | "value"; value: string } =
+        question instanceof HidingOptionsStrategy
+          ? { key: "elementId", value: comp.id }
+          : { key: "value", value: comp.getPayload() };
 
-    const node = this.nodeTree.findChild(this.currentNode.value, key, value);
+      const node = this.nodeTree.findChild(this.currentNode.value, key, value);
 
-    if (node) {
-      this.currentNode.value = node;
-    } else {
-      console.error(`coudn't find node with ${qName} and value ${value}`);
+      if (node) {
+        this.currentNode.value = node;
+      } else {
+        console.error(`coudn't find node with ${qName} and value ${value}`);
+      }
+    }
+  }
+
+  handleBackNavigation(layer: CerosLayer) {
+    if (!this.doubleClickHandler.isDoubleClickBug(layer.id)) {
+      if (this.currentNode.value.parent) {
+        this.currentNode.value = this.currentNode.value.parent;
+      }
     }
   }
 
   handleNodeChange(node: Node) {
     if (node.children) {
       if (this.isLastQuestion(node)) {
-        console.log("show results!");
+        this.resultHandler.showResultModule(node.children.length);
       } else {
-        console.log("display next question answer options");
-        console.log(this.currentNode);
+        console.log(this.currentNode.value);
         const childNodeName = node.children[0].name.toLowerCase();
         this.questions[childNodeName] &&
           this.questions[childNodeName].displayAnswerOptions(node);
       }
     }
+  }
+
+  updatePath(node: Node) {
+    let currentNode = node;
+    const pathArray: string[] = [];
+    const nodePath = currentNode.getPath();
+
+    nodePath.forEach(({ name, value }) => {
+      if (name === "Root") {
+        return;
+      }
+      const template = pathMap[name];
+      const text = template.replace("{{}}", capitalize(value));
+      pathArray.push(text);
+    });
+
+    pathArray.length
+      ? this.pathTextCollection.setText(pathArray.join("  >  "))
+      : this.pathTextCollection.setText("");
+
+    this.pathTextCollection.show();
   }
 
   isLastQuestion(node: Node) {
