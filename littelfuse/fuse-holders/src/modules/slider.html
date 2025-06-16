@@ -1,6 +1,7 @@
 <style>
   #customSlider {
     -webkit-appearance: none;
+    appearance: none;
     width: 100%;
     height: 6px;
     background: linear-gradient(to right, #008752 0%, #ccc 0%);
@@ -61,10 +62,15 @@
   style="width: 100%; max-width: 1500px; margin: 40px auto"
 >
   <input type="range" id="customSlider" min="0" max="32" step="1" value="0" />
-  <div id="tick-marks"></div>
+  <!-- <div id="tick-marks"></div> -->
   <div
     id="slider-value"
-    style="text-align: center; margin-top: 10px; font-weight: bold"
+    style="
+      text-align: center;
+      margin-top: 4rem;
+      font-weight: bold;
+      font-size: 3rem;
+    "
   >
     Selected: 0.5
   </div>
@@ -81,13 +87,13 @@
   const output = document.getElementById("slider-value");
   const tickMarks = document.getElementById("tick-marks");
 
-  sliderValues.forEach((value, index) => {
-    const tick = document.createElement("div");
-    tick.className = "tick";
-    tick.textContent = value;
-    tick.style.left = `${(index / (sliderValues.length - 1)) * 100}%`;
-    tickMarks.appendChild(tick);
-  });
+  //   sliderValues.forEach((value, index) => {
+  //     const tick = document.createElement("div");
+  //     tick.className = "tick";
+  //     tick.textContent = value;
+  //     tick.style.left = `${(index / (sliderValues.length - 1)) * 100}%`;
+  //     tickMarks.appendChild(tick);
+  //   });
 
   function updateSliderBackground(index) {
     const percent = (index / (sliderValues.length - 1)) * 100;
