@@ -28,15 +28,19 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
         assignQuestionsStrategy() {
             for (const fieldName in constants_1.fieldNodesDict) {
                 const field = constants_1.fieldNodesDict[fieldName];
-                if (field.questionStrategy && field.type === "question") {
-                    if (field.questionStrategy === "hiding") {
-                        const strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience);
-                        this.questions[fieldName] = strategy;
+                let strategy;
+                if (field.type === "question") {
+                    if (field.questionStrategy && field.questionStrategy === "hiding") {
+                        strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience);
                     }
-                    else if (field.questionStrategy === "masking") {
-                        const strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
-                        this.questions[fieldName] = strategy;
+                    else if (field.questionStrategy &&
+                        field.questionStrategy === "masking") {
+                        strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
                     }
+                    else {
+                        strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
+                    }
+                    this.questions[fieldName] = strategy;
                 }
             }
         }

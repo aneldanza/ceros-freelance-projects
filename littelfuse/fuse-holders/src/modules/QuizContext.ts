@@ -63,22 +63,30 @@ export class QuizContext {
   assignQuestionsStrategy() {
     for (const fieldName in fieldNodesDict) {
       const field = fieldNodesDict[fieldName];
-      if (field.questionStrategy && field.type === "question") {
-        if (field.questionStrategy === "hiding") {
-          const strategy = new HidingOptionsStrategy(
-            fieldName,
-            this.experience
-          );
-          this.questions[fieldName] = strategy;
-        } else if (field.questionStrategy === "masking") {
-          const strategy = new MaskingOptionsStrategy(
+      let strategy: QuestionStrategy;
+
+      if (field.type === "question") {
+        if (field.questionStrategy && field.questionStrategy === "hiding") {
+          strategy = new HidingOptionsStrategy(fieldName, this.experience);
+        } else if (
+          field.questionStrategy &&
+          field.questionStrategy === "masking"
+        ) {
+          strategy = new MaskingOptionsStrategy(
             fieldName,
             this.experience,
             this.currentNode,
             this.CerosSDK
           );
-          this.questions[fieldName] = strategy;
+        } else {
+          strategy = new MaskingOptionsStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
         }
+        this.questions[fieldName] = strategy;
       }
     }
   }
