@@ -26,16 +26,19 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.currentNode.subscribe(this.updatePath.bind(this));
         }
         assignQuestionsStrategy() {
-            constants_1.hidingStrategyQuestions.forEach((fieldName) => {
-                const name = fieldName.toLowerCase();
-                const strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(name, this.experience);
-                this.questions[name] = strategy;
-            });
-            constants_1.maskingStrategyQuestions.forEach((fieldName) => {
-                const name = fieldName.toLowerCase();
-                const strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(name, this.experience, this.currentNode, this.CerosSDK);
-                this.questions[name] = strategy;
-            });
+            for (const fieldName in constants_1.fieldNodesDict) {
+                const field = constants_1.fieldNodesDict[fieldName];
+                if (field.questionStrategy && field.type === "question") {
+                    if (field.questionStrategy === "hiding") {
+                        const strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience);
+                        this.questions[fieldName] = strategy;
+                    }
+                    else if (field.questionStrategy === "masking") {
+                        const strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
+                        this.questions[fieldName] = strategy;
+                    }
+                }
+            }
         }
         subscribeToCerosEvents() {
             this.answerCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleAnswerClick.bind(this));
@@ -45,6 +48,10 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
                 const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
                 const question = this.questions[qName];
+                if (!question) {
+                    console.error(`Could not find question field ${qName}`);
+                    return;
+                }
                 const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
                     ? { key: "elementId", value: comp.id }
                     : { key: "value", value: comp.getPayload() };

@@ -6,6 +6,7 @@ import {
   hidingStrategyQuestions,
   pathMap,
   BACK,
+  fieldNodesDict,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
@@ -60,22 +61,26 @@ export class QuizContext {
   }
 
   assignQuestionsStrategy() {
-    hidingStrategyQuestions.forEach((fieldName) => {
-      const name = fieldName.toLowerCase();
-      const strategy = new HidingOptionsStrategy(name, this.experience);
-      this.questions[name] = strategy;
-    });
-
-    maskingStrategyQuestions.forEach((fieldName) => {
-      const name = fieldName.toLowerCase();
-      const strategy = new MaskingOptionsStrategy(
-        name,
-        this.experience,
-        this.currentNode,
-        this.CerosSDK
-      );
-      this.questions[name] = strategy;
-    });
+    for (const fieldName in fieldNodesDict) {
+      const field = fieldNodesDict[fieldName];
+      if (field.questionStrategy && field.type === "question") {
+        if (field.questionStrategy === "hiding") {
+          const strategy = new HidingOptionsStrategy(
+            fieldName,
+            this.experience
+          );
+          this.questions[fieldName] = strategy;
+        } else if (field.questionStrategy === "masking") {
+          const strategy = new MaskingOptionsStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
+          this.questions[fieldName] = strategy;
+        }
+      }
+    }
   }
 
   subscribeToCerosEvents() {
@@ -94,6 +99,11 @@ export class QuizContext {
     if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
       const qName = getValueFromTags(comp.getTags(), QUESTION);
       const question = this.questions[qName];
+
+      if (!question) {
+        console.error(`Could not find question field ${qName}`);
+        return;
+      }
 
       const { key, value }: { key: "elementId" | "value"; value: string } =
         question instanceof HidingOptionsStrategy
