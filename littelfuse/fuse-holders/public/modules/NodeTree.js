@@ -5,6 +5,7 @@ define(["require", "exports", "./Node"], function (require, exports, Node_1) {
     class NodeTree {
         constructor(fields) {
             this.fields = fields;
+            // constructor(public fields: string[]) {
             this.root = new Node_1.Node("Root");
         }
         buildTree(data) {
@@ -27,10 +28,14 @@ define(["require", "exports", "./Node"], function (require, exports, Node_1) {
         }
         addBranch(node, obj) {
             let parent = node;
-            for (let i = 0; i < this.fields.length; i++) {
-                const key = this.fields[i].trim();
-                const val = obj[key].trim();
-                if (i === this.fields.length - 1) {
+            const fieldNames = Object.keys(this.fields);
+            for (let i = 0; i < fieldNames.length; i++) {
+                const key = fieldNames[i].trim();
+                // for (let i = 0; i < this.fields.length; i++) {
+                //   const key = this.fields[i].trim();
+                // const val = obj[key].trim();
+                const val = obj[key].trim().toLowerCase();
+                if (this.fields[fieldNames[i]].type === "result") {
                     parent = this.addNewNode(val, key, parent, obj);
                 }
                 else {

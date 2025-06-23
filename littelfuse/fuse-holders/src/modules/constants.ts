@@ -1,36 +1,80 @@
+import { FieldNodes } from "./quizTypes";
+
+export const fieldNodesDict: FieldNodes = {
+  "fuse type": {
+    type: "question",
+    pathText: "Fuse Type: {{}}",
+  },
+  "fuse style": {
+    type: "question",
+    pathText: "Fuse Style: {{}}",
+  },
+  "max voltage": {
+    type: "question",
+    pathText: "Volts: {{}}V DC",
+    questionStrategy: "hiding",
+  },
+  "max current": {
+    type: "question",
+    pathText: "Amps: {{}}A",
+    questionStrategy: "hiding",
+  },
+  "circuit option": {
+    type: "question",
+    pathText: "Fuse Holder Position: {{}}",
+    questionStrategy: "masking",
+  },
+  style: {
+    type: "question",
+    pathText: "Fuse Holder Style: {{}}",
+    questionStrategy: "masking",
+  },
+  "mounting method": {
+    type: "question",
+    pathText: "Mounting: {{}}",
+    questionStrategy: "masking",
+  },
+  protection: {
+    type: "question",
+    pathText: "Protection: {{}}",
+    questionStrategy: "masking",
+  },
+  part: {
+    type: "result",
+    pathText: "",
+  },
+};
+
 export const fields = [
   "Fuse Type",
   "Fuse Style",
-  "Fuse Holder Voltage",
-  "Fuse Holder Amps",
-  "Fuse Holder Position",
-  "Fuse Holder Style",
-  "Fuse Holder Mounting Method",
-  "Environmental Protection",
+  "Max Voltage",
+  "Max Current",
+  "Circuit Option",
+  "Style",
+  "Mounting Method",
+  "Protection",
   "part",
 ];
 
 export const maskingStrategyQuestions = [
-  "Fuse Holder Position",
-  "Fuse Holder Style",
-  "Fuse Holder Mounting Method",
-  "Environmental Protection",
+  "Circuit Option",
+  "Style",
+  "Mounting Method",
+  "Protection",
 ];
 
-export const hidingStrategyQuestions = [
-  "Fuse Holder Voltage",
-  "Fuse Holder Amps",
-];
+export const hidingStrategyQuestions = ["Max Voltage", "Max Current"];
 
 export const pathMap: Record<string, string> = {
   "Fuse Type": "Fuse Type: {{}}",
   "Fuse Style": "Fuse Style: {{}}",
-  "Fuse Holder Voltage": "Volts: {{}}V DC",
-  "Fuse Holder Amps": "Amps: {{}}A",
-  "Fuse Holder Position": "Fuse Holder Position: {{}}",
-  "Fuse Holder Style": "Fuse Holder Style: {{}}",
-  "Fuse Holder Mounting Method": "Mounting: {{}}",
-  "Environmental Protection": "Protecttion: {{}}",
+  "Max Voltage": "Volts: {{}}V DC",
+  "Max Current": "Amps: {{}}A",
+  "Circuit Option": "Fuse Holder Position: {{}}",
+  Style: "Fuse Holder Style: {{}}",
+  "Mounting Method": "Mounting: {{}}",
+  Protection: "Protection: {{}}",
 };
 
 export const OPTION = "answer";
