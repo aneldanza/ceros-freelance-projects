@@ -2,9 +2,9 @@ import {
   PATH,
   OPTION,
   QUESTION,
-  maskingStrategyQuestions,
-  hidingStrategyQuestions,
-  pathMap,
+  // maskingStrategyQuestions,
+  // hidingStrategyQuestions,
+  // pathMap,
   BACK,
   fieldNodesDict,
 } from "./constants";
@@ -158,7 +158,7 @@ export class QuizContext {
       if (name === "Root") {
         return;
       }
-      const template = pathMap[name];
+      const template = fieldNodesDict[name].pathText;
       const text = template.replace("{{}}", capitalize(value));
       pathArray.push(text);
     });

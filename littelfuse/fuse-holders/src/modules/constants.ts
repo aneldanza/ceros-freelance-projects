@@ -45,37 +45,37 @@ export const fieldNodesDict: FieldNodes = {
   },
 };
 
-export const fields = [
-  "Fuse Type",
-  "Fuse Style",
-  "Max Voltage",
-  "Max Current",
-  "Circuit Option",
-  "Style",
-  "Mounting Method",
-  "Protection",
-  "part",
-];
+// export const fields = [
+//   "Fuse Type",
+//   "Fuse Style",
+//   "Max Voltage",
+//   "Max Current",
+//   "Circuit Option",
+//   "Style",
+//   "Mounting Method",
+//   "Protection",
+//   "part",
+// ];
 
-export const maskingStrategyQuestions = [
-  "Circuit Option",
-  "Style",
-  "Mounting Method",
-  "Protection",
-];
+// export const maskingStrategyQuestions = [
+//   "Circuit Option",
+//   "Style",
+//   "Mounting Method",
+//   "Protection",
+// ];
 
-export const hidingStrategyQuestions = ["Max Voltage", "Max Current"];
+// export const hidingStrategyQuestions = ["Max Voltage", "Max Current"];
 
-export const pathMap: Record<string, string> = {
-  "Fuse Type": "Fuse Type: {{}}",
-  "Fuse Style": "Fuse Style: {{}}",
-  "Max Voltage": "Volts: {{}}V DC",
-  "Max Current": "Amps: {{}}A",
-  "Circuit Option": "Fuse Holder Position: {{}}",
-  Style: "Fuse Holder Style: {{}}",
-  "Mounting Method": "Mounting: {{}}",
-  Protection: "Protection: {{}}",
-};
+// export const pathMap: Record<string, string> = {
+//   "Fuse Type": "Fuse Type: {{}}",
+//   "Fuse Style": "Fuse Style: {{}}",
+//   "Max Voltage": "Volts: {{}}V DC",
+//   "Max Current": "Amps: {{}}A",
+//   "Circuit Option": "Fuse Holder Position: {{}}",
+//   Style: "Fuse Holder Style: {{}}",
+//   "Mounting Method": "Mounting: {{}}",
+//   Protection: "Protection: {{}}",
+// };
 
 export const OPTION = "answer";
 export const QUESTION = "q";

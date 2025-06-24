@@ -1,7 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.BACK = exports.PATH = exports.DESCRIPTION = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.pathMap = exports.hidingStrategyQuestions = exports.maskingStrategyQuestions = exports.fields = exports.fieldNodesDict = void 0;
+    exports.BACK = exports.PATH = exports.DESCRIPTION = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
     exports.fieldNodesDict = {
         "fuse type": {
             type: "question",
@@ -46,34 +46,34 @@ define(["require", "exports"], function (require, exports) {
             pathText: "",
         },
     };
-    exports.fields = [
-        "Fuse Type",
-        "Fuse Style",
-        "Max Voltage",
-        "Max Current",
-        "Circuit Option",
-        "Style",
-        "Mounting Method",
-        "Protection",
-        "part",
-    ];
-    exports.maskingStrategyQuestions = [
-        "Circuit Option",
-        "Style",
-        "Mounting Method",
-        "Protection",
-    ];
-    exports.hidingStrategyQuestions = ["Max Voltage", "Max Current"];
-    exports.pathMap = {
-        "Fuse Type": "Fuse Type: {{}}",
-        "Fuse Style": "Fuse Style: {{}}",
-        "Max Voltage": "Volts: {{}}V DC",
-        "Max Current": "Amps: {{}}A",
-        "Circuit Option": "Fuse Holder Position: {{}}",
-        Style: "Fuse Holder Style: {{}}",
-        "Mounting Method": "Mounting: {{}}",
-        Protection: "Protection: {{}}",
-    };
+    // export const fields = [
+    //   "Fuse Type",
+    //   "Fuse Style",
+    //   "Max Voltage",
+    //   "Max Current",
+    //   "Circuit Option",
+    //   "Style",
+    //   "Mounting Method",
+    //   "Protection",
+    //   "part",
+    // ];
+    // export const maskingStrategyQuestions = [
+    //   "Circuit Option",
+    //   "Style",
+    //   "Mounting Method",
+    //   "Protection",
+    // ];
+    // export const hidingStrategyQuestions = ["Max Voltage", "Max Current"];
+    // export const pathMap: Record<string, string> = {
+    //   "Fuse Type": "Fuse Type: {{}}",
+    //   "Fuse Style": "Fuse Style: {{}}",
+    //   "Max Voltage": "Volts: {{}}V DC",
+    //   "Max Current": "Amps: {{}}A",
+    //   "Circuit Option": "Fuse Holder Position: {{}}",
+    //   Style: "Fuse Holder Style: {{}}",
+    //   "Mounting Method": "Mounting: {{}}",
+    //   Protection: "Protection: {{}}",
+    // };
     exports.OPTION = "answer";
     exports.QUESTION = "q";
     exports.DELIMETER = ":";

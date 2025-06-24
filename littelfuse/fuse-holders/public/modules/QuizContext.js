@@ -96,7 +96,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                 if (name === "Root") {
                     return;
                 }
-                const template = constants_1.pathMap[name];
+                const template = constants_1.fieldNodesDict[name].pathText;
                 const text = template.replace("{{}}", (0, utils_1.capitalize)(value));
                 pathArray.push(text);
             });
