@@ -107,6 +107,7 @@ export class QuizContext {
     if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
       const qName = getValueFromTags(comp.getTags(), QUESTION);
       const question = this.questions[qName];
+      const answer = comp.getPayload().trim();
 
       if (!question) {
         console.error(`Could not find question field ${qName}`);
@@ -116,12 +117,20 @@ export class QuizContext {
       const { key, value }: { key: "elementId" | "value"; value: string } =
         question instanceof HidingOptionsStrategy
           ? { key: "elementId", value: comp.id }
-          : { key: "value", value: comp.getPayload() };
+          : { key: "value", value: answer };
 
       const node = this.nodeTree.findChild(this.currentNode.value, key, value);
 
       if (node) {
-        this.currentNode.value = node;
+        if (
+          fieldNodesDict[qName].skipif &&
+          fieldNodesDict[qName].skipif.find((str) => str === answer)
+        ) {
+          const nextNode = node.children[0];
+          this.currentNode.value = nextNode;
+        } else {
+          this.currentNode.value = node;
+        }
       } else {
         console.error(`coudn't find node with ${qName} and value ${value}`);
       }

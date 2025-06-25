@@ -52,16 +52,24 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
                 const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
                 const question = this.questions[qName];
+                const answer = comp.getPayload().trim();
                 if (!question) {
                     console.error(`Could not find question field ${qName}`);
                     return;
                 }
                 const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
                     ? { key: "elementId", value: comp.id }
-                    : { key: "value", value: comp.getPayload() };
+                    : { key: "value", value: answer };
                 const node = this.nodeTree.findChild(this.currentNode.value, key, value);
                 if (node) {
-                    this.currentNode.value = node;
+                    if (constants_1.fieldNodesDict[qName].skipif &&
+                        constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer)) {
+                        const nextNode = node.children[0];
+                        this.currentNode.value = nextNode;
+                    }
+                    else {
+                        this.currentNode.value = node;
+                    }
                 }
                 else {
                     console.error(`coudn't find node with ${qName} and value ${value}`);

@@ -23,13 +23,14 @@ define(["require", "exports"], function (require, exports) {
         },
         "circuit option": {
             type: "question",
-            pathText: "Fuse Holder Position: {{}}",
+            pathText: "Circuit Option: {{}}",
             questionStrategy: "masking",
         },
         style: {
             type: "question",
-            pathText: "Fuse Holder Style: {{}}",
+            pathText: "Style: {{}}",
             questionStrategy: "masking",
+            skipif: ["PCBA", "Fuse Block / PDM"],
         },
         "mounting method": {
             type: "question",

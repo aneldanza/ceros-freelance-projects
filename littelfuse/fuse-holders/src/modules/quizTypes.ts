@@ -5,5 +5,6 @@ export type FieldNodes = {
     type: "question" | "result";
     pathText: string;
     questionStrategy?: QuestionStrategyName;
+    skipif?: string[];
   };
 };
