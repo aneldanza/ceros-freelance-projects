@@ -35,7 +35,7 @@ if (typeof require !== "undefined" && typeof require === "function") {
         CerosSDK.findExperience()
             .done((experience) => {
             console.log(experience);
-            const nodeTree = new NodeTreeModule.NodeTree(constants.fields);
+            const nodeTree = new NodeTreeModule.NodeTree(constants.fieldNodesDict);
             PapaParse.parse(link, {
                 download: true,
                 header: true,

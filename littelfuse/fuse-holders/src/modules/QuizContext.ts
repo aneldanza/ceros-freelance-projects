@@ -2,10 +2,11 @@ import {
   PATH,
   OPTION,
   QUESTION,
-  maskingStrategyQuestions,
-  hidingStrategyQuestions,
-  pathMap,
+  // maskingStrategyQuestions,
+  // hidingStrategyQuestions,
+  // pathMap,
   BACK,
+  fieldNodesDict,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
@@ -60,22 +61,34 @@ export class QuizContext {
   }
 
   assignQuestionsStrategy() {
-    hidingStrategyQuestions.forEach((fieldName) => {
-      const name = fieldName.toLowerCase();
-      const strategy = new HidingOptionsStrategy(name, this.experience);
-      this.questions[name] = strategy;
-    });
+    for (const fieldName in fieldNodesDict) {
+      const field = fieldNodesDict[fieldName];
+      let strategy: QuestionStrategy;
 
-    maskingStrategyQuestions.forEach((fieldName) => {
-      const name = fieldName.toLowerCase();
-      const strategy = new MaskingOptionsStrategy(
-        name,
-        this.experience,
-        this.currentNode,
-        this.CerosSDK
-      );
-      this.questions[name] = strategy;
-    });
+      if (field.type === "question") {
+        if (field.questionStrategy && field.questionStrategy === "hiding") {
+          strategy = new HidingOptionsStrategy(fieldName, this.experience);
+        } else if (
+          field.questionStrategy &&
+          field.questionStrategy === "masking"
+        ) {
+          strategy = new MaskingOptionsStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
+        } else {
+          strategy = new MaskingOptionsStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
+        }
+        this.questions[fieldName] = strategy;
+      }
+    }
   }
 
   subscribeToCerosEvents() {
@@ -94,16 +107,30 @@ export class QuizContext {
     if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
       const qName = getValueFromTags(comp.getTags(), QUESTION);
       const question = this.questions[qName];
+      const answer = comp.getPayload().trim();
+
+      if (!question) {
+        console.error(`Could not find question field ${qName}`);
+        return;
+      }
 
       const { key, value }: { key: "elementId" | "value"; value: string } =
         question instanceof HidingOptionsStrategy
           ? { key: "elementId", value: comp.id }
-          : { key: "value", value: comp.getPayload() };
+          : { key: "value", value: answer };
 
       const node = this.nodeTree.findChild(this.currentNode.value, key, value);
 
       if (node) {
-        this.currentNode.value = node;
+        if (
+          fieldNodesDict[qName].skipif &&
+          fieldNodesDict[qName].skipif.find((str) => str === answer)
+        ) {
+          const nextNode = node.children[0];
+          this.currentNode.value = nextNode;
+        } else {
+          this.currentNode.value = node;
+        }
       } else {
         console.error(`coudn't find node with ${qName} and value ${value}`);
       }
@@ -140,7 +167,7 @@ export class QuizContext {
       if (name === "Root") {
         return;
       }
-      const template = pathMap[name];
+      const template = fieldNodesDict[name].pathText;
       const text = template.replace("{{}}", capitalize(value));
       pathArray.push(text);
     });

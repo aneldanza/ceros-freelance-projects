@@ -26,16 +26,23 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.currentNode.subscribe(this.updatePath.bind(this));
         }
         assignQuestionsStrategy() {
-            constants_1.hidingStrategyQuestions.forEach((fieldName) => {
-                const name = fieldName.toLowerCase();
-                const strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(name, this.experience);
-                this.questions[name] = strategy;
-            });
-            constants_1.maskingStrategyQuestions.forEach((fieldName) => {
-                const name = fieldName.toLowerCase();
-                const strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(name, this.experience, this.currentNode, this.CerosSDK);
-                this.questions[name] = strategy;
-            });
+            for (const fieldName in constants_1.fieldNodesDict) {
+                const field = constants_1.fieldNodesDict[fieldName];
+                let strategy;
+                if (field.type === "question") {
+                    if (field.questionStrategy && field.questionStrategy === "hiding") {
+                        strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience);
+                    }
+                    else if (field.questionStrategy &&
+                        field.questionStrategy === "masking") {
+                        strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
+                    }
+                    else {
+                        strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
+                    }
+                    this.questions[fieldName] = strategy;
+                }
+            }
         }
         subscribeToCerosEvents() {
             this.answerCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleAnswerClick.bind(this));
@@ -45,12 +52,24 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
                 const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
                 const question = this.questions[qName];
+                const answer = comp.getPayload().trim();
+                if (!question) {
+                    console.error(`Could not find question field ${qName}`);
+                    return;
+                }
                 const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
                     ? { key: "elementId", value: comp.id }
-                    : { key: "value", value: comp.getPayload() };
+                    : { key: "value", value: answer };
                 const node = this.nodeTree.findChild(this.currentNode.value, key, value);
                 if (node) {
-                    this.currentNode.value = node;
+                    if (constants_1.fieldNodesDict[qName].skipif &&
+                        constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer)) {
+                        const nextNode = node.children[0];
+                        this.currentNode.value = nextNode;
+                    }
+                    else {
+                        this.currentNode.value = node;
+                    }
                 }
                 else {
                     console.error(`coudn't find node with ${qName} and value ${value}`);
@@ -85,7 +104,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                 if (name === "Root") {
                     return;
                 }
-                const template = constants_1.pathMap[name];
+                const template = constants_1.fieldNodesDict[name].pathText;
                 const text = template.replace("{{}}", (0, utils_1.capitalize)(value));
                 pathArray.push(text);
             });

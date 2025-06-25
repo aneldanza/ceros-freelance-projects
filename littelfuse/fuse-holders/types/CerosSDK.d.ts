@@ -60,7 +60,7 @@ declare global {
     [key: string]: any; // Add specific methods if known
   }
 
-  interface CerosLayer {
+  class CerosLayer {
     id: string;
     type: string;
     tags: string[];
@@ -78,15 +78,10 @@ declare global {
     show(): void;
     hide(): void;
     setText(textContent: string): void;
-    setUrl(url: string, useNewImageSize: boolean = false): void;
+    setUrl(url: string, useNewImageSize?: boolean): void;
   }
 
-  class CerosComponent implements CerosLayer {
-    id: string;
-    on(
-      event: CerosSDKEvent,
-      callback: (component: CerosComponent) => void
-    ): void;
+  class CerosComponent extends CerosLayer {
     click(): void;
     reset(): void;
     isVideoComponent(): boolean;
@@ -107,7 +102,7 @@ declare global {
     [key: string]: any;
   }
 
-  class CerosComponentCollection extends CerosLayerCollection {
+  class CerosComponentCollection implements CerosLayerCollection {
     components: CerosComponent[];
     messenger: CerosMessenger;
     componentsByTag: Record<string, CerosComponent[]>;

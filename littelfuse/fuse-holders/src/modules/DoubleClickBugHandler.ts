@@ -8,11 +8,12 @@ export class DoubleClickBugHandler {
   isDoubleClickBug(layerId: string) {
     const now = Date.now();
     const lastTime = this.clickObjectTimeTracker[layerId];
+    this.clickObjectTimeTracker[layerId] = now;
 
     if (lastTime) {
-      return now - lastTime < 200;
-    } else {
-      this.clickObjectTimeTracker[layerId] = now;
+      const timeBetweenClicks = now - lastTime;
+      console.log(timeBetweenClicks);
+      return timeBetweenClicks < 200;
     }
   }
 }

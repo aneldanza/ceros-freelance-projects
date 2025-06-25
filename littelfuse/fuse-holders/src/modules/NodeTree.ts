@@ -1,9 +1,11 @@
 import { Node } from "./Node";
+import { FieldNodes } from "./quizTypes";
 
 export class NodeTree {
   public root: Node;
 
-  constructor(public fields: string[]) {
+  constructor(public fields: FieldNodes) {
+    // constructor(public fields: string[]) {
     this.root = new Node("Root");
   }
 
@@ -29,10 +31,14 @@ export class NodeTree {
 
   addBranch(node: Node, obj: Record<string, string>) {
     let parent = node;
-    for (let i = 0; i < this.fields.length; i++) {
-      const key = this.fields[i].trim();
-      const val = obj[key].trim();
-      if (i === this.fields.length - 1) {
+    const fieldNames = Object.keys(this.fields);
+    for (let i = 0; i < fieldNames.length; i++) {
+      const key = fieldNames[i].trim();
+      // for (let i = 0; i < this.fields.length; i++) {
+      //   const key = this.fields[i].trim();
+      // const val = obj[key].trim();
+      const val = obj[key].trim().toLowerCase();
+      if (this.fields[fieldNames[i]].type === "result") {
         parent = this.addNewNode(val, key, parent, obj);
       } else {
         parent = this.addNewNode(val, key, parent);
