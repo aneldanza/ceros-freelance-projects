@@ -70,13 +70,20 @@ export class ResultHandler {
     layersDict.part &&
       this.updateResultTextbox("part", moduleTag, layersDict.part);
 
-    // layersDict.features &&
-    //   this.updateResultTextbox("features", moduleTag, layersDict.features);
+    layersDict.series &&
+      this.updateResultTextbox("series", moduleTag, layersDict.series);
 
     layersDict.datasheet &&
       this.registerResultClcikEvent(
         layersDict.datasheet,
         "datasheet",
+        moduleTag
+      );
+
+    layersDict["2d print"] &&
+      this.registerResultClcikEvent(
+        layersDict.datasheet,
+        "2d print",
         moduleTag
       );
 
@@ -129,6 +136,10 @@ export class ResultHandler {
     txtboxArray: CerosLayer[]
   ) {
     txtboxArray.forEach((layer) => {
+      const type = moduleTag.split("-")[0];
+      const obj = this.resultModules[type][moduleTag];
+      layer.setText(obj[key]);
+
       layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
         const type = moduleTag.split("-")[0];
         const obj = this.resultModules[type][moduleTag];
@@ -166,10 +177,12 @@ export class ResultHandler {
 
   handleModuleImage(img: CerosLayer, data: any) {
     const imgStr = data.image;
-    const imgUrl = new URL(imgStr);
 
-    if (imgUrl) {
+    try {
+      const imgUrl = new URL(imgStr);
       img.setUrl(imgStr);
+    } catch (e) {
+      console.error(e);
     }
   }
 }
