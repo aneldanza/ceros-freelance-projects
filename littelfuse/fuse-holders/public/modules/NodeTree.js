@@ -34,7 +34,7 @@ define(["require", "exports", "./Node"], function (require, exports, Node_1) {
                 // for (let i = 0; i < this.fields.length; i++) {
                 //   const key = this.fields[i].trim();
                 // const val = obj[key].trim();
-                const val = obj[key].trim().toLowerCase();
+                const val = obj[key].trim();
                 if (this.fields[fieldNames[i]].type === "result") {
                     parent = this.addNewNode(val, key, parent, obj);
                 }

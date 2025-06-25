@@ -36,6 +36,7 @@ define(["require", "exports"], function (require, exports) {
             type: "question",
             pathText: "Mounting: {{}}",
             questionStrategy: "masking",
+            skipBackIf: { style: ["PCBA", "Fuse Block / PDM"] },
         },
         protection: {
             type: "question",

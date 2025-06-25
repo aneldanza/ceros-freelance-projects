@@ -6,5 +6,6 @@ export type FieldNodes = {
     pathText: string;
     questionStrategy?: QuestionStrategyName;
     skipif?: string[];
+    skipBackIf?: Record<string, string[]>;
   };
 };

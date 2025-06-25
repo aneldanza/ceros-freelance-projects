@@ -138,11 +138,32 @@ export class QuizContext {
   }
 
   handleBackNavigation(layer: CerosLayer) {
-    if (!this.doubleClickHandler.isDoubleClickBug(layer.id)) {
-      if (this.currentNode.value.parent) {
-        this.currentNode.value = this.currentNode.value.parent;
+    // Prevent double-click bug
+    if (this.doubleClickHandler.isDoubleClickBug(layer.id)) return;
+
+    const current = this.currentNode.value;
+    const parent = current.parent;
+    if (!parent) return;
+
+    const name = current.name;
+    const field = fieldNodesDict[name];
+
+    // Check if skipBackIf logic applies
+    if (field && field.skipBackIf) {
+      const skipData = field.skipBackIf;
+      const nodeName = Object.keys(skipData)[0];
+      const valueArray = skipData[nodeName];
+
+      const ancestor = current.findParentByName(nodeName);
+      if (ancestor && valueArray.find((val) => val === ancestor.value)) {
+        // Skip one extra level if condition matches
+        this.currentNode.value = parent.parent || parent;
+        return;
       }
     }
+
+    // Default: go back one level
+    this.currentNode.value = parent;
   }
 
   handleNodeChange(node: Node) {

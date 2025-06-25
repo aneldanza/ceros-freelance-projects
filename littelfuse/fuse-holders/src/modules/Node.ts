@@ -17,6 +17,17 @@ export class Node {
     );
   }
 
+  findParentByName(name: string) {
+    let node: Node | null = this;
+
+    while (node) {
+      if (node.name === name) {
+        return node;
+      }
+      node = node.parent;
+    }
+  }
+
   getPath() {
     const path = [];
     let currentNode: Node | null = this;
