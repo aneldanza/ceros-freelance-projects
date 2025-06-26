@@ -1,7 +1,9 @@
+import { ResultData } from "./quizTypes";
+
 export class Node {
   public children: Node[] = [];
   public elementId: string = "";
-  public data: object = {};
+  public data: ResultData = {};
 
   constructor(
     public name: string,

@@ -12,3 +12,5 @@ export type FieldNodes = {
     skipBackIf?: Record<string, string[]>;
   };
 };
+
+export type ResultData = { [key: string]: string };

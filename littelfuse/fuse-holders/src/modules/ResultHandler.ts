@@ -1,10 +1,15 @@
-import { DESCRIPTION, SPECS } from "./constants";
+import { DESCRIPTION, DIVIDER, RELATED_PRODUCTS, SPECS } from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
 import { LandingPageProxy } from "./LandinPageProxy";
+import { ResultData } from "./quizTypes";
 
 export class ResultHandler {
-  private resultModules: any = {};
+  private resultModules: {
+    [key: string]: {
+      [key: string]: ResultData;
+    };
+  } = {};
   private landingPageProxy: LandingPageProxy;
 
   constructor(
@@ -61,6 +66,9 @@ export class ResultHandler {
   }
 
   processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
+    const type = moduleTag.split("-")[0];
+    const data = this.resultModules[type][moduleTag];
+
     layersDict.img &&
       this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict.img);
 
@@ -96,6 +104,44 @@ export class ResultHandler {
 
     layersDict[DESCRIPTION] &&
       this.updateResultTextbox(DESCRIPTION, moduleTag, layersDict[DESCRIPTION]);
+
+    layersDict[RELATED_PRODUCTS] &&
+      this.handleOverlay(
+        RELATED_PRODUCTS,
+        layersDict[RELATED_PRODUCTS],
+        moduleTag
+      );
+  }
+
+  handleOverlay(name: string, layerArray: CerosLayer[], moduleTag: string) {
+    layerArray.forEach((layer) => {
+      this.registerOverlayAnimation(layer, moduleTag, name);
+
+      this.registerOverlayClick(layer, moduleTag, name);
+    });
+  }
+
+  registerOverlayAnimation(layer: CerosLayer, moduleTag: string, name: string) {
+    layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+      const data = this.getData(moduleTag);
+      const value = data[name];
+      const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
+      if (items.length === 0) {
+        layer.hide();
+      }
+    });
+  }
+
+  registerOverlayClick(layer: CerosLayer, moduleTag: string, name: string) {
+    layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
+      const data = this.getData(moduleTag);
+      const value = data[name];
+      const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
+      const hotspotCollection = this.experience.findComponentsByTag(
+        `${name}-${items.length}`
+      );
+      hotspotCollection.click();
+    });
   }
 
   showResultImage(
@@ -181,5 +227,10 @@ export class ResultHandler {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  getData(moduleTag: string) {
+    const type = moduleTag.split("-")[0];
+    return this.resultModules[type][moduleTag];
   }
 }

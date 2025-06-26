@@ -88,3 +88,5 @@ export const DESCRIPTION = "description";
 export const PATH = "path";
 export const BACK = "back";
 export const NAV = "nav";
+export const RELATED_PRODUCTS = "related products";
+export const DIVIDER = ";";
