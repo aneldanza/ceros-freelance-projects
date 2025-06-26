@@ -11,6 +11,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.currentNode = new Observer_1.Observable(this.nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
             this.backLayersCollection = this.experience.findLayersByTag(constants_1.BACK);
+            this.navCollecttion = this.experience.findComponentsByTag(constants_1.NAV);
             this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
             this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
@@ -47,6 +48,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
         subscribeToCerosEvents() {
             this.answerCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleAnswerClick.bind(this));
             this.backLayersCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleBackNavigation.bind(this));
+            this.navCollecttion.on(this.CerosSDK.EVENTS.CLICKED, this.handleRandomNavigation.bind(this));
         }
         handleAnswerClick(comp) {
             if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
@@ -100,6 +102,16 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             }
             // Default: go back one level
             this.currentNode.value = parent;
+        }
+        handleRandomNavigation(comp) {
+            const name = comp.getPayload().toLowerCase();
+            const node = this.currentNode.value.findParentByName(name);
+            if (node && node.parent) {
+                this.currentNode.value = node.parent;
+            }
+            else {
+                console.error(`Could not find node ${name} or it's parent`);
+            }
         }
         handleNodeChange(node) {
             if (node.children) {

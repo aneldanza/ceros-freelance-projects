@@ -1,13 +1,4 @@
-import {
-  PATH,
-  OPTION,
-  QUESTION,
-  // maskingStrategyQuestions,
-  // hidingStrategyQuestions,
-  // pathMap,
-  BACK,
-  fieldNodesDict,
-} from "./constants";
+import { PATH, OPTION, QUESTION, BACK, fieldNodesDict, NAV } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
 import { Node } from "./Node";
@@ -22,6 +13,7 @@ export class QuizContext {
   private currentNode: Observable<Node>;
   private answerCollection: CerosComponentCollection;
   private backLayersCollection: CerosLayerCollection;
+  private navCollecttion: CerosComponentCollection;
   private pathTextCollection: CerosComponentCollection;
   private questions: Record<string, QuestionStrategy> = {};
   private resultHandler: ResultHandler;
@@ -36,6 +28,7 @@ export class QuizContext {
     this.currentNode = new Observable<Node>(this.nodeTree.root);
     this.answerCollection = this.experience.findComponentsByTag(OPTION);
     this.backLayersCollection = this.experience.findLayersByTag(BACK);
+    this.navCollecttion = this.experience.findComponentsByTag(NAV);
     this.pathTextCollection = this.experience.findComponentsByTag(PATH);
     this.resultHandler = new ResultHandler(
       experience,
@@ -101,6 +94,11 @@ export class QuizContext {
       this.CerosSDK.EVENTS.CLICKED,
       this.handleBackNavigation.bind(this)
     );
+
+    this.navCollecttion.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.handleRandomNavigation.bind(this)
+    );
   }
 
   handleAnswerClick(comp: CerosComponent) {
@@ -164,6 +162,16 @@ export class QuizContext {
 
     // Default: go back one level
     this.currentNode.value = parent;
+  }
+
+  handleRandomNavigation(comp: CerosComponent) {
+    const name = comp.getPayload().toLowerCase();
+    const node = this.currentNode.value.findParentByName(name);
+    if (node && node.parent) {
+      this.currentNode.value = node.parent;
+    } else {
+      console.error(`Could not find node ${name} or it's parent`);
+    }
   }
 
   handleNodeChange(node: Node) {
