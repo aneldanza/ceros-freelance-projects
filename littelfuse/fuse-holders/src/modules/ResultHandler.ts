@@ -64,9 +64,6 @@ export class ResultHandler {
     layersDict.img &&
       this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict.img);
 
-    // layersDict.icons &&
-    //   this.showResultImage(moduleTag, this.handleModuleIcon, layersDict.icons);
-
     layersDict.part &&
       this.updateResultTextbox("part", moduleTag, layersDict.part);
 

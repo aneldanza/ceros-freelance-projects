@@ -8,6 +8,7 @@ import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
 import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
 import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
+import { MaskingOptionsWithSubcategoriesStrategy } from "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -59,13 +60,10 @@ export class QuizContext {
       let strategy: QuestionStrategy;
 
       if (field.type === "question") {
-        if (field.questionStrategy && field.questionStrategy === "hiding") {
+        if (field.questionStrategy === "hiding") {
           strategy = new HidingOptionsStrategy(fieldName, this.experience);
-        } else if (
-          field.questionStrategy &&
-          field.questionStrategy === "masking"
-        ) {
-          strategy = new MaskingOptionsStrategy(
+        } else if (field.questionStrategy === "masking-with-subcategories") {
+          strategy = new MaskingOptionsWithSubcategoriesStrategy(
             fieldName,
             this.experience,
             this.currentNode,
@@ -102,36 +100,36 @@ export class QuizContext {
   }
 
   handleAnswerClick(comp: CerosComponent) {
-    if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
-      const qName = getValueFromTags(comp.getTags(), QUESTION);
-      const question = this.questions[qName];
-      const answer = comp.getPayload().trim();
+    if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
 
-      if (!question) {
-        console.error(`Could not find question field ${qName}`);
-        return;
-      }
+    const qName = getValueFromTags(comp.getTags(), QUESTION);
+    const question = this.questions[qName];
+    const answer = comp.getPayload().trim();
 
-      const { key, value }: { key: "elementId" | "value"; value: string } =
-        question instanceof HidingOptionsStrategy
-          ? { key: "elementId", value: comp.id }
-          : { key: "value", value: answer };
+    if (!question) {
+      console.error(`Could not find question field ${qName}`);
+      return;
+    }
 
-      const node = this.nodeTree.findChild(this.currentNode.value, key, value);
+    const { key, value }: { key: "elementId" | "value"; value: string } =
+      question instanceof HidingOptionsStrategy
+        ? { key: "elementId", value: comp.id }
+        : { key: "value", value: answer };
 
-      if (node) {
-        if (
-          fieldNodesDict[qName].skipif &&
-          fieldNodesDict[qName].skipif.find((str) => str === answer)
-        ) {
-          const nextNode = node.children[0];
-          this.currentNode.value = nextNode;
-        } else {
-          this.currentNode.value = node;
-        }
+    const node = this.nodeTree.findChild(this.currentNode.value, key, value);
+
+    if (node) {
+      if (
+        fieldNodesDict[qName].skipif &&
+        fieldNodesDict[qName].skipif.find((str) => str === answer)
+      ) {
+        const nextNode = node.children[0];
+        this.currentNode.value = nextNode;
       } else {
-        console.error(`coudn't find node with ${qName} and value ${value}`);
+        this.currentNode.value = node;
       }
+    } else {
+      console.error(`coudn't find node with ${qName} and value ${value}`);
     }
   }
 

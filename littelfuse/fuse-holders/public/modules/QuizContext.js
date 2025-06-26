@@ -1,4 +1,4 @@
-define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1) {
+define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
@@ -31,12 +31,11 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                 const field = constants_1.fieldNodesDict[fieldName];
                 let strategy;
                 if (field.type === "question") {
-                    if (field.questionStrategy && field.questionStrategy === "hiding") {
+                    if (field.questionStrategy === "hiding") {
                         strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience);
                     }
-                    else if (field.questionStrategy &&
-                        field.questionStrategy === "masking") {
-                        strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
+                    else if (field.questionStrategy === "masking-with-subcategories") {
+                        strategy = new MaskingOptionsWithSubCategoriesStrategy_1.MaskingOptionsWithSubcategoriesStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
                     }
                     else {
                         strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
@@ -51,31 +50,31 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.navCollecttion.on(this.CerosSDK.EVENTS.CLICKED, this.handleRandomNavigation.bind(this));
         }
         handleAnswerClick(comp) {
-            if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
-                const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
-                const question = this.questions[qName];
-                const answer = comp.getPayload().trim();
-                if (!question) {
-                    console.error(`Could not find question field ${qName}`);
-                    return;
-                }
-                const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
-                    ? { key: "elementId", value: comp.id }
-                    : { key: "value", value: answer };
-                const node = this.nodeTree.findChild(this.currentNode.value, key, value);
-                if (node) {
-                    if (constants_1.fieldNodesDict[qName].skipif &&
-                        constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer)) {
-                        const nextNode = node.children[0];
-                        this.currentNode.value = nextNode;
-                    }
-                    else {
-                        this.currentNode.value = node;
-                    }
+            if (this.doubleClickHandler.isDoubleClickBug(comp.id))
+                return;
+            const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
+            const question = this.questions[qName];
+            const answer = comp.getPayload().trim();
+            if (!question) {
+                console.error(`Could not find question field ${qName}`);
+                return;
+            }
+            const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
+                ? { key: "elementId", value: comp.id }
+                : { key: "value", value: answer };
+            const node = this.nodeTree.findChild(this.currentNode.value, key, value);
+            if (node) {
+                if (constants_1.fieldNodesDict[qName].skipif &&
+                    constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer)) {
+                    const nextNode = node.children[0];
+                    this.currentNode.value = nextNode;
                 }
                 else {
-                    console.error(`coudn't find node with ${qName} and value ${value}`);
+                    this.currentNode.value = node;
                 }
+            }
+            else {
+                console.error(`coudn't find node with ${qName} and value ${value}`);
             }
         }
         handleBackNavigation(layer) {

@@ -1,4 +1,7 @@
-export type QuestionStrategyName = "hiding" | "masking";
+export type QuestionStrategyName =
+  | "hiding"
+  | "masking"
+  | "masking-with-subcategories";
 
 export type FieldNodes = {
   [key: string]: {

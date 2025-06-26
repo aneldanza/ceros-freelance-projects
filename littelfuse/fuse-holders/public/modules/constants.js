@@ -10,6 +10,7 @@ define(["require", "exports"], function (require, exports) {
         "fuse style": {
             type: "question",
             pathText: "Fuse Style: {{}}",
+            questionStrategy: "masking-with-subcategories",
         },
         "max voltage": {
             type: "question",
@@ -35,7 +36,7 @@ define(["require", "exports"], function (require, exports) {
         "mounting method": {
             type: "question",
             pathText: "Mounting: {{}}",
-            questionStrategy: "masking",
+            questionStrategy: "masking-with-subcategories",
             skipBackIf: { style: ["PCBA", "Fuse Block / PDM"] },
         },
         protection: {
