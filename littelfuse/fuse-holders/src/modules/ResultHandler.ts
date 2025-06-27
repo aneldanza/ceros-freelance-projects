@@ -72,9 +72,6 @@ export class ResultHandler {
   }
 
   processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
-    const type = moduleTag.split("-")[0];
-    const data = this.resultModules[type][moduleTag];
-
     layersDict.img &&
       this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict.img);
 
@@ -205,8 +202,7 @@ export class ResultHandler {
   ) {
     imgArray.forEach((layer) => {
       layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-        const type = moduleTag.split("-")[0];
-        const obj = this.resultModules[type][moduleTag];
+        const obj = this.getResultData(moduleTag);
         callback(layer, obj);
       });
     });
@@ -218,13 +214,11 @@ export class ResultHandler {
     txtboxArray: CerosLayer[]
   ) {
     txtboxArray.forEach((layer) => {
-      const type = moduleTag.split("-")[0];
-      const obj = this.resultModules[type][moduleTag];
+      const obj = this.getResultData(moduleTag);
       layer.setText(obj[key]);
 
       layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
-        const type = moduleTag.split("-")[0];
-        const obj = this.resultModules[type][moduleTag];
+        const obj = this.getResultData(moduleTag);
         txtBox.setText(obj[key]);
       });
     });
@@ -237,8 +231,7 @@ export class ResultHandler {
   ) {
     layerArray.forEach((layer) => {
       layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
-        const type = moduleTag.split("-")[0];
-        const obj = this.resultModules[type][moduleTag];
+        const obj = this.getResultData(moduleTag);
 
         this.landingPageProxy.openAndTrackLink(obj[key], layer.id);
       });
