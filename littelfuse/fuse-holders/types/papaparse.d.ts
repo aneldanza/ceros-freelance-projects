@@ -9,7 +9,7 @@ declare namespace Papa {
     input: string | File,
     config?: {
       header?: boolean;
-      complete?: (results: ParseResult<T>) => void;
+      complete?: (results: ParseResult<Record<string, string>>) => void;
       [key: string]: any;
     }
   ): ParseResult<T>;

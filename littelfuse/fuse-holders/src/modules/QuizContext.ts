@@ -1,3 +1,5 @@
+/// <reference path="../../types/papaparse.d.ts" />
+
 import { PATH, OPTION, QUESTION, BACK, fieldNodesDict, NAV } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
@@ -24,7 +26,10 @@ export class QuizContext {
     public CerosSDK: CerosSDK,
     public experience: Experience,
     private nodeTree: NodeTree,
-    distributor: string
+    public distributor: string,
+    private relatedProductsLink: string,
+    private accessoriesLink: string,
+    private PapaParse: typeof window.Papa
   ) {
     this.currentNode = new Observable<Node>(this.nodeTree.root);
     this.answerCollection = this.experience.findComponentsByTag(OPTION);
@@ -35,7 +40,10 @@ export class QuizContext {
       experience,
       CerosSDK,
       this.currentNode,
-      distributor
+      distributor,
+      relatedProductsLink,
+      accessoriesLink,
+      PapaParse
     );
 
     this.doubleClickHandler = new DoubleClickBugHandler();

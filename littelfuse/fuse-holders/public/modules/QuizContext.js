@@ -1,19 +1,24 @@
+/// <reference path="../../types/papaparse.d.ts" />
 define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
     class QuizContext {
-        constructor(CerosSDK, experience, nodeTree, distributor) {
+        constructor(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse) {
             this.CerosSDK = CerosSDK;
             this.experience = experience;
             this.nodeTree = nodeTree;
+            this.distributor = distributor;
+            this.relatedProductsLink = relatedProductsLink;
+            this.accessoriesLink = accessoriesLink;
+            this.PapaParse = PapaParse;
             this.questions = {};
             this.currentNode = new Observer_1.Observable(this.nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
             this.backLayersCollection = this.experience.findLayersByTag(constants_1.BACK);
             this.navCollecttion = this.experience.findComponentsByTag(constants_1.NAV);
             this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
-            this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor);
+            this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor, relatedProductsLink, accessoriesLink, PapaParse);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.init();
         }

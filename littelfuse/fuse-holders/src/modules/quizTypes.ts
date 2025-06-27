@@ -14,3 +14,5 @@ export type FieldNodes = {
 };
 
 export type ResultData = { [key: string]: string };
+
+export type CsvData = { [key: string]: string };

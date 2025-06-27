@@ -2,7 +2,7 @@ import { DESCRIPTION, DIVIDER, RELATED_PRODUCTS, SPECS } from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
 import { LandingPageProxy } from "./LandinPageProxy";
-import { ResultData } from "./quizTypes";
+import { CsvData, ResultData } from "./quizTypes";
 
 export class ResultHandler {
   private resultModules: {
@@ -12,11 +12,17 @@ export class ResultHandler {
   } = {};
   private landingPageProxy: LandingPageProxy;
 
+  private relatedProductsData: CsvData = {};
+  private csvData: Record<string, Record<string, CsvData>> = {};
+
   constructor(
     private experience: Experience,
     private CerosSDK: CerosSDK,
     private currentNodeObservable: Observable<Node>,
-    private distributor: string
+    private distributor: string,
+    private relatedProductsLink: string,
+    private accessoriesLink: string,
+    private PapaParse: typeof window.Papa
   ) {
     this.landingPageProxy = new LandingPageProxy();
   }
@@ -109,21 +115,27 @@ export class ResultHandler {
       this.handleOverlay(
         RELATED_PRODUCTS,
         layersDict[RELATED_PRODUCTS],
-        moduleTag
+        moduleTag,
+        this.relatedProductsLink
       );
   }
 
-  handleOverlay(name: string, layerArray: CerosLayer[], moduleTag: string) {
+  handleOverlay(
+    name: string,
+    layerArray: CerosLayer[],
+    moduleTag: string,
+    link: string
+  ) {
     layerArray.forEach((layer) => {
       this.registerOverlayAnimation(layer, moduleTag, name);
 
-      this.registerOverlayClick(layer, moduleTag, name);
+      this.registerOverlayClick(layer, moduleTag, name, link);
     });
   }
 
   registerOverlayAnimation(layer: CerosLayer, moduleTag: string, name: string) {
     layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-      const data = this.getData(moduleTag);
+      const data = this.getResultData(moduleTag);
       const value = data[name];
       const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
       if (items.length === 0) {
@@ -132,31 +144,58 @@ export class ResultHandler {
     });
   }
 
-  registerOverlayClick(layer: CerosLayer, moduleTag: string, name: string) {
-    layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
-      const data = this.getData(moduleTag);
+  registerOverlayClick(
+    layer: CerosLayer,
+    moduleTag: string,
+    name: string,
+    link: string
+  ) {
+    layer.on(this.CerosSDK.EVENTS.CLICKED, async () => {
+      const data = this.getResultData(moduleTag);
       const value = data[name];
       const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
+
+      if (!items.length) return;
+
+      await this.loadCsvData(name, link);
+
+      console.log(this.csvData[name]);
+
       const hotspotCollection = this.experience.findComponentsByTag(
         `${name}-${items.length}`
       );
+
       hotspotCollection.click();
     });
   }
 
-  showResultImage(
-    moduleTag: string,
-    callback: (img: CerosLayer, obj: object) => void,
-    imgArray: CerosLayer[]
-  ) {
-    imgArray.forEach((layer) => {
-      layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
-        const type = moduleTag.split("-")[0];
-        const obj = this.resultModules[type][moduleTag];
-        const images = group.findAllComponents();
-        images.layers.forEach((img) => callback(img, obj));
-      });
+  loadCsvData(name: string, link: string) {
+    return new Promise<{
+      [key: string]: Record<string, string>;
+    }>((resolve, reject) => {
+      if (this.csvData[name] && Object.keys(this.csvData[name]).length > 0) {
+        resolve(this.csvData[name]);
+      } else {
+        this.PapaParse.parse(link, {
+          header: true,
+          download: true,
+          complete: (results) => {
+            const data = this.indexByPartNumber(results.data);
+            this.csvData[name] = data;
+            resolve(this.csvData[name]);
+          },
+          error: (error: any) => reject(error),
+        });
+      }
     });
+  }
+
+  indexByPartNumber(data: Record<string, string>[]) {
+    const result: { [key: string]: Record<string, string> } = {};
+    data.forEach((obj) => {
+      result[obj.part] = obj;
+    });
+    return result;
   }
 
   showImageFromUrl(
@@ -206,18 +245,6 @@ export class ResultHandler {
     });
   }
 
-  handleModuleIcon(icon: CerosLayer, data: any) {
-    if (
-      data["application"]
-        .toLowerCase()
-        .includes(icon.getPayload().toLowerCase())
-    ) {
-      icon.show();
-    } else {
-      icon.hide();
-    }
-  }
-
   handleModuleImage(img: CerosLayer, data: any) {
     const imgStr = data.image;
 
@@ -229,7 +256,7 @@ export class ResultHandler {
     }
   }
 
-  getData(moduleTag: string) {
+  getResultData(moduleTag: string) {
     const type = moduleTag.split("-")[0];
     return this.resultModules[type][moduleTag];
   }

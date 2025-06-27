@@ -8,6 +8,8 @@ if (script === null) {
 }
 const link = script.getAttribute("data-link") || "";
 const distributor = script.getAttribute("data-distributor") || "";
+const relatedProductsLink = script.getAttribute("data-related-products") || "";
+const accessoriesLink = script.getAttribute("data-accessories") || "";
 
 // Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
 // let absUrl = "./";
@@ -39,7 +41,7 @@ if (typeof require !== "undefined" && typeof require === "function") {
     "modules/constants",
   ], function (
     CerosSDK: CerosSDK,
-    PapaParse: any,
+    PapaParse: typeof window.Papa,
     QuizModule: any,
     NodeTreeModule: any,
     constants: any
@@ -58,7 +60,10 @@ if (typeof require !== "undefined" && typeof require === "function") {
               CerosSDK,
               experience,
               nodeTree,
-              distributor
+              distributor,
+              relatedProductsLink,
+              accessoriesLink,
+              PapaParse
             );
           },
         });

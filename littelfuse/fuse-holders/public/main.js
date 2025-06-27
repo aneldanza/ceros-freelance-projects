@@ -7,6 +7,8 @@ if (script === null) {
 }
 const link = script.getAttribute("data-link") || "";
 const distributor = script.getAttribute("data-distributor") || "";
+const relatedProductsLink = script.getAttribute("data-related-products") || "";
+const accessoriesLink = script.getAttribute("data-accessories") || "";
 // Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
 // let absUrl = "./";
 // const srcAttribute = script.getAttribute("src");
@@ -41,7 +43,7 @@ if (typeof require !== "undefined" && typeof require === "function") {
                 header: true,
                 complete: (result) => {
                     nodeTree.buildTree(result.data);
-                    const quiz = new QuizModule.QuizContext(CerosSDK, experience, nodeTree, distributor);
+                    const quiz = new QuizModule.QuizContext(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse);
                 },
             });
         })
