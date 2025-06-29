@@ -1,7 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DIVIDER = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.DESCRIPTION = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
+    exports.DIVIDER = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
     exports.fieldNodesDict = {
         "fuse type": {
             type: "question",
@@ -81,7 +81,11 @@ define(["require", "exports"], function (require, exports) {
     exports.QUESTION = "q";
     exports.DELIMETER = ":";
     exports.SPECS = "specs";
+    exports.SERIES = "series";
+    exports.PART = "part";
     exports.DESCRIPTION = "description";
+    exports.DATASHEET = "datasheet";
+    exports.PRINT = "2d print";
     exports.PATH = "path";
     exports.BACK = "back";
     exports.NAV = "nav";

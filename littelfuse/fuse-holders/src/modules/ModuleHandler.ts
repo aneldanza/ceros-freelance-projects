@@ -56,7 +56,7 @@ export class ModuleHandler {
     this.moduleDict[size][moduleTag].layers = layersDict;
 
     this.processLayers(layersDict, moduleTag);
-    //   processOverlayLayers && processOverlayLayers(layersDict, moduleTag);
+    processOverlayLayers && processOverlayLayers(layersDict, moduleTag);
 
     console.log(this.moduleDict);
   }
@@ -64,7 +64,7 @@ export class ModuleHandler {
   getModuleTag(type: number, index: number) {
     return type > 1
       ? `${type}-${this.moduleName}-${index + 1}`
-      : `${type}-module`;
+      : `${type}-${this.moduleName}`;
   }
 
   processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
