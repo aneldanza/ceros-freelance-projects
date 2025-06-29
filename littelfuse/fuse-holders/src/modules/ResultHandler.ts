@@ -80,10 +80,13 @@ export class ResultHandler {
     });
   }
 
-  updateRelatedProductsModules(size: number, name: string, items: string[]) {
-    const data = this.csvData[name];
-    items.forEach((part, index) => {
-      this.relatedProductsModulesHandler.updateModule(size, index, data[part]);
+  updateRelatedProductsModules(parts: CsvData[]) {
+    parts.forEach((part, index) => {
+      this.relatedProductsModulesHandler.updateModule(
+        parts.length,
+        index,
+        part
+      );
     });
   }
 
@@ -133,14 +136,29 @@ export class ResultHandler {
 
       console.log(this.csvData[name]);
 
-      this.updateRelatedProductsModules(items.length, name, items);
+      const parts = this.getExistingParts(name, items);
+
+      this.updateRelatedProductsModules(parts);
 
       const hotspotCollection = this.experience.findComponentsByTag(
-        `${name}-${items.length}`
+        `${name}-${parts.length}`
       );
 
       hotspotCollection.click();
     });
+  }
+
+  getExistingParts(overlay: string, names: string[]) {
+    const parts: CsvData[] = [];
+    names.forEach((name) => {
+      if (this.csvData[overlay][name]) {
+        parts.push(this.csvData[overlay][name]);
+      } else {
+        console.error(`could not find part: ${name} from ${overlay}!`);
+      }
+    });
+
+    return parts;
   }
 
   loadCsvData(name: string, link: string) {
