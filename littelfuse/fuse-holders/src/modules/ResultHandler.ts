@@ -2,28 +2,35 @@ import {
   ACCESSORIES,
   DESCRIPTION,
   DIVIDER,
+  MAX_ACCESSORIES,
+  MAX_RELATED_PRODUCTS,
   RELATED_PRODUCTS,
   SPECS,
 } from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
 import { LandingPageProxy } from "./LandinPageProxy";
-import { CsvData, ResultData } from "./quizTypes";
+import { CsvData, Overlay } from "./quizTypes";
 import { ModuleHandler } from "./ModuleHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
+import { Carousel } from "./Carousel";
 
 export class ResultHandler {
-  private resultModules: {
-    [key: string]: {
-      [key: string]: ResultData;
-    };
-  } = {};
   private landingPageProxy: LandingPageProxy;
 
-  private csvData: Record<string, Record<string, CsvData>> = {};
+  private csvData: Record<Overlay, Record<string, CsvData>> = {
+    "related products": {},
+    accessories: {},
+  };
+
+  private overlayPartsState: Record<Overlay, CsvData[]> = {
+    "related products": [],
+    accessories: [],
+  };
   private resultModulesHandler: ModuleHandler;
   private relatedProductsModulesHandler: ModuleHandler;
   private accessoriesModulesHandler: ModuleHandler;
+  private accessoriesCarousel: Carousel;
   private doubleClickBugHandler: DoubleClickBugHandler =
     new DoubleClickBugHandler();
 
@@ -59,6 +66,14 @@ export class ResultHandler {
       CerosSDK,
       distributor,
       this.landingPageProxy
+    );
+
+    this.accessoriesCarousel = new Carousel(
+      MAX_ACCESSORIES,
+      ACCESSORIES,
+      CerosSDK,
+      experience,
+      this.accessoriesModulesHandler
     );
   }
 
@@ -104,21 +119,32 @@ export class ResultHandler {
       );
   }
 
-  updateOverlayModules(parts: CsvData[], name: string) {
-    const handler =
-      name === RELATED_PRODUCTS
-        ? this.relatedProductsModulesHandler
-        : name === ACCESSORIES
-        ? this.accessoriesModulesHandler
-        : null;
+  updateRelatedProductsModules(parts: CsvData[]) {
+    if (parts.length < MAX_RELATED_PRODUCTS) {
+      parts.forEach((part, index) => {
+        this.relatedProductsModulesHandler.updateModule(
+          parts.length,
+          index,
+          part
+        );
+      });
+    } else {
+      // this.accessoriesCarousel.init(parts);
+    }
+  }
 
-    parts.forEach((part, index) => {
-      handler && handler.updateModule(parts.length, index, part);
-    });
+  updateAccessoriesModules(parts: CsvData[]) {
+    if (parts.length < MAX_ACCESSORIES) {
+      parts.forEach((part, index) => {
+        this.accessoriesModulesHandler.updateModule(parts.length, index, part);
+      });
+    } else {
+      this.accessoriesCarousel.init(parts);
+    }
   }
 
   handleOverlay(
-    name: string,
+    name: Overlay,
     layerArray: CerosLayer[],
     moduleTag: string,
     link: string
@@ -157,7 +183,7 @@ export class ResultHandler {
   registerOverlayClick(
     layer: CerosLayer,
     moduleTag: string,
-    name: string,
+    name: Overlay,
     link: string
   ) {
     layer.on(this.CerosSDK.EVENTS.CLICKED, async (layer) => {
@@ -175,10 +201,14 @@ export class ResultHandler {
 
       if (!parts.length) return;
 
-      this.updateOverlayModules(parts, name);
+      if (name === RELATED_PRODUCTS) {
+        this.updateRelatedProductsModules(parts);
+      } else if (name === ACCESSORIES) {
+        this.updateAccessoriesModules(parts);
+      }
 
       const hotspotCollection = this.experience.findComponentsByTag(
-        `${name}-${parts.length}`
+        `${name}-${parts.length < 6 ? parts.length : "4+"}`
       );
 
       hotspotCollection.click();
@@ -192,7 +222,7 @@ export class ResultHandler {
     return items;
   }
 
-  getExistingParts(overlay: string, names: string[]) {
+  getExistingParts(overlay: Overlay, names: string[]) {
     const parts: CsvData[] = [];
     names.forEach((name) => {
       if (this.csvData[overlay][name]) {
@@ -205,7 +235,7 @@ export class ResultHandler {
     return parts;
   }
 
-  loadCsvData(name: string, link: string) {
+  loadCsvData(name: Overlay, link: string) {
     return new Promise<{
       [key: string]: Record<string, string>;
     }>((resolve, reject) => {

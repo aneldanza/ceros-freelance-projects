@@ -22,6 +22,18 @@ export class ModuleHandler {
     private landingPageProxy: LandingPageProxy
   ) {}
 
+  hideModule(type: number, index: number) {
+    const moduleTag = this.getModuleTag(type, index);
+    const module = this.experience.findLayersByTag(moduleTag);
+
+    if (!module.layers.length) {
+      console.error(`No module found with tag: ${moduleTag}`);
+      return;
+    }
+
+    module.hide();
+  }
+
   updateModule(
     type: number,
     index: number,
@@ -59,6 +71,8 @@ export class ModuleHandler {
     processOverlayLayers && processOverlayLayers(layersDict, moduleTag);
 
     console.log(this.moduleDict);
+
+    module.show();
   }
 
   getModuleTag(type: number, index: number) {

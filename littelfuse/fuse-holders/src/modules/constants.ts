@@ -48,38 +48,6 @@ export const fieldNodesDict: FieldNodes = {
   },
 };
 
-// export const fields = [
-//   "Fuse Type",
-//   "Fuse Style",
-//   "Max Voltage",
-//   "Max Current",
-//   "Circuit Option",
-//   "Style",
-//   "Mounting Method",
-//   "Protection",
-//   "part",
-// ];
-
-// export const maskingStrategyQuestions = [
-//   "Circuit Option",
-//   "Style",
-//   "Mounting Method",
-//   "Protection",
-// ];
-
-// export const hidingStrategyQuestions = ["Max Voltage", "Max Current"];
-
-// export const pathMap: Record<string, string> = {
-//   "Fuse Type": "Fuse Type: {{}}",
-//   "Fuse Style": "Fuse Style: {{}}",
-//   "Max Voltage": "Volts: {{}}V DC",
-//   "Max Current": "Amps: {{}}A",
-//   "Circuit Option": "Fuse Holder Position: {{}}",
-//   Style: "Fuse Holder Style: {{}}",
-//   "Mounting Method": "Mounting: {{}}",
-//   Protection: "Protection: {{}}",
-// };
-
 export const OPTION = "answer";
 export const QUESTION = "q";
 export const DELIMETER = ":";
@@ -95,3 +63,5 @@ export const NAV = "nav";
 export const RELATED_PRODUCTS = "related products";
 export const ACCESSORIES = "accessories";
 export const DIVIDER = ";";
+export const MAX_RELATED_PRODUCTS = 2;
+export const MAX_ACCESSORIES = 4;
