@@ -4,6 +4,7 @@ import {
   DIVIDER,
   MAX_ACCESSORIES,
   MAX_RELATED_PRODUCTS,
+  PRODUCT_GUIDE,
   RELATED_PRODUCTS,
   SPECS,
 } from "./constants";
@@ -165,7 +166,11 @@ export class ResultHandler {
     });
   }
 
-  registerOverlayAnimation(layer: CerosLayer, moduleTag: string, name: string) {
+  registerOverlayAnimation(
+    layer: CerosLayer,
+    moduleTag: string,
+    name: Overlay
+  ) {
     layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
       const items = this.getRelatedParts(moduleTag, name);
       if (items.length === 0) {
@@ -176,7 +181,9 @@ export class ResultHandler {
           RELATED_PRODUCTS
         ).length;
 
-        if (hasRelatedProducts) {
+        const hasProductGuide = !!this.getValue(moduleTag, PRODUCT_GUIDE);
+
+        if (hasRelatedProducts || hasProductGuide) {
           if (layer.getTags().find((tag) => tag === "pos:1")) {
             layer.hide();
           }
@@ -225,10 +232,14 @@ export class ResultHandler {
   }
 
   getRelatedParts(moduleTag: string, name: string) {
-    const dict = this.resultModulesHandler.getResultData(moduleTag);
-    const value = dict.data[name];
+    const value = this.getValue(moduleTag, name);
     const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
     return items;
+  }
+
+  getValue(moduleTag: string, name: string) {
+    const dict = this.resultModulesHandler.getResultData(moduleTag);
+    return dict.data[name];
   }
 
   getExistingParts(overlay: Overlay, names: string[]) {

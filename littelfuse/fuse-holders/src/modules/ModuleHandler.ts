@@ -181,6 +181,13 @@ export class ModuleHandler {
 
         this.landingPageProxy.openAndTrackLink(obj.data[key], layer.id);
       });
+
+      layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+        const dict = this.getResultData(moduleTag);
+        if (!dict.data[key]) {
+          layer.hide();
+        }
+      });
     });
   }
 
