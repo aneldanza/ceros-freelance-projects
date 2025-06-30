@@ -1,7 +1,7 @@
 define('modules/constants',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
+    exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.RESET = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
     exports.fieldNodesDict = {
         "fuse type": {
             type: "question",
@@ -51,6 +51,7 @@ define('modules/constants',["require", "exports"], function (require, exports) {
     };
     exports.OPTION = "answer";
     exports.QUESTION = "q";
+    exports.RESET = "reset";
     exports.DELIMETER = ":";
     exports.SPECS = "specs";
     exports.SERIES = "series";
@@ -785,6 +786,7 @@ define('modules/QuizContext',["require", "exports", "./constants", "./Observer",
             this.backLayersCollection = this.experience.findLayersByTag(constants_1.BACK);
             this.navCollecttion = this.experience.findComponentsByTag(constants_1.NAV);
             this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
+            this.resetCollection = this.experience.findLayersByTag(constants_1.RESET);
             this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor, relatedProductsLink, accessoriesLink, PapaParse);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.init();
@@ -820,6 +822,10 @@ define('modules/QuizContext',["require", "exports", "./constants", "./Observer",
             this.answerCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleAnswerClick.bind(this));
             this.backLayersCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleBackNavigation.bind(this));
             this.navCollecttion.on(this.CerosSDK.EVENTS.CLICKED, this.handleRandomNavigation.bind(this));
+            this.resetCollection.on(this.CerosSDK.EVENTS.CLICKED, this.resetQuiz.bind(this));
+        }
+        resetQuiz() {
+            this.currentNode.value = this.nodeTree.root;
         }
         handleAnswerClick(comp) {
             if (this.doubleClickHandler.isDoubleClickBug(comp.id))
@@ -1023,16 +1029,6 @@ const link = script.getAttribute("data-link") || "";
 const distributor = script.getAttribute("data-distributor") || "";
 const relatedProductsLink = script.getAttribute("data-related-products") || "";
 const accessoriesLink = script.getAttribute("data-accessories") || "";
-// Calculate an absolute URL for our modules, so they're not loaded from view.ceros.com if lazy loaded
-// let absUrl = "./";
-// const srcAttribute = script.getAttribute("src");
-// Check that a src attibute was defined, and code hasn't been inlined by third party
-// if (typeof srcAttribute === "string" && new URL(srcAttribute)) {
-//   const srcURL = new URL(srcAttribute);
-//   const path = srcURL.pathname;
-//   const projectDirectory = path.split("/").slice(0, -1).join("/") + "/";
-//   absUrl = srcURL.origin + projectDirectory;
-// }
 if (typeof require !== "undefined" && typeof require === "function") {
     require.config({
         baseUrl: "http://127.0.0.1:5173/",
@@ -1050,14 +1046,13 @@ if (typeof require !== "undefined" && typeof require === "function") {
     ], function (CerosSDK, PapaParse, QuizModule, NodeTreeModule, constants) {
         CerosSDK.findExperience()
             .done((experience) => {
-            console.log(experience);
             const nodeTree = new NodeTreeModule.NodeTree(constants.fieldNodesDict);
             PapaParse.parse(link, {
                 download: true,
                 header: true,
                 complete: (result) => {
                     nodeTree.buildTree(result.data);
-                    const quiz = new QuizModule.QuizContext(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse);
+                    new QuizModule.QuizContext(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse);
                 },
             });
         })

@@ -130,7 +130,7 @@ export class ResultHandler {
   }
 
   updateRelatedProductsModules(parts: CsvData[]) {
-    if (parts.length < MAX_RELATED_PRODUCTS) {
+    if (parts.length <= MAX_RELATED_PRODUCTS) {
       parts.forEach((part, index) => {
         this.relatedProductsModulesHandler.updateModule(
           parts.length,
@@ -144,7 +144,7 @@ export class ResultHandler {
   }
 
   updateAccessoriesModules(parts: CsvData[]) {
-    if (parts.length < MAX_ACCESSORIES) {
+    if (parts.length <= MAX_ACCESSORIES) {
       parts.forEach((part, index) => {
         this.accessoriesModulesHandler.updateModule(parts.length, index, part);
       });
@@ -211,7 +211,7 @@ export class ResultHandler {
 
       await this.loadCsvData(name, link);
 
-      console.log(this.csvData[name]);
+      // console.log(this.csvData[name]);
 
       const parts = this.getExistingParts(name, items);
 
