@@ -79,6 +79,7 @@ declare global {
     hide(): void;
     setText(textContent: string): void;
     setUrl(url: string, useNewImageSize?: boolean): void;
+    reset(): void;
   }
 
   class CerosComponent extends CerosLayer {
@@ -89,6 +90,7 @@ declare global {
     stopVideo(): void;
     isTextComponent(): boolean;
     setText(text: string): void;
+    reset(): void;
 
     [key: string]: any; // For additional dynamic properties
   }

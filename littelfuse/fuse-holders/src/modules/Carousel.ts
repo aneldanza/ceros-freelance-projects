@@ -26,15 +26,16 @@ export class Carousel {
     private CerosSDK: CerosSDK,
     private experience: Experience,
     private moduleHandler: ModuleHandler
-  ) {}
+  ) {
+    this.registerNavigationEvents();
+  }
 
   init(parts: CsvData[]) {
-    this.currentPage.value = 1;
+    this.pages = {};
     this.parts = parts;
-    this.registerNavigationEvents();
     this.paginate();
     this.setTotalPageIndex();
-    this.populate();
+    this.currentPage.value = 1;
   }
 
   paginate() {
@@ -95,12 +96,10 @@ export class Carousel {
   populate() {
     let i = 0;
     const parts = this.pages[this.currentPage.value];
-    while (i < this.max) {
+    while (i < this.max && i < parts.length) {
       const part = parts[i];
       if (part) {
         this.moduleHandler.updateModule(this.max, i, part);
-      } else {
-        this.moduleHandler.hideModule(this.max, i);
       }
       i++;
     }
