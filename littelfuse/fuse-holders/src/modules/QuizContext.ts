@@ -8,6 +8,8 @@ import {
   fieldNodesDict,
   NAV,
   RESET,
+  MCASE_ADAPTER,
+  RELATED_PRODUCTS,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
@@ -19,6 +21,7 @@ import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrat
 import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { MaskingOptionsWithSubcategoriesStrategy } from "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy";
+import { ModuleHandler } from "./ModuleHandler";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -30,6 +33,8 @@ export class QuizContext {
   private resetCollection: CerosLayerCollection;
   private resultHandler: ResultHandler;
   private doubleClickHandler: DoubleClickBugHandler;
+  private mcaseAdapterModuleHandler: ModuleHandler;
+  private mcaseAdapterCtaCollection: CerosLayerCollection;
 
   constructor(
     public CerosSDK: CerosSDK,
@@ -46,6 +51,9 @@ export class QuizContext {
     this.navCollecttion = this.experience.findComponentsByTag(NAV);
     this.pathTextCollection = this.experience.findComponentsByTag(PATH);
     this.resetCollection = this.experience.findLayersByTag(RESET);
+    this.mcaseAdapterCtaCollection = this.experience.findLayersByTag(
+      `${MCASE_ADAPTER}-cta`
+    );
     this.resultHandler = new ResultHandler(
       experience,
       CerosSDK,
@@ -54,6 +62,14 @@ export class QuizContext {
       relatedProductsLink,
       accessoriesLink,
       PapaParse
+    );
+
+    this.mcaseAdapterModuleHandler = new ModuleHandler(
+      MCASE_ADAPTER,
+      experience,
+      CerosSDK,
+      distributor,
+      this.resultHandler.landingPageProxy
     );
 
     this.doubleClickHandler = new DoubleClickBugHandler();
@@ -120,6 +136,36 @@ export class QuizContext {
       this.CerosSDK.EVENTS.CLICKED,
       this.resetQuiz.bind(this)
     );
+
+    this.mcaseAdapterCtaCollection.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.handleMcaseAdapter.bind(this)
+    );
+  }
+
+  async handleMcaseAdapter(layer: CerosLayer) {
+    if (this.doubleClickHandler.isDoubleClickBug(layer.id)) return;
+
+    const partNum = layer.getPayload().trim();
+
+    await this.resultHandler.loadCsvData(
+      RELATED_PRODUCTS,
+      this.relatedProductsLink
+    );
+
+    const data = this.resultHandler.csvData[RELATED_PRODUCTS][partNum];
+
+    if (data) {
+      this.mcaseAdapterModuleHandler.updateModule(1, 0, data);
+
+      const hotspotCollection = this.experience.findComponentsByTag(
+        `${MCASE_ADAPTER}-1`
+      );
+
+      hotspotCollection.click();
+    } else {
+      console.error(`Could not find part ${partNum} in related products sheet`);
+    }
   }
 
   resetQuiz() {

@@ -1,5 +1,14 @@
 /// <reference path="../../types/papaparse.d.ts" />
-define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1) {
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy", "./ModuleHandler"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1, ModuleHandler_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
@@ -19,7 +28,9 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.navCollecttion = this.experience.findComponentsByTag(constants_1.NAV);
             this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
             this.resetCollection = this.experience.findLayersByTag(constants_1.RESET);
+            this.mcaseAdapterCtaCollection = this.experience.findLayersByTag(`${constants_1.MCASE_ADAPTER}-cta`);
             this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor, relatedProductsLink, accessoriesLink, PapaParse);
+            this.mcaseAdapterModuleHandler = new ModuleHandler_1.ModuleHandler(constants_1.MCASE_ADAPTER, experience, CerosSDK, distributor, this.resultHandler.landingPageProxy);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.init();
         }
@@ -55,6 +66,24 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.backLayersCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleBackNavigation.bind(this));
             this.navCollecttion.on(this.CerosSDK.EVENTS.CLICKED, this.handleRandomNavigation.bind(this));
             this.resetCollection.on(this.CerosSDK.EVENTS.CLICKED, this.resetQuiz.bind(this));
+            this.mcaseAdapterCtaCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleMcaseAdapter.bind(this));
+        }
+        handleMcaseAdapter(layer) {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (this.doubleClickHandler.isDoubleClickBug(layer.id))
+                    return;
+                const partNum = layer.getPayload().trim();
+                yield this.resultHandler.loadCsvData(constants_1.RELATED_PRODUCTS, this.relatedProductsLink);
+                const data = this.resultHandler.csvData[constants_1.RELATED_PRODUCTS][partNum];
+                if (data) {
+                    this.mcaseAdapterModuleHandler.updateModule(1, 0, data);
+                    const hotspotCollection = this.experience.findComponentsByTag(`${constants_1.MCASE_ADAPTER}-1`);
+                    hotspotCollection.click();
+                }
+                else {
+                    console.error(`Could not find part ${partNum} in related products sheet`);
+                }
+            });
         }
         resetQuiz() {
             this.currentNode.value = this.nodeTree.root;

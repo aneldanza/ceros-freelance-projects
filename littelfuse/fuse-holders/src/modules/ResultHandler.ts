@@ -17,17 +17,13 @@ import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { Carousel } from "./Carousel";
 
 export class ResultHandler {
-  private landingPageProxy: LandingPageProxy;
+  public landingPageProxy: LandingPageProxy;
 
-  private csvData: Record<Overlay, Record<string, CsvData>> = {
+  public csvData: Record<Overlay, Record<string, CsvData>> = {
     "related products": {},
     accessories: {},
   };
 
-  private overlayPartsState: Record<Overlay, CsvData[]> = {
-    "related products": [],
-    accessories: [],
-  };
   private resultModulesHandler: ModuleHandler;
   private relatedProductsModulesHandler: ModuleHandler;
   private accessoriesModulesHandler: ModuleHandler;

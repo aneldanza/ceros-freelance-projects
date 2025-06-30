@@ -622,7 +622,7 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
                 this.handleOverlay(constants_1.ACCESSORIES, layersDict[constants_1.ACCESSORIES], moduleTag, this.accessoriesLink);
         }
         updateRelatedProductsModules(parts) {
-            if (parts.length < constants_1.MAX_RELATED_PRODUCTS) {
+            if (parts.length <= constants_1.MAX_RELATED_PRODUCTS) {
                 parts.forEach((part, index) => {
                     this.relatedProductsModulesHandler.updateModule(parts.length, index, part);
                 });
@@ -632,7 +632,7 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
             }
         }
         updateAccessoriesModules(parts) {
-            if (parts.length < constants_1.MAX_ACCESSORIES) {
+            if (parts.length <= constants_1.MAX_ACCESSORIES) {
                 parts.forEach((part, index) => {
                     this.accessoriesModulesHandler.updateModule(parts.length, index, part);
                 });
@@ -677,7 +677,7 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
                 if (!items.length)
                     return;
                 yield this.loadCsvData(name, link);
-                console.log(this.csvData[name]);
+                // console.log(this.csvData[name]);
                 const parts = this.getExistingParts(name, items);
                 if (!parts.length)
                     return;

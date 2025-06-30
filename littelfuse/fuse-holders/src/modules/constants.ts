@@ -69,3 +69,4 @@ export const ACCESSORIES = "accessories";
 export const DIVIDER = ";";
 export const MAX_RELATED_PRODUCTS = 2;
 export const MAX_ACCESSORIES = 4;
+export const MCASE_ADAPTER = "mcase-adapter";
