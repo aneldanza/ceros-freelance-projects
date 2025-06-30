@@ -3,7 +3,7 @@ import { Observable } from "../Observer";
 import { QuestionStrategy } from "./QuestionStrategy";
 
 export class MaskingOptionsStrategy extends QuestionStrategy {
-  private maskCollection: CerosLayerCollection;
+  protected maskCollection: CerosLayerCollection;
   constructor(
     name: string,
     experience: Experience,

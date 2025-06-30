@@ -1,4 +1,7 @@
-export type QuestionStrategyName = "hiding" | "masking";
+export type QuestionStrategyName =
+  | "hiding"
+  | "masking"
+  | "masking-with-subcategories";
 
 export type FieldNodes = {
   [key: string]: {
@@ -6,5 +9,10 @@ export type FieldNodes = {
     pathText: string;
     questionStrategy?: QuestionStrategyName;
     skipif?: string[];
+    skipBackIf?: Record<string, string[]>;
   };
 };
+
+export type CsvData = { [key: string]: string };
+
+export type Overlay = "accessories" | "related products";

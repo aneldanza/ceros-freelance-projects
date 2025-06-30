@@ -1,19 +1,86 @@
-import { DESCRIPTION, SPECS } from "./constants";
+import {
+  ACCESSORIES,
+  DESCRIPTION,
+  DIVIDER,
+  MAX_ACCESSORIES,
+  MAX_RELATED_PRODUCTS,
+  PRODUCT_GUIDE,
+  RELATED_PRODUCTS,
+  SPECS,
+} from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
 import { LandingPageProxy } from "./LandinPageProxy";
+import { CsvData, Overlay } from "./quizTypes";
+import { ModuleHandler } from "./ModuleHandler";
+import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
+import { Carousel } from "./Carousel";
 
 export class ResultHandler {
-  private resultModules: any = {};
-  private landingPageProxy: LandingPageProxy;
+  public landingPageProxy: LandingPageProxy;
+
+  public csvData: Record<Overlay, Record<string, CsvData>> = {
+    "related products": {},
+    accessories: {},
+  };
+
+  private resultModulesHandler: ModuleHandler;
+  private relatedProductsModulesHandler: ModuleHandler;
+  private accessoriesModulesHandler: ModuleHandler;
+  private accessoriesCarousel: Carousel;
+  private relatedProductsCarousel: Carousel;
+  private doubleClickBugHandler: DoubleClickBugHandler =
+    new DoubleClickBugHandler();
 
   constructor(
     private experience: Experience,
     private CerosSDK: CerosSDK,
     private currentNodeObservable: Observable<Node>,
-    private distributor: string
+    private distributor: string,
+    private relatedProductsLink: string,
+    private accessoriesLink: string,
+    private PapaParse: typeof window.Papa
   ) {
     this.landingPageProxy = new LandingPageProxy();
+    this.resultModulesHandler = new ModuleHandler(
+      "module",
+      experience,
+      CerosSDK,
+      distributor,
+      this.landingPageProxy
+    );
+
+    this.relatedProductsModulesHandler = new ModuleHandler(
+      RELATED_PRODUCTS,
+      experience,
+      CerosSDK,
+      distributor,
+      this.landingPageProxy
+    );
+
+    this.accessoriesModulesHandler = new ModuleHandler(
+      ACCESSORIES,
+      experience,
+      CerosSDK,
+      distributor,
+      this.landingPageProxy
+    );
+
+    this.accessoriesCarousel = new Carousel(
+      MAX_ACCESSORIES,
+      ACCESSORIES,
+      CerosSDK,
+      experience,
+      this.accessoriesModulesHandler
+    );
+
+    this.relatedProductsCarousel = new Carousel(
+      MAX_RELATED_PRODUCTS,
+      RELATED_PRODUCTS,
+      CerosSDK,
+      experience,
+      this.relatedProductsModulesHandler
+    );
   }
 
   showResultModule(type: number) {
@@ -25,164 +92,191 @@ export class ResultHandler {
     moduleResultHotspot.click();
   }
 
-  updateModule(type: number, index: number, node: Node) {
-    const moduleTag = this.getModuleTag(type, index);
-    const module = this.experience.findLayersByTag(moduleTag);
-    if (!module.layers.length) {
-      console.error(`No module found with tag: ${moduleTag}`);
-      return;
-    }
-
-    const collection = module.layers[0].findAllComponents();
-    const layersDict = collection.layersByTag;
-
-    const data = node.data;
-    const size = type.toString();
-    if (this.resultModules.size && this.resultModules[size][moduleTag]) {
-      this.resultModules[size] = this.resultModules[size] || {};
-      this.resultModules[size][moduleTag] = data;
-    } else {
-      this.resultModules[size] = this.resultModules[size] || {};
-      this.resultModules[size][moduleTag] = data;
-
-      this.processLayers(layersDict, moduleTag);
-    }
-  }
-
   updateResultModules(type: number) {
     this.currentNodeObservable.value.children.forEach((node, index) => {
-      this.updateModule(type, index, node);
-    });
-    console.log(this.resultModules);
-  }
-
-  getModuleTag(type: number, index: number) {
-    return type > 1 ? `${type}-module-${index + 1}` : `${type}-module`;
-  }
-
-  processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
-    layersDict.img &&
-      this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict.img);
-
-    // layersDict.icons &&
-    //   this.showResultImage(moduleTag, this.handleModuleIcon, layersDict.icons);
-
-    layersDict.part &&
-      this.updateResultTextbox("part", moduleTag, layersDict.part);
-
-    layersDict.series &&
-      this.updateResultTextbox("series", moduleTag, layersDict.series);
-
-    layersDict.datasheet &&
-      this.registerResultClcikEvent(
-        layersDict.datasheet,
-        "datasheet",
-        moduleTag
+      this.resultModulesHandler.updateModule(
+        type,
+        index,
+        node.data,
+        this.processOverlayLayers.bind(this)
       );
-
-    layersDict["2d print"] &&
-      this.registerResultClcikEvent(
-        layersDict.datasheet,
-        "2d print",
-        moduleTag
-      );
-
-    layersDict["buy-now"] &&
-      this.registerResultClcikEvent(
-        layersDict["buy-now"],
-        this.distributor,
-        moduleTag
-      );
-
-    layersDict[SPECS] &&
-      this.updateResultTextbox(SPECS, moduleTag, layersDict[SPECS]);
-
-    layersDict[DESCRIPTION] &&
-      this.updateResultTextbox(DESCRIPTION, moduleTag, layersDict[DESCRIPTION]);
-  }
-
-  showResultImage(
-    moduleTag: string,
-    callback: (img: CerosLayer, obj: object) => void,
-    imgArray: CerosLayer[]
-  ) {
-    imgArray.forEach((layer) => {
-      layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (group) => {
-        const type = moduleTag.split("-")[0];
-        const obj = this.resultModules[type][moduleTag];
-        const images = group.findAllComponents();
-        images.layers.forEach((img) => callback(img, obj));
-      });
     });
   }
 
-  showImageFromUrl(
-    moduleTag: string,
-    callback: (img: CerosLayer, obj: object) => void,
-    imgArray: CerosLayer[]
-  ) {
-    imgArray.forEach((layer) => {
-      layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-        const type = moduleTag.split("-")[0];
-        const obj = this.resultModules[type][moduleTag];
-        callback(layer, obj);
-      });
-    });
-  }
-
-  updateResultTextbox(
-    key: string,
-    moduleTag: string,
-    txtboxArray: CerosLayer[]
-  ) {
-    txtboxArray.forEach((layer) => {
-      const type = moduleTag.split("-")[0];
-      const obj = this.resultModules[type][moduleTag];
-      layer.setText(obj[key]);
-
-      layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
-        const type = moduleTag.split("-")[0];
-        const obj = this.resultModules[type][moduleTag];
-        txtBox.setText(obj[key]);
-      });
-    });
-  }
-
-  registerResultClcikEvent(
-    layerArray: CerosLayer[],
-    key: string,
+  processOverlayLayers(
+    layersDict: Record<string, CerosLayer[]>,
     moduleTag: string
   ) {
-    layerArray.forEach((layer) => {
-      layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
-        const type = moduleTag.split("-")[0];
-        const obj = this.resultModules[type][moduleTag];
+    if (layersDict[RELATED_PRODUCTS]) {
+      this.handleOverlay(
+        RELATED_PRODUCTS,
+        layersDict[RELATED_PRODUCTS],
+        moduleTag,
+        this.relatedProductsLink
+      );
+    }
 
-        this.landingPageProxy.openAndTrackLink(obj[key], layer.id);
+    layersDict[ACCESSORIES] &&
+      this.handleOverlay(
+        ACCESSORIES,
+        layersDict[ACCESSORIES],
+        moduleTag,
+        this.accessoriesLink
+      );
+  }
+
+  updateRelatedProductsModules(parts: CsvData[]) {
+    if (parts.length <= MAX_RELATED_PRODUCTS) {
+      parts.forEach((part, index) => {
+        this.relatedProductsModulesHandler.updateModule(
+          parts.length,
+          index,
+          part
+        );
       });
+    } else {
+      this.relatedProductsCarousel.init(parts);
+    }
+  }
+
+  updateAccessoriesModules(parts: CsvData[]) {
+    if (parts.length <= MAX_ACCESSORIES) {
+      parts.forEach((part, index) => {
+        this.accessoriesModulesHandler.updateModule(parts.length, index, part);
+      });
+    } else {
+      this.accessoriesCarousel.init(parts);
+    }
+  }
+
+  handleOverlay(
+    name: Overlay,
+    layerArray: CerosLayer[],
+    moduleTag: string,
+    link: string
+  ) {
+    layerArray.forEach((layer) => {
+      this.registerOverlayAnimation(layer, moduleTag, name);
+
+      this.registerOverlayClick(layer, moduleTag, name, link);
     });
   }
 
-  handleModuleIcon(icon: CerosLayer, data: any) {
-    if (
-      data["application"]
-        .toLowerCase()
-        .includes(icon.getPayload().toLowerCase())
-    ) {
-      icon.show();
-    } else {
-      icon.hide();
-    }
+  registerOverlayAnimation(
+    layer: CerosLayer,
+    moduleTag: string,
+    name: Overlay
+  ) {
+    layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+      const items = this.getRelatedParts(moduleTag, name);
+      if (items.length === 0) {
+        layer.hide();
+      } else if (name === ACCESSORIES) {
+        const hasRelatedProducts = !!this.getRelatedParts(
+          moduleTag,
+          RELATED_PRODUCTS
+        ).length;
+
+        const hasProductGuide = !!this.getValue(moduleTag, PRODUCT_GUIDE);
+
+        if (hasRelatedProducts || hasProductGuide) {
+          if (layer.getTags().find((tag) => tag === "pos:1")) {
+            layer.hide();
+          }
+        } else {
+          if (layer.getTags().find((tag) => tag === "pos:2")) {
+            layer.hide();
+          }
+        }
+      }
+    });
   }
 
-  handleModuleImage(img: CerosLayer, data: any) {
-    const imgStr = data.image;
+  registerOverlayClick(
+    layer: CerosLayer,
+    moduleTag: string,
+    name: Overlay,
+    link: string
+  ) {
+    layer.on(this.CerosSDK.EVENTS.CLICKED, async (layer) => {
+      if (this.doubleClickBugHandler.isDoubleClickBug(layer.id)) return;
 
-    try {
-      const imgUrl = new URL(imgStr);
-      img.setUrl(imgStr);
-    } catch (e) {
-      console.error(e);
-    }
+      const items = this.getRelatedParts(moduleTag, name);
+
+      if (!items.length) return;
+
+      await this.loadCsvData(name, link);
+
+      // console.log(this.csvData[name]);
+
+      const parts = this.getExistingParts(name, items);
+
+      if (!parts.length) return;
+
+      if (name === RELATED_PRODUCTS) {
+        this.updateRelatedProductsModules(parts);
+      } else if (name === ACCESSORIES) {
+        this.updateAccessoriesModules(parts);
+      }
+
+      const hotspotCollection = this.experience.findComponentsByTag(
+        `${name}-${parts.length < 6 ? parts.length : "4+"}`
+      );
+
+      hotspotCollection.click();
+    });
+  }
+
+  getRelatedParts(moduleTag: string, name: string) {
+    const value = this.getValue(moduleTag, name);
+    const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
+    return items;
+  }
+
+  getValue(moduleTag: string, name: string) {
+    const dict = this.resultModulesHandler.getResultData(moduleTag);
+    return dict.data[name];
+  }
+
+  getExistingParts(overlay: Overlay, names: string[]) {
+    const parts: CsvData[] = [];
+    names.forEach((name) => {
+      if (this.csvData[overlay][name]) {
+        parts.push(this.csvData[overlay][name]);
+      } else {
+        console.error(`could not find part: ${name} from ${overlay}!`);
+      }
+    });
+
+    return parts;
+  }
+
+  loadCsvData(name: Overlay, link: string) {
+    return new Promise<{
+      [key: string]: Record<string, string>;
+    }>((resolve, reject) => {
+      if (this.csvData[name] && Object.keys(this.csvData[name]).length > 0) {
+        resolve(this.csvData[name]);
+      } else {
+        this.PapaParse.parse(link, {
+          header: true,
+          download: true,
+          complete: (results) => {
+            const data = this.indexByPartNumber(results.data);
+            this.csvData[name] = data;
+            resolve(this.csvData[name]);
+          },
+          error: (error: any) => reject(error),
+        });
+      }
+    });
+  }
+
+  indexByPartNumber(data: Record<string, string>[]) {
+    const result: { [key: string]: Record<string, string> } = {};
+    data.forEach((obj) => {
+      result[obj.part] = obj;
+    });
+    return result;
   }
 }

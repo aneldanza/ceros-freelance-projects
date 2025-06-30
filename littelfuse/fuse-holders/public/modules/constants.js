@@ -1,7 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.BACK = exports.PATH = exports.DESCRIPTION = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
+    exports.MCASE_ADAPTER = exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.RESET = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
     exports.fieldNodesDict = {
         "fuse type": {
             type: "question",
@@ -10,6 +10,7 @@ define(["require", "exports"], function (require, exports) {
         "fuse style": {
             type: "question",
             pathText: "Fuse Style: {{}}",
+            questionStrategy: "masking-with-subcategories",
         },
         "max voltage": {
             type: "question",
@@ -35,7 +36,8 @@ define(["require", "exports"], function (require, exports) {
         "mounting method": {
             type: "question",
             pathText: "Mounting: {{}}",
-            questionStrategy: "masking",
+            questionStrategy: "masking-with-subcategories",
+            skipBackIf: { style: ["PCBA", "Fuse Block / PDM"] },
         },
         protection: {
             type: "question",
@@ -47,39 +49,26 @@ define(["require", "exports"], function (require, exports) {
             pathText: "",
         },
     };
-    // export const fields = [
-    //   "Fuse Type",
-    //   "Fuse Style",
-    //   "Max Voltage",
-    //   "Max Current",
-    //   "Circuit Option",
-    //   "Style",
-    //   "Mounting Method",
-    //   "Protection",
-    //   "part",
-    // ];
-    // export const maskingStrategyQuestions = [
-    //   "Circuit Option",
-    //   "Style",
-    //   "Mounting Method",
-    //   "Protection",
-    // ];
-    // export const hidingStrategyQuestions = ["Max Voltage", "Max Current"];
-    // export const pathMap: Record<string, string> = {
-    //   "Fuse Type": "Fuse Type: {{}}",
-    //   "Fuse Style": "Fuse Style: {{}}",
-    //   "Max Voltage": "Volts: {{}}V DC",
-    //   "Max Current": "Amps: {{}}A",
-    //   "Circuit Option": "Fuse Holder Position: {{}}",
-    //   Style: "Fuse Holder Style: {{}}",
-    //   "Mounting Method": "Mounting: {{}}",
-    //   Protection: "Protection: {{}}",
-    // };
     exports.OPTION = "answer";
     exports.QUESTION = "q";
+    exports.RESET = "reset";
     exports.DELIMETER = ":";
     exports.SPECS = "specs";
+    exports.SERIES = "series";
+    exports.PART = "part";
+    exports.IMAGE = "img";
     exports.DESCRIPTION = "description";
+    exports.DATASHEET = "datasheet";
+    exports.PRINT = "2d print";
+    exports.BUY_NOW = "buy-now";
+    exports.PRODUCT_GUIDE = "product guide";
     exports.PATH = "path";
     exports.BACK = "back";
+    exports.NAV = "nav";
+    exports.RELATED_PRODUCTS = "related products";
+    exports.ACCESSORIES = "accessories";
+    exports.DIVIDER = ";";
+    exports.MAX_RELATED_PRODUCTS = 2;
+    exports.MAX_ACCESSORIES = 4;
+    exports.MCASE_ADAPTER = "mcase-adapter";
 });

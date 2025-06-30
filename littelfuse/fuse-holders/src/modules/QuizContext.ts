@@ -1,12 +1,15 @@
+/// <reference path="../../types/papaparse.d.ts" />
+
 import {
   PATH,
   OPTION,
   QUESTION,
-  // maskingStrategyQuestions,
-  // hidingStrategyQuestions,
-  // pathMap,
   BACK,
   fieldNodesDict,
+  NAV,
+  RESET,
+  MCASE_ADAPTER,
+  RELATED_PRODUCTS,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
@@ -17,31 +20,56 @@ import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
 import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
 import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
+import { MaskingOptionsWithSubcategoriesStrategy } from "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy";
+import { ModuleHandler } from "./ModuleHandler";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
   private answerCollection: CerosComponentCollection;
   private backLayersCollection: CerosLayerCollection;
+  private navCollecttion: CerosComponentCollection;
   private pathTextCollection: CerosComponentCollection;
   private questions: Record<string, QuestionStrategy> = {};
+  private resetCollection: CerosLayerCollection;
   private resultHandler: ResultHandler;
   private doubleClickHandler: DoubleClickBugHandler;
+  private mcaseAdapterModuleHandler: ModuleHandler;
+  private mcaseAdapterCtaCollection: CerosLayerCollection;
 
   constructor(
     public CerosSDK: CerosSDK,
     public experience: Experience,
     private nodeTree: NodeTree,
-    distributor: string
+    public distributor: string,
+    private relatedProductsLink: string,
+    private accessoriesLink: string,
+    private PapaParse: typeof window.Papa
   ) {
     this.currentNode = new Observable<Node>(this.nodeTree.root);
     this.answerCollection = this.experience.findComponentsByTag(OPTION);
     this.backLayersCollection = this.experience.findLayersByTag(BACK);
+    this.navCollecttion = this.experience.findComponentsByTag(NAV);
     this.pathTextCollection = this.experience.findComponentsByTag(PATH);
+    this.resetCollection = this.experience.findLayersByTag(RESET);
+    this.mcaseAdapterCtaCollection = this.experience.findLayersByTag(
+      `${MCASE_ADAPTER}-cta`
+    );
     this.resultHandler = new ResultHandler(
       experience,
       CerosSDK,
       this.currentNode,
-      distributor
+      distributor,
+      relatedProductsLink,
+      accessoriesLink,
+      PapaParse
+    );
+
+    this.mcaseAdapterModuleHandler = new ModuleHandler(
+      MCASE_ADAPTER,
+      experience,
+      CerosSDK,
+      distributor,
+      this.resultHandler.landingPageProxy
     );
 
     this.doubleClickHandler = new DoubleClickBugHandler();
@@ -66,13 +94,10 @@ export class QuizContext {
       let strategy: QuestionStrategy;
 
       if (field.type === "question") {
-        if (field.questionStrategy && field.questionStrategy === "hiding") {
+        if (field.questionStrategy === "hiding") {
           strategy = new HidingOptionsStrategy(fieldName, this.experience);
-        } else if (
-          field.questionStrategy &&
-          field.questionStrategy === "masking"
-        ) {
-          strategy = new MaskingOptionsStrategy(
+        } else if (field.questionStrategy === "masking-with-subcategories") {
+          strategy = new MaskingOptionsWithSubcategoriesStrategy(
             fieldName,
             this.experience,
             this.currentNode,
@@ -101,47 +126,122 @@ export class QuizContext {
       this.CerosSDK.EVENTS.CLICKED,
       this.handleBackNavigation.bind(this)
     );
+
+    this.navCollecttion.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.handleRandomNavigation.bind(this)
+    );
+
+    this.resetCollection.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.resetQuiz.bind(this)
+    );
+
+    this.mcaseAdapterCtaCollection.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.handleMcaseAdapter.bind(this)
+    );
+  }
+
+  async handleMcaseAdapter(layer: CerosLayer) {
+    if (this.doubleClickHandler.isDoubleClickBug(layer.id)) return;
+
+    const partNum = layer.getPayload().trim();
+
+    await this.resultHandler.loadCsvData(
+      RELATED_PRODUCTS,
+      this.relatedProductsLink
+    );
+
+    const data = this.resultHandler.csvData[RELATED_PRODUCTS][partNum];
+
+    if (data) {
+      this.mcaseAdapterModuleHandler.updateModule(1, 0, data);
+
+      const hotspotCollection = this.experience.findComponentsByTag(
+        `${MCASE_ADAPTER}-1`
+      );
+
+      hotspotCollection.click();
+    } else {
+      console.error(`Could not find part ${partNum} in related products sheet`);
+    }
+  }
+
+  resetQuiz() {
+    this.currentNode.value = this.nodeTree.root;
   }
 
   handleAnswerClick(comp: CerosComponent) {
-    if (!this.doubleClickHandler.isDoubleClickBug(comp.id)) {
-      const qName = getValueFromTags(comp.getTags(), QUESTION);
-      const question = this.questions[qName];
-      const answer = comp.getPayload().trim();
+    if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
 
-      if (!question) {
-        console.error(`Could not find question field ${qName}`);
-        return;
-      }
+    const qName = getValueFromTags(comp.getTags(), QUESTION);
+    const question = this.questions[qName];
+    const answer = comp.getPayload().trim();
 
-      const { key, value }: { key: "elementId" | "value"; value: string } =
-        question instanceof HidingOptionsStrategy
-          ? { key: "elementId", value: comp.id }
-          : { key: "value", value: answer };
+    if (!question) {
+      console.error(`Could not find question field ${qName}`);
+      return;
+    }
 
-      const node = this.nodeTree.findChild(this.currentNode.value, key, value);
+    const { key, value }: { key: "elementId" | "value"; value: string } =
+      question instanceof HidingOptionsStrategy
+        ? { key: "elementId", value: comp.id }
+        : { key: "value", value: answer };
 
-      if (node) {
-        if (
-          fieldNodesDict[qName].skipif &&
-          fieldNodesDict[qName].skipif.find((str) => str === answer)
-        ) {
-          const nextNode = node.children[0];
-          this.currentNode.value = nextNode;
-        } else {
-          this.currentNode.value = node;
-        }
+    const node = this.nodeTree.findChild(this.currentNode.value, key, value);
+
+    if (node) {
+      if (
+        fieldNodesDict[qName].skipif &&
+        fieldNodesDict[qName].skipif.find((str) => str === answer)
+      ) {
+        const nextNode = node.children[0];
+        this.currentNode.value = nextNode;
       } else {
-        console.error(`coudn't find node with ${qName} and value ${value}`);
+        this.currentNode.value = node;
       }
+    } else {
+      console.error(`coudn't find node with ${qName} and value ${value}`);
     }
   }
 
   handleBackNavigation(layer: CerosLayer) {
-    if (!this.doubleClickHandler.isDoubleClickBug(layer.id)) {
-      if (this.currentNode.value.parent) {
-        this.currentNode.value = this.currentNode.value.parent;
+    // Prevent double-click bug
+    if (this.doubleClickHandler.isDoubleClickBug(layer.id)) return;
+
+    const current = this.currentNode.value;
+    const parent = current.parent;
+    if (!parent) return;
+
+    const name = current.name;
+    const field = fieldNodesDict[name];
+
+    // Check if skipBackIf logic applies
+    if (field && field.skipBackIf) {
+      const skipData = field.skipBackIf;
+      const nodeName = Object.keys(skipData)[0];
+      const valueArray = skipData[nodeName];
+
+      const ancestor = current.findParentByName(nodeName);
+      if (ancestor && valueArray.find((val) => val === ancestor.value)) {
+        // Skip one extra level if condition matches
+        this.currentNode.value = parent.parent || parent;
+        return;
       }
+    }
+
+    // Default: go back one level
+    this.currentNode.value = parent;
+  }
+
+  handleRandomNavigation(comp: CerosComponent) {
+    const name = comp.getPayload().toLowerCase();
+    const node = this.currentNode.value.findParentByName(name);
+    if (node && node.parent) {
+      this.currentNode.value = node.parent;
+    } else {
+      console.error(`Could not find node ${name} or it's parent`);
     }
   }
 

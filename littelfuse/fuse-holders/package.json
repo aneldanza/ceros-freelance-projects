@@ -8,7 +8,7 @@
     "dev": "npm-run-all --parallel dev:modules dev:main",
     "build:modules": "tsc --project tsconfig.json",
     "build:main": "tsc --project tsconfig.main.json",
-    "build:bundle": "r.js -o build.js && esbuild dist/ceros-plugin.js --minify --outfile=dist/ceros-plugin.min.js",
+    "build:bundle": "r.js -o build.js && esbuild dist/fuse-holders.js --minify --outfile=dist/fuse-holders.min.js",
     "build": "npm run clean && npm run build:modules && npm run build:main && npm run build:bundle",
     "clean": "rimraf ./public ./dist",
     "serve": "http-server ./public -p 5173"

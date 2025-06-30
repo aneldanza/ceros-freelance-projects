@@ -8,6 +8,7 @@ export const fieldNodesDict: FieldNodes = {
   "fuse style": {
     type: "question",
     pathText: "Fuse Style: {{}}",
+    questionStrategy: "masking-with-subcategories",
   },
   "max voltage": {
     type: "question",
@@ -33,7 +34,8 @@ export const fieldNodesDict: FieldNodes = {
   "mounting method": {
     type: "question",
     pathText: "Mounting: {{}}",
-    questionStrategy: "masking",
+    questionStrategy: "masking-with-subcategories",
+    skipBackIf: { style: ["PCBA", "Fuse Block / PDM"] },
   },
   protection: {
     type: "question",
@@ -46,42 +48,25 @@ export const fieldNodesDict: FieldNodes = {
   },
 };
 
-// export const fields = [
-//   "Fuse Type",
-//   "Fuse Style",
-//   "Max Voltage",
-//   "Max Current",
-//   "Circuit Option",
-//   "Style",
-//   "Mounting Method",
-//   "Protection",
-//   "part",
-// ];
-
-// export const maskingStrategyQuestions = [
-//   "Circuit Option",
-//   "Style",
-//   "Mounting Method",
-//   "Protection",
-// ];
-
-// export const hidingStrategyQuestions = ["Max Voltage", "Max Current"];
-
-// export const pathMap: Record<string, string> = {
-//   "Fuse Type": "Fuse Type: {{}}",
-//   "Fuse Style": "Fuse Style: {{}}",
-//   "Max Voltage": "Volts: {{}}V DC",
-//   "Max Current": "Amps: {{}}A",
-//   "Circuit Option": "Fuse Holder Position: {{}}",
-//   Style: "Fuse Holder Style: {{}}",
-//   "Mounting Method": "Mounting: {{}}",
-//   Protection: "Protection: {{}}",
-// };
-
 export const OPTION = "answer";
 export const QUESTION = "q";
+export const RESET = "reset";
 export const DELIMETER = ":";
 export const SPECS = "specs";
+export const SERIES = "series";
+export const PART = "part";
+export const IMAGE = "img";
 export const DESCRIPTION = "description";
+export const DATASHEET = "datasheet";
+export const PRINT = "2d print";
+export const BUY_NOW = "buy-now";
+export const PRODUCT_GUIDE = "product guide";
 export const PATH = "path";
 export const BACK = "back";
+export const NAV = "nav";
+export const RELATED_PRODUCTS = "related products";
+export const ACCESSORIES = "accessories";
+export const DIVIDER = ";";
+export const MAX_RELATED_PRODUCTS = 2;
+export const MAX_ACCESSORIES = 4;
+export const MCASE_ADAPTER = "mcase-adapter";
