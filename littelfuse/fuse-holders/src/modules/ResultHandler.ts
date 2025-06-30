@@ -104,13 +104,16 @@ export class ResultHandler {
       );
   }
 
-  updateOverlayModules(parts: CsvData[]) {
+  updateOverlayModules(parts: CsvData[], name: string) {
+    const handler =
+      name === RELATED_PRODUCTS
+        ? this.relatedProductsModulesHandler
+        : name === ACCESSORIES
+        ? this.accessoriesModulesHandler
+        : null;
+
     parts.forEach((part, index) => {
-      this.relatedProductsModulesHandler.updateModule(
-        parts.length,
-        index,
-        part
-      );
+      handler && handler.updateModule(parts.length, index, part);
     });
   }
 
@@ -172,7 +175,7 @@ export class ResultHandler {
 
       if (!parts.length) return;
 
-      this.updateOverlayModules(parts);
+      this.updateOverlayModules(parts, name);
 
       const hotspotCollection = this.experience.findComponentsByTag(
         `${name}-${parts.length}`
