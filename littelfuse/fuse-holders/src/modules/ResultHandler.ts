@@ -1,4 +1,10 @@
-import { DESCRIPTION, DIVIDER, RELATED_PRODUCTS, SPECS } from "./constants";
+import {
+  ACCESSORIES,
+  DESCRIPTION,
+  DIVIDER,
+  RELATED_PRODUCTS,
+  SPECS,
+} from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
 import { LandingPageProxy } from "./LandinPageProxy";
@@ -17,6 +23,7 @@ export class ResultHandler {
   private csvData: Record<string, Record<string, CsvData>> = {};
   private resultModulesHandler: ModuleHandler;
   private relatedProductsModulesHandler: ModuleHandler;
+  private accessoriesModulesHandler: ModuleHandler;
   private doubleClickBugHandler: DoubleClickBugHandler =
     new DoubleClickBugHandler();
 
@@ -45,6 +52,14 @@ export class ResultHandler {
       distributor,
       this.landingPageProxy
     );
+
+    this.accessoriesModulesHandler = new ModuleHandler(
+      ACCESSORIES,
+      experience,
+      CerosSDK,
+      distributor,
+      this.landingPageProxy
+    );
   }
 
   showResultModule(type: number) {
@@ -54,19 +69,6 @@ export class ResultHandler {
       `module-${type}`
     );
     moduleResultHotspot.click();
-  }
-
-  processOverlayLayers(
-    layersDict: Record<string, CerosLayer[]>,
-    moduleTag: string
-  ) {
-    layersDict[RELATED_PRODUCTS] &&
-      this.handleOverlay(
-        RELATED_PRODUCTS,
-        layersDict[RELATED_PRODUCTS],
-        moduleTag,
-        this.relatedProductsLink
-      );
   }
 
   updateResultModules(type: number) {
@@ -80,7 +82,29 @@ export class ResultHandler {
     });
   }
 
-  updateRelatedProductsModules(parts: CsvData[]) {
+  processOverlayLayers(
+    layersDict: Record<string, CerosLayer[]>,
+    moduleTag: string
+  ) {
+    if (layersDict[RELATED_PRODUCTS]) {
+      this.handleOverlay(
+        RELATED_PRODUCTS,
+        layersDict[RELATED_PRODUCTS],
+        moduleTag,
+        this.relatedProductsLink
+      );
+    }
+
+    layersDict[ACCESSORIES] &&
+      this.handleOverlay(
+        ACCESSORIES,
+        layersDict[ACCESSORIES],
+        moduleTag,
+        this.accessoriesLink
+      );
+  }
+
+  updateOverlayModules(parts: CsvData[]) {
     parts.forEach((part, index) => {
       this.relatedProductsModulesHandler.updateModule(
         parts.length,
@@ -108,15 +132,23 @@ export class ResultHandler {
       const items = this.getRelatedParts(moduleTag, name);
       if (items.length === 0) {
         layer.hide();
+      } else if (name === ACCESSORIES) {
+        const hasRelatedProducts = !!this.getRelatedParts(
+          moduleTag,
+          RELATED_PRODUCTS
+        ).length;
+
+        if (hasRelatedProducts) {
+          if (layer.getTags().find((tag) => tag === "pos:1")) {
+            layer.hide();
+          }
+        } else {
+          if (layer.getTags().find((tag) => tag === "pos:2")) {
+            layer.hide();
+          }
+        }
       }
     });
-  }
-
-  getRelatedParts(moduleTag: string, name: string) {
-    const dict = this.resultModulesHandler.getResultData(moduleTag);
-    const value = dict.data[name];
-    const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
-    return items;
   }
 
   registerOverlayClick(
@@ -138,7 +170,9 @@ export class ResultHandler {
 
       const parts = this.getExistingParts(name, items);
 
-      this.updateRelatedProductsModules(parts);
+      if (!parts.length) return;
+
+      this.updateOverlayModules(parts);
 
       const hotspotCollection = this.experience.findComponentsByTag(
         `${name}-${parts.length}`
@@ -146,6 +180,13 @@ export class ResultHandler {
 
       hotspotCollection.click();
     });
+  }
+
+  getRelatedParts(moduleTag: string, name: string) {
+    const dict = this.resultModulesHandler.getResultData(moduleTag);
+    const value = dict.data[name];
+    const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
+    return items;
   }
 
   getExistingParts(overlay: string, names: string[]) {
