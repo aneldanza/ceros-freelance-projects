@@ -1,4 +1,14 @@
-import { DESCRIPTION, SPECS } from "./constants";
+import {
+  BUY_NOW,
+  DATASHEET,
+  DESCRIPTION,
+  IMAGE,
+  PART,
+  PRINT,
+  PRODUCT_GUIDE,
+  SERIES,
+  SPECS,
+} from "./constants";
 import { LandingPageProxy } from "./LandinPageProxy";
 import { CsvData } from "./quizTypes";
 
@@ -82,33 +92,40 @@ export class ModuleHandler {
   }
 
   processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
-    layersDict.img &&
-      this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict.img);
+    layersDict[IMAGE] &&
+      this.showImageFromUrl(
+        moduleTag,
+        this.handleModuleImage,
+        layersDict[IMAGE]
+      );
 
-    layersDict.part &&
-      this.updateResultTextbox("part", moduleTag, layersDict.part);
+    layersDict[PART] &&
+      this.updateResultTextbox(PART, moduleTag, layersDict[PART]);
 
-    layersDict.series &&
-      this.updateResultTextbox("series", moduleTag, layersDict.series);
+    layersDict[SERIES] &&
+      this.updateResultTextbox(SERIES, moduleTag, layersDict[SERIES]);
 
-    layersDict.datasheet &&
+    layersDict[DATASHEET] &&
       this.registerResultClcikEvent(
-        layersDict.datasheet,
-        "datasheet",
+        layersDict[DATASHEET],
+        DATASHEET,
         moduleTag
       );
 
-    layersDict["2d print"] &&
-      this.registerResultClcikEvent(
-        layersDict["2d print"],
-        "2d print",
-        moduleTag
-      );
+    layersDict[PRINT] &&
+      this.registerResultClcikEvent(layersDict[PRINT], PRINT, moduleTag);
 
-    layersDict["buy-now"] &&
+    layersDict[BUY_NOW] &&
       this.registerResultClcikEvent(
-        layersDict["buy-now"],
+        layersDict[BUY_NOW],
         this.distributor,
+        moduleTag
+      );
+
+    layersDict[PRODUCT_GUIDE] &&
+      this.registerResultClcikEvent(
+        layersDict[PRODUCT_GUIDE],
+        PRODUCT_GUIDE,
         moduleTag
       );
 
