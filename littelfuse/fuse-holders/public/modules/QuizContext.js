@@ -18,6 +18,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.backLayersCollection = this.experience.findLayersByTag(constants_1.BACK);
             this.navCollecttion = this.experience.findComponentsByTag(constants_1.NAV);
             this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
+            this.resetCollection = this.experience.findLayersByTag(constants_1.RESET);
             this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor, relatedProductsLink, accessoriesLink, PapaParse);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.init();
@@ -53,6 +54,10 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.answerCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleAnswerClick.bind(this));
             this.backLayersCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleBackNavigation.bind(this));
             this.navCollecttion.on(this.CerosSDK.EVENTS.CLICKED, this.handleRandomNavigation.bind(this));
+            this.resetCollection.on(this.CerosSDK.EVENTS.CLICKED, this.resetQuiz.bind(this));
+        }
+        resetQuiz() {
+            this.currentNode.value = this.nodeTree.root;
         }
         handleAnswerClick(comp) {
             if (this.doubleClickHandler.isDoubleClickBug(comp.id))

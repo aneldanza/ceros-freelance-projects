@@ -1,6 +1,14 @@
 /// <reference path="../../types/papaparse.d.ts" />
 
-import { PATH, OPTION, QUESTION, BACK, fieldNodesDict, NAV } from "./constants";
+import {
+  PATH,
+  OPTION,
+  QUESTION,
+  BACK,
+  fieldNodesDict,
+  NAV,
+  RESET,
+} from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
 import { Node } from "./Node";
@@ -19,6 +27,7 @@ export class QuizContext {
   private navCollecttion: CerosComponentCollection;
   private pathTextCollection: CerosComponentCollection;
   private questions: Record<string, QuestionStrategy> = {};
+  private resetCollection: CerosLayerCollection;
   private resultHandler: ResultHandler;
   private doubleClickHandler: DoubleClickBugHandler;
 
@@ -36,6 +45,7 @@ export class QuizContext {
     this.backLayersCollection = this.experience.findLayersByTag(BACK);
     this.navCollecttion = this.experience.findComponentsByTag(NAV);
     this.pathTextCollection = this.experience.findComponentsByTag(PATH);
+    this.resetCollection = this.experience.findLayersByTag(RESET);
     this.resultHandler = new ResultHandler(
       experience,
       CerosSDK,
@@ -105,6 +115,15 @@ export class QuizContext {
       this.CerosSDK.EVENTS.CLICKED,
       this.handleRandomNavigation.bind(this)
     );
+
+    this.resetCollection.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.resetQuiz.bind(this)
+    );
+  }
+
+  resetQuiz() {
+    this.currentNode.value = this.nodeTree.root;
   }
 
   handleAnswerClick(comp: CerosComponent) {

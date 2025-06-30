@@ -50,6 +50,7 @@ export const fieldNodesDict: FieldNodes = {
 
 export const OPTION = "answer";
 export const QUESTION = "q";
+export const RESET = "reset";
 export const DELIMETER = ":";
 export const SPECS = "specs";
 export const SERIES = "series";

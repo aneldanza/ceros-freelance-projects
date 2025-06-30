@@ -1,7 +1,7 @@
 define('modules/constants',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
+    exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
     exports.fieldNodesDict = {
         "fuse type": {
             type: "question",
@@ -55,9 +55,12 @@ define('modules/constants',["require", "exports"], function (require, exports) {
     exports.SPECS = "specs";
     exports.SERIES = "series";
     exports.PART = "part";
+    exports.IMAGE = "img";
     exports.DESCRIPTION = "description";
     exports.DATASHEET = "datasheet";
     exports.PRINT = "2d print";
+    exports.BUY_NOW = "buy-now";
+    exports.PRODUCT_GUIDE = "product guide";
     exports.PATH = "path";
     exports.BACK = "back";
     exports.NAV = "nav";
@@ -379,18 +382,20 @@ define('modules/ModuleHandler',["require", "exports", "./constants"], function (
                 : `${type}-${this.moduleName}`;
         }
         processLayers(layersDict, moduleTag) {
-            layersDict.img &&
-                this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict.img);
-            layersDict.part &&
-                this.updateResultTextbox("part", moduleTag, layersDict.part);
-            layersDict.series &&
-                this.updateResultTextbox("series", moduleTag, layersDict.series);
-            layersDict.datasheet &&
-                this.registerResultClcikEvent(layersDict.datasheet, "datasheet", moduleTag);
-            layersDict["2d print"] &&
-                this.registerResultClcikEvent(layersDict["2d print"], "2d print", moduleTag);
-            layersDict["buy-now"] &&
-                this.registerResultClcikEvent(layersDict["buy-now"], this.distributor, moduleTag);
+            layersDict[constants_1.IMAGE] &&
+                this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict[constants_1.IMAGE]);
+            layersDict[constants_1.PART] &&
+                this.updateResultTextbox(constants_1.PART, moduleTag, layersDict[constants_1.PART]);
+            layersDict[constants_1.SERIES] &&
+                this.updateResultTextbox(constants_1.SERIES, moduleTag, layersDict[constants_1.SERIES]);
+            layersDict[constants_1.DATASHEET] &&
+                this.registerResultClcikEvent(layersDict[constants_1.DATASHEET], constants_1.DATASHEET, moduleTag);
+            layersDict[constants_1.PRINT] &&
+                this.registerResultClcikEvent(layersDict[constants_1.PRINT], constants_1.PRINT, moduleTag);
+            layersDict[constants_1.BUY_NOW] &&
+                this.registerResultClcikEvent(layersDict[constants_1.BUY_NOW], this.distributor, moduleTag);
+            layersDict[constants_1.PRODUCT_GUIDE] &&
+                this.registerResultClcikEvent(layersDict[constants_1.PRODUCT_GUIDE], constants_1.PRODUCT_GUIDE, moduleTag);
             layersDict[constants_1.SPECS] &&
                 this.updateResultTextbox(constants_1.SPECS, moduleTag, layersDict[constants_1.SPECS]);
             layersDict[constants_1.DESCRIPTION] &&
@@ -423,6 +428,12 @@ define('modules/ModuleHandler',["require", "exports", "./constants"], function (
                 layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
                     const obj = this.getResultData(moduleTag);
                     this.landingPageProxy.openAndTrackLink(obj.data[key], layer.id);
+                });
+                layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+                    const dict = this.getResultData(moduleTag);
+                    if (!dict.data[key]) {
+                        layer.hide();
+                    }
                 });
             });
         }
@@ -643,7 +654,8 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
                 }
                 else if (name === constants_1.ACCESSORIES) {
                     const hasRelatedProducts = !!this.getRelatedParts(moduleTag, constants_1.RELATED_PRODUCTS).length;
-                    if (hasRelatedProducts) {
+                    const hasProductGuide = !!this.getValue(moduleTag, constants_1.PRODUCT_GUIDE);
+                    if (hasRelatedProducts || hasProductGuide) {
                         if (layer.getTags().find((tag) => tag === "pos:1")) {
                             layer.hide();
                         }
@@ -679,10 +691,13 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
             }));
         }
         getRelatedParts(moduleTag, name) {
-            const dict = this.resultModulesHandler.getResultData(moduleTag);
-            const value = dict.data[name];
+            const value = this.getValue(moduleTag, name);
             const items = value ? value.split(constants_1.DIVIDER).map((str) => str.trim()) : [];
             return items;
+        }
+        getValue(moduleTag, name) {
+            const dict = this.resultModulesHandler.getResultData(moduleTag);
+            return dict.data[name];
         }
         getExistingParts(overlay, names) {
             const parts = [];
