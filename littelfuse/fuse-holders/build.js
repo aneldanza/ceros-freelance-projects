@@ -4,7 +4,7 @@
   out: "dist/fuse-holders.js",
   paths: {
     CerosSDK: "empty:", // Exclude CerosSDK if loaded externally via RequireJS
-    PapaParse: "empty",
+    PapaParse: "empty:",
   },
   include: [],
   optimize: "none",
