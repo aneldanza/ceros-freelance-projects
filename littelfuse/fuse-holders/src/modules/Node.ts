@@ -1,9 +1,9 @@
-import { ResultData } from "./quizTypes";
+import { CsvData } from "./quizTypes";
 
 export class Node {
   public children: Node[] = [];
   public elementId: string = "";
-  public data: ResultData = {};
+  public data: CsvData = {};
 
   constructor(
     public name: string,

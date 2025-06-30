@@ -31,6 +31,7 @@ export class ResultHandler {
   private relatedProductsModulesHandler: ModuleHandler;
   private accessoriesModulesHandler: ModuleHandler;
   private accessoriesCarousel: Carousel;
+  private relatedProductsCarousel: Carousel;
   private doubleClickBugHandler: DoubleClickBugHandler =
     new DoubleClickBugHandler();
 
@@ -74,6 +75,14 @@ export class ResultHandler {
       CerosSDK,
       experience,
       this.accessoriesModulesHandler
+    );
+
+    this.relatedProductsCarousel = new Carousel(
+      MAX_RELATED_PRODUCTS,
+      RELATED_PRODUCTS,
+      CerosSDK,
+      experience,
+      this.relatedProductsModulesHandler
     );
   }
 
@@ -129,7 +138,7 @@ export class ResultHandler {
         );
       });
     } else {
-      // this.accessoriesCarousel.init(parts);
+      this.relatedProductsCarousel.init(parts);
     }
   }
 
