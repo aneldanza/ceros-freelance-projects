@@ -11,6 +11,13 @@ export class Carousel {
   private back: CerosLayerCollection = this.experience.findLayersByTag(
     `${this.name}-back`
   );
+
+  private currentIndex: CerosComponentCollection =
+    this.experience.findComponentsByTag(`${this.name}-current`);
+
+  private totalIndex: CerosComponentCollection =
+    this.experience.findComponentsByTag(`${this.name}-total`);
+
   private pages: Record<number, CsvData[]> = {};
 
   constructor(
@@ -26,6 +33,7 @@ export class Carousel {
     this.parts = parts;
     this.registerNavigationEvents();
     this.paginate();
+    this.setTotalPageIndex();
     this.populate();
   }
 
@@ -66,6 +74,8 @@ export class Carousel {
     });
 
     this.currentPage.subscribe(() => {
+      this.hideModules();
+      this.updatePageIndex();
       this.populate();
 
       if (this.isLastPage()) {
@@ -94,6 +104,28 @@ export class Carousel {
       }
       i++;
     }
+  }
+
+  hideModules() {
+    let i = 0;
+    while (i < this.max) {
+      this.moduleHandler.hideModule(this.max, i);
+
+      i++;
+    }
+  }
+
+  updatePageIndex() {
+    this.currentIndex.components.forEach((comp) =>
+      comp.setText(this.currentPage.value.toString())
+    );
+  }
+
+  setTotalPageIndex() {
+    const pageNums = Object.keys(this.pages);
+    this.totalIndex.components.forEach((comp) =>
+      comp.setText(pageNums[pageNums.length - 1])
+    );
   }
 
   isLastPage() {
