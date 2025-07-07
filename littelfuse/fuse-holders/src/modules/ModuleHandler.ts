@@ -3,6 +3,7 @@ import {
   DATASHEET,
   DESCRIPTION,
   IMAGE,
+  IMG_LRG,
   PART,
   PRINT,
   PRODUCT_GUIDE,
@@ -10,6 +11,7 @@ import {
   SPECS,
 } from "./constants";
 import { LandingPageProxy } from "./LandinPageProxy";
+import { Observable } from "./Observer";
 import { CsvData } from "./quizTypes";
 
 export class ModuleHandler {
@@ -24,12 +26,17 @@ export class ModuleHandler {
 
   private isNew: boolean = false;
 
+  private imgLargeHotspotCollection = this.experience.findComponentsByTag(
+    `${IMG_LRG}-1`
+  );
+
   constructor(
     private moduleName: string,
     private experience: Experience,
     private CerosSDK: CerosSDK,
     private distributor: string,
-    private landingPageProxy: LandingPageProxy
+    private landingPageProxy: LandingPageProxy,
+    private imgLrgLink: Observable<string>
   ) {}
 
   hideModule(type: number, index: number) {
@@ -95,7 +102,7 @@ export class ModuleHandler {
     layersDict[IMAGE] &&
       this.showImageFromUrl(
         moduleTag,
-        this.handleModuleImage,
+        ModuleHandler.handleModuleImage,
         layersDict[IMAGE]
       );
 
@@ -150,6 +157,13 @@ export class ModuleHandler {
           const obj = this.getResultData(moduleTag);
           callback(layer, obj.data);
         });
+
+      this.isNew &&
+        layer.on(this.CerosSDK.EVENTS.CLICKED, (layer) => {
+          const currentObj = this.getResultData(moduleTag);
+          this.imgLrgLink.value = currentObj.data.image;
+          this.imgLargeHotspotCollection.click();
+        });
     });
   }
 
@@ -191,7 +205,7 @@ export class ModuleHandler {
     });
   }
 
-  handleModuleImage(img: CerosLayer, data: CsvData) {
+  static handleModuleImage(img: CerosLayer, data: CsvData) {
     const imgStr = data.image;
 
     try {

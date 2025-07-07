@@ -1,12 +1,11 @@
 import {
   ACCESSORIES,
-  DESCRIPTION,
   DIVIDER,
   MAX_ACCESSORIES,
   MAX_RELATED_PRODUCTS,
   PRODUCT_GUIDE,
   RELATED_PRODUCTS,
-  SPECS,
+  IMG_LRG,
 } from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
@@ -31,6 +30,12 @@ export class ResultHandler {
   private relatedProductsCarousel: Carousel;
   private doubleClickBugHandler: DoubleClickBugHandler =
     new DoubleClickBugHandler();
+  private imgLargeOverlayCollection = this.experience.findLayersByTag(IMG_LRG);
+
+  private imgLrgLink: Observable<string> = new Observable("");
+  private imgLrgCloseHotspotCollection = this.experience.findLayersByTag(
+    `${IMG_LRG}-close`
+  );
 
   constructor(
     private experience: Experience,
@@ -47,7 +52,8 @@ export class ResultHandler {
       experience,
       CerosSDK,
       distributor,
-      this.landingPageProxy
+      this.landingPageProxy,
+      this.imgLrgLink
     );
 
     this.relatedProductsModulesHandler = new ModuleHandler(
@@ -55,7 +61,8 @@ export class ResultHandler {
       experience,
       CerosSDK,
       distributor,
-      this.landingPageProxy
+      this.landingPageProxy,
+      this.imgLrgLink
     );
 
     this.accessoriesModulesHandler = new ModuleHandler(
@@ -63,7 +70,8 @@ export class ResultHandler {
       experience,
       CerosSDK,
       distributor,
-      this.landingPageProxy
+      this.landingPageProxy,
+      this.imgLrgLink
     );
 
     this.accessoriesCarousel = new Carousel(
@@ -81,6 +89,29 @@ export class ResultHandler {
       experience,
       this.relatedProductsModulesHandler
     );
+
+    this.registerImageOverlay();
+  }
+
+  registerImageOverlay() {
+    this.imgLargeOverlayCollection.on(
+      this.CerosSDK.EVENTS.ANIMATION_STARTED,
+      (layer: CerosLayer) => {
+        ModuleHandler.handleModuleImage(layer, {
+          image: this.imgLrgLink.value,
+        });
+      }
+    );
+
+    this.imgLrgCloseHotspotCollection.on(this.CerosSDK.EVENTS.CLICKED, () => {
+      this.imgLrgLink.value = "";
+    });
+
+    this.imgLrgLink.subscribe((link: string) => {
+      this.imgLargeOverlayCollection.layers.forEach((layer) => {
+        ModuleHandler.handleModuleImage(layer, { image: link });
+      });
+    });
   }
 
   showResultModule(type: number) {
