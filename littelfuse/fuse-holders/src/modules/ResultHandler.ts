@@ -123,8 +123,17 @@ export class ResultHandler {
     moduleResultHotspot.click();
   }
 
+  sortNodesBySales() {
+    return this.currentNodeObservable.value.children.sort((a, b) => {
+      const aSales = isNaN(Number(a.data.sales)) ? 0 : Number(a.data.sales);
+      const bSales = isNaN(Number(b.data.sales)) ? 0 : Number(b.data.sales);
+      return bSales - aSales;
+    });
+  }
+
   updateResultModules(type: number) {
-    this.currentNodeObservable.value.children.forEach((node, index) => {
+    const results = this.sortNodesBySales();
+    results.forEach((node, index) => {
       this.resultModulesHandler.updateModule(
         type,
         index,
