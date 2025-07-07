@@ -2,6 +2,7 @@ import { ModuleHandler } from "./ModuleHandler";
 import { Observable } from "./Observer";
 import { CsvData, Overlay } from "./quizTypes";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
+import { RESULTS } from "./constants";
 
 export class Carousel {
   private currentPage: Observable<number> = new Observable(0);
@@ -26,7 +27,7 @@ export class Carousel {
 
   constructor(
     private max: number,
-    private name: Overlay,
+    private name: Overlay | typeof RESULTS,
     private CerosSDK: CerosSDK,
     private experience: Experience,
     private moduleHandler: ModuleHandler

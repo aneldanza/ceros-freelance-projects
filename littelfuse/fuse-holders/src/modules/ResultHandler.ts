@@ -6,6 +6,8 @@ import {
   PRODUCT_GUIDE,
   RELATED_PRODUCTS,
   IMG_LRG,
+  RESULTS,
+  MAX_RESULTS,
 } from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
@@ -26,16 +28,11 @@ export class ResultHandler {
   private resultModulesHandler: ModuleHandler;
   private relatedProductsModulesHandler: ModuleHandler;
   private accessoriesModulesHandler: ModuleHandler;
+  private resultsCarousel: Carousel;
   private accessoriesCarousel: Carousel;
   private relatedProductsCarousel: Carousel;
   private doubleClickBugHandler: DoubleClickBugHandler =
     new DoubleClickBugHandler();
-  private imgLargeOverlayCollection = this.experience.findLayersByTag(IMG_LRG);
-
-  private imgLrgLink: Observable<string> = new Observable("");
-  private imgLrgCloseHotspotCollection = this.experience.findLayersByTag(
-    `${IMG_LRG}-close`
-  );
 
   constructor(
     private experience: Experience,
@@ -44,11 +41,12 @@ export class ResultHandler {
     private distributor: string,
     private relatedProductsLink: string,
     private accessoriesLink: string,
-    private PapaParse: typeof window.Papa
+    private PapaParse: typeof window.Papa,
+    private imgLrgLink: Observable<string>
   ) {
     this.landingPageProxy = new LandingPageProxy();
     this.resultModulesHandler = new ModuleHandler(
-      "module",
+      RESULTS,
       experience,
       CerosSDK,
       distributor,
@@ -90,37 +88,19 @@ export class ResultHandler {
       this.relatedProductsModulesHandler
     );
 
-    this.registerImageOverlay();
+    this.resultsCarousel = new Carousel(
+      MAX_RESULTS,
+      RESULTS,
+      CerosSDK,
+      experience,
+      this.resultModulesHandler
+    );
   }
 
-  registerImageOverlay() {
-    this.imgLargeOverlayCollection.on(
-      this.CerosSDK.EVENTS.ANIMATION_STARTED,
-      (layer: CerosLayer) => {
-        ModuleHandler.handleModuleImage(layer, {
-          image: this.imgLrgLink.value,
-        });
-      }
-    );
+  showResultModule(length: number) {
+    this.updateResultModules(length);
 
-    this.imgLrgCloseHotspotCollection.on(this.CerosSDK.EVENTS.CLICKED, () => {
-      this.imgLrgLink.value = "";
-    });
-
-    this.imgLrgLink.subscribe((link: string) => {
-      this.imgLargeOverlayCollection.layers.forEach((layer) => {
-        ModuleHandler.handleModuleImage(layer, { image: link });
-      });
-    });
-  }
-
-  showResultModule(type: number) {
-    this.updateResultModules(type);
-
-    const moduleResultHotspot = this.experience.findComponentsByTag(
-      `module-${type}`
-    );
-    moduleResultHotspot.click();
+    this.triggerHotspot(RESULTS, length, MAX_RESULTS);
   }
 
   sortNodesBySales() {
@@ -133,14 +113,18 @@ export class ResultHandler {
 
   updateResultModules(type: number) {
     const results = this.sortNodesBySales();
-    results.forEach((node, index) => {
-      this.resultModulesHandler.updateModule(
-        type,
-        index,
-        node.data,
-        this.processOverlayLayers.bind(this)
-      );
-    });
+    if (results.length <= MAX_RESULTS) {
+      results.forEach((node, index) => {
+        this.resultModulesHandler.updateModule(
+          type,
+          index,
+          node.data,
+          this.processOverlayLayers.bind(this)
+        );
+      });
+    } else {
+      this.resultsCarousel.init(results.map((node) => node.data));
+    }
   }
 
   processOverlayLayers(
@@ -208,11 +192,11 @@ export class ResultHandler {
     name: Overlay
   ) {
     layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-      const items = this.getRelatedParts(moduleTag, name);
+      const items = this.getPartNumbers(moduleTag, name);
       if (items.length === 0) {
         layer.hide();
       } else if (name === ACCESSORIES) {
-        const hasRelatedProducts = !!this.getRelatedParts(
+        const hasRelatedProducts = !!this.getPartNumbers(
           moduleTag,
           RELATED_PRODUCTS
         ).length;
@@ -235,42 +219,43 @@ export class ResultHandler {
   registerOverlayClick(
     layer: CerosLayer,
     moduleTag: string,
-    name: Overlay,
+    overlayName: Overlay,
     link: string
   ) {
     layer.on(this.CerosSDK.EVENTS.CLICKED, async (layer) => {
       if (this.doubleClickBugHandler.isDoubleClickBug(layer.id)) return;
 
-      const items = this.getRelatedParts(moduleTag, name);
+      const partNumbers = this.getPartNumbers(moduleTag, overlayName);
 
-      if (!items.length) return;
+      if (!partNumbers.length) return;
 
-      await this.loadCsvData(name, link);
+      await this.loadCsvData(overlayName, link);
 
-      // console.log(this.csvData[name]);
-
-      const parts = this.getExistingParts(name, items);
+      const parts = this.getExistingParts(overlayName, partNumbers);
 
       if (!parts.length) return;
 
-      if (name === RELATED_PRODUCTS) {
+      if (overlayName === RELATED_PRODUCTS) {
         this.updateRelatedProductsModules(parts);
-      } else if (name === ACCESSORIES) {
+        this.triggerHotspot(overlayName, parts.length, MAX_RELATED_PRODUCTS);
+      } else if (overlayName === ACCESSORIES) {
         this.updateAccessoriesModules(parts);
+        this.triggerHotspot(overlayName, parts.length, MAX_ACCESSORIES);
       }
-
-      const hotspotCollection = this.experience.findComponentsByTag(
-        `${name}-${parts.length < 6 ? parts.length : "4+"}`
-      );
-
-      hotspotCollection.click();
     });
   }
 
-  getRelatedParts(moduleTag: string, name: string) {
+  triggerHotspot(name: string, length: number, max: number) {
+    const hotspotCollection = this.experience.findComponentsByTag(
+      `${name}-${length <= max ? length : `${max + 1}+`}`
+    );
+
+    hotspotCollection.click();
+  }
+
+  getPartNumbers(moduleTag: string, name: string) {
     const value = this.getValue(moduleTag, name);
-    const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
-    return items;
+    return value ? value.split(DIVIDER).map((str) => str.replace(" ", "")) : [];
   }
 
   getValue(moduleTag: string, name: string) {
@@ -315,7 +300,7 @@ export class ResultHandler {
   indexByPartNumber(data: Record<string, string>[]) {
     const result: { [key: string]: Record<string, string> } = {};
     data.forEach((obj) => {
-      result[obj.part] = obj;
+      result[obj.part.trim()] = obj;
     });
     return result;
   }

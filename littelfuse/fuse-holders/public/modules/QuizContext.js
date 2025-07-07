@@ -22,6 +22,9 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.accessoriesLink = accessoriesLink;
             this.PapaParse = PapaParse;
             this.questions = {};
+            this.imgLargeOverlayCollection = this.experience.findLayersByTag(constants_1.IMG_LRG);
+            this.imgLrgLink = new Observer_1.Observable("");
+            this.imgLrgCloseHotspotCollection = this.experience.findLayersByTag(`${constants_1.IMG_LRG}-close`);
             this.currentNode = new Observer_1.Observable(this.nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
             this.backLayersCollection = this.experience.findLayersByTag(constants_1.BACK);
@@ -29,8 +32,8 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
             this.resetCollection = this.experience.findLayersByTag(constants_1.RESET);
             this.mcaseAdapterCtaCollection = this.experience.findLayersByTag(`${constants_1.MCASE_ADAPTER}-cta`);
-            this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor, relatedProductsLink, accessoriesLink, PapaParse);
-            this.mcaseAdapterModuleHandler = new ModuleHandler_1.ModuleHandler(constants_1.MCASE_ADAPTER, experience, CerosSDK, distributor, this.resultHandler.landingPageProxy);
+            this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor, relatedProductsLink, accessoriesLink, PapaParse, this.imgLrgLink);
+            this.mcaseAdapterModuleHandler = new ModuleHandler_1.ModuleHandler(constants_1.MCASE_ADAPTER, experience, CerosSDK, distributor, this.resultHandler.landingPageProxy, this.imgLrgLink);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.init();
         }
@@ -38,6 +41,22 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             this.subscribeCurrentNodeObserver();
             this.subscribeToCerosEvents();
             this.assignQuestionsStrategy();
+            this.registerImageOverlay();
+        }
+        registerImageOverlay() {
+            this.imgLargeOverlayCollection.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+                ModuleHandler_1.ModuleHandler.handleModuleImage(layer, {
+                    image: this.imgLrgLink.value,
+                });
+            });
+            this.imgLrgCloseHotspotCollection.on(this.CerosSDK.EVENTS.CLICKED, () => {
+                this.imgLrgLink.value = "";
+            });
+            this.imgLrgLink.subscribe((link) => {
+                this.imgLargeOverlayCollection.layers.forEach((layer) => {
+                    ModuleHandler_1.ModuleHandler.handleModuleImage(layer, { image: link });
+                });
+            });
         }
         subscribeCurrentNodeObserver() {
             this.currentNode.subscribe(this.handleNodeChange.bind(this));
