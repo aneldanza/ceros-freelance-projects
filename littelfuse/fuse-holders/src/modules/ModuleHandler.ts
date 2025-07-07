@@ -1,6 +1,7 @@
 import {
   BUY_NOW,
   DATASHEET,
+  DEFAULT_IMAGE,
   DESCRIPTION,
   IMAGE,
   IMG_LRG,
@@ -213,9 +214,7 @@ export class ModuleHandler {
       img.setUrl(imgStr);
     } catch (e) {
       console.error(e);
-      img.setUrl(
-        "https://admin.ceros.com/v1/account/littelfuse/images/2025-06-17-60ecf7d1a494b7d0760c289a69b27a44-product-image-place-holder-jpg/proxy"
-      );
+      img.setUrl(DEFAULT_IMAGE);
     }
   }
 
