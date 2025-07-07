@@ -1,6 +1,7 @@
 import { ModuleHandler } from "./ModuleHandler";
 import { Observable } from "./Observer";
 import { CsvData, Overlay } from "./quizTypes";
+import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 
 export class Carousel {
   private currentPage: Observable<number> = new Observable(0);
@@ -19,6 +20,9 @@ export class Carousel {
     this.experience.findComponentsByTag(`${this.name}-total`);
 
   private pages: Record<number, CsvData[]> = {};
+
+  private doubleClickBugHandler: DoubleClickBugHandler =
+    new DoubleClickBugHandler();
 
   constructor(
     private max: number,
@@ -54,11 +58,14 @@ export class Carousel {
   }
 
   registerNavigationEvents() {
-    this.next.on(this.CerosSDK.EVENTS.CLICKED, () => {
+    this.next.on(this.CerosSDK.EVENTS.CLICKED, (layer: CerosLayer) => {
+      if (this.doubleClickBugHandler.isDoubleClickBug(layer.id)) return;
       this.currentPage.value++;
+      console.log(this.currentPage.value);
     });
 
-    this.back.on(this.CerosSDK.EVENTS.CLICKED, () => {
+    this.back.on(this.CerosSDK.EVENTS.CLICKED, (layer: CerosLayer) => {
+      if (this.doubleClickBugHandler.isDoubleClickBug(layer.id)) return;
       this.currentPage.value--;
     });
 
