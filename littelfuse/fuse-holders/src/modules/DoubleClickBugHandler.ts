@@ -13,7 +13,7 @@ export class DoubleClickBugHandler {
     if (lastTime) {
       const timeBetweenClicks = now - lastTime;
       console.log(timeBetweenClicks);
-      return timeBetweenClicks < 200;
+      return timeBetweenClicks < 900;
     }
   }
 }

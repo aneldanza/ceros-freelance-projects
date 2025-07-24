@@ -1,7 +1,7 @@
 define('modules/constants',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.RESET = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
+    exports.DEFAULT_IMAGE = exports.IMG_LRG = exports.MCASE_ADAPTER = exports.MAX_RESULTS = exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.RESULTS = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.RESET = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
     exports.fieldNodesDict = {
         "fuse type": {
             type: "question",
@@ -67,9 +67,14 @@ define('modules/constants',["require", "exports"], function (require, exports) {
     exports.NAV = "nav";
     exports.RELATED_PRODUCTS = "related products";
     exports.ACCESSORIES = "accessories";
+    exports.RESULTS = "module";
     exports.DIVIDER = ";";
     exports.MAX_RELATED_PRODUCTS = 2;
     exports.MAX_ACCESSORIES = 4;
+    exports.MAX_RESULTS = 5;
+    exports.MCASE_ADAPTER = "mcase-adapter";
+    exports.IMG_LRG = "img lrg";
+    exports.DEFAULT_IMAGE = "https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/fuse-holders/Image+Not+Available.jpg";
 });
 
 define('modules/Observer',["require", "exports"], function (require, exports) {
@@ -268,7 +273,7 @@ define('modules/DoubleClickBugHandler',["require", "exports"], function (require
             if (lastTime) {
                 const timeBetweenClicks = now - lastTime;
                 console.log(timeBetweenClicks);
-                return timeBetweenClicks < 200;
+                return timeBetweenClicks < 900;
             }
         }
     }
@@ -336,14 +341,16 @@ define('modules/ModuleHandler',["require", "exports", "./constants"], function (
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ModuleHandler = void 0;
     class ModuleHandler {
-        constructor(moduleName, experience, CerosSDK, distributor, landingPageProxy) {
+        constructor(moduleName, experience, CerosSDK, distributor, landingPageProxy, imgLrgLink) {
             this.moduleName = moduleName;
             this.experience = experience;
             this.CerosSDK = CerosSDK;
             this.distributor = distributor;
             this.landingPageProxy = landingPageProxy;
+            this.imgLrgLink = imgLrgLink;
             this.moduleDict = {};
             this.isNew = false;
+            this.imgLargeHotspotCollection = this.experience.findComponentsByTag(`${constants_1.IMG_LRG}-1`);
         }
         hideModule(type, index) {
             const moduleTag = this.getModuleTag(type, index);
@@ -384,7 +391,7 @@ define('modules/ModuleHandler',["require", "exports", "./constants"], function (
         }
         processLayers(layersDict, moduleTag) {
             layersDict[constants_1.IMAGE] &&
-                this.showImageFromUrl(moduleTag, this.handleModuleImage, layersDict[constants_1.IMAGE]);
+                this.showImageFromUrl(moduleTag, ModuleHandler.handleModuleImage, layersDict[constants_1.IMAGE]);
             layersDict[constants_1.PART] &&
                 this.updateResultTextbox(constants_1.PART, moduleTag, layersDict[constants_1.PART]);
             layersDict[constants_1.SERIES] &&
@@ -410,6 +417,12 @@ define('modules/ModuleHandler',["require", "exports", "./constants"], function (
                     layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
                         const obj = this.getResultData(moduleTag);
                         callback(layer, obj.data);
+                    });
+                this.isNew &&
+                    layer.on(this.CerosSDK.EVENTS.CLICKED, (layer) => {
+                        const currentObj = this.getResultData(moduleTag);
+                        this.imgLrgLink.value = currentObj.data.image;
+                        this.imgLargeHotspotCollection.click();
                     });
             });
         }
@@ -438,7 +451,7 @@ define('modules/ModuleHandler',["require", "exports", "./constants"], function (
                 });
             });
         }
-        handleModuleImage(img, data) {
+        static handleModuleImage(img, data) {
             const imgStr = data.image;
             try {
                 new URL(imgStr);
@@ -446,7 +459,7 @@ define('modules/ModuleHandler',["require", "exports", "./constants"], function (
             }
             catch (e) {
                 console.error(e);
-                img.setUrl("https://admin.ceros.com/v1/account/littelfuse/images/2025-06-17-60ecf7d1a494b7d0760c289a69b27a44-product-image-place-holder-jpg/proxy");
+                img.setUrl(constants_1.DEFAULT_IMAGE);
             }
         }
         getResultData(moduleTag) {
@@ -457,7 +470,7 @@ define('modules/ModuleHandler',["require", "exports", "./constants"], function (
     exports.ModuleHandler = ModuleHandler;
 });
 
-define('modules/Carousel',["require", "exports", "./Observer"], function (require, exports, Observer_1) {
+define('modules/Carousel',["require", "exports", "./Observer", "./DoubleClickBugHandler"], function (require, exports, Observer_1, DoubleClickBugHandler_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Carousel = void 0;
@@ -475,6 +488,7 @@ define('modules/Carousel',["require", "exports", "./Observer"], function (requir
             this.currentIndex = this.experience.findComponentsByTag(`${this.name}-current`);
             this.totalIndex = this.experience.findComponentsByTag(`${this.name}-total`);
             this.pages = {};
+            this.doubleClickBugHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.registerNavigationEvents();
         }
         init(parts) {
@@ -496,10 +510,15 @@ define('modules/Carousel',["require", "exports", "./Observer"], function (requir
             console.log(this.pages);
         }
         registerNavigationEvents() {
-            this.next.on(this.CerosSDK.EVENTS.CLICKED, () => {
+            this.next.on(this.CerosSDK.EVENTS.CLICKED, (layer) => {
+                if (this.doubleClickBugHandler.isDoubleClickBug(layer.id))
+                    return;
                 this.currentPage.value++;
+                console.log(this.currentPage.value);
             });
-            this.back.on(this.CerosSDK.EVENTS.CLICKED, () => {
+            this.back.on(this.CerosSDK.EVENTS.CLICKED, (layer) => {
+                if (this.doubleClickBugHandler.isDoubleClickBug(layer.id))
+                    return;
                 this.currentPage.value--;
             });
             this.next.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
@@ -580,7 +599,7 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ResultHandler = void 0;
     class ResultHandler {
-        constructor(experience, CerosSDK, currentNodeObservable, distributor, relatedProductsLink, accessoriesLink, PapaParse) {
+        constructor(experience, CerosSDK, currentNodeObservable, distributor, relatedProductsLink, accessoriesLink, PapaParse, imgLrgLink) {
             this.experience = experience;
             this.CerosSDK = CerosSDK;
             this.currentNodeObservable = currentNodeObservable;
@@ -588,31 +607,41 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
             this.relatedProductsLink = relatedProductsLink;
             this.accessoriesLink = accessoriesLink;
             this.PapaParse = PapaParse;
+            this.imgLrgLink = imgLrgLink;
             this.csvData = {
                 "related products": {},
                 accessories: {},
             };
-            this.overlayPartsState = {
-                "related products": [],
-                accessories: [],
-            };
             this.doubleClickBugHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.landingPageProxy = new LandinPageProxy_1.LandingPageProxy();
-            this.resultModulesHandler = new ModuleHandler_1.ModuleHandler("module", experience, CerosSDK, distributor, this.landingPageProxy);
-            this.relatedProductsModulesHandler = new ModuleHandler_1.ModuleHandler(constants_1.RELATED_PRODUCTS, experience, CerosSDK, distributor, this.landingPageProxy);
-            this.accessoriesModulesHandler = new ModuleHandler_1.ModuleHandler(constants_1.ACCESSORIES, experience, CerosSDK, distributor, this.landingPageProxy);
+            this.resultModulesHandler = new ModuleHandler_1.ModuleHandler(constants_1.RESULTS, experience, CerosSDK, distributor, this.landingPageProxy, this.imgLrgLink);
+            this.relatedProductsModulesHandler = new ModuleHandler_1.ModuleHandler(constants_1.RELATED_PRODUCTS, experience, CerosSDK, distributor, this.landingPageProxy, this.imgLrgLink);
+            this.accessoriesModulesHandler = new ModuleHandler_1.ModuleHandler(constants_1.ACCESSORIES, experience, CerosSDK, distributor, this.landingPageProxy, this.imgLrgLink);
             this.accessoriesCarousel = new Carousel_1.Carousel(constants_1.MAX_ACCESSORIES, constants_1.ACCESSORIES, CerosSDK, experience, this.accessoriesModulesHandler);
             this.relatedProductsCarousel = new Carousel_1.Carousel(constants_1.MAX_RELATED_PRODUCTS, constants_1.RELATED_PRODUCTS, CerosSDK, experience, this.relatedProductsModulesHandler);
+            this.resultsCarousel = new Carousel_1.Carousel(constants_1.MAX_RESULTS, constants_1.RESULTS, CerosSDK, experience, this.resultModulesHandler);
         }
-        showResultModule(type) {
-            this.updateResultModules(type);
-            const moduleResultHotspot = this.experience.findComponentsByTag(`module-${type}`);
-            moduleResultHotspot.click();
+        showResultModule(length) {
+            this.updateResultModules(length);
+            this.triggerHotspot(constants_1.RESULTS, length, constants_1.MAX_RESULTS);
+        }
+        sortNodesBySales() {
+            return this.currentNodeObservable.value.children.sort((a, b) => {
+                const aSales = isNaN(Number(a.data.sales)) ? 0 : Number(a.data.sales);
+                const bSales = isNaN(Number(b.data.sales)) ? 0 : Number(b.data.sales);
+                return bSales - aSales;
+            });
         }
         updateResultModules(type) {
-            this.currentNodeObservable.value.children.forEach((node, index) => {
-                this.resultModulesHandler.updateModule(type, index, node.data, this.processOverlayLayers.bind(this));
-            });
+            const results = this.sortNodesBySales();
+            if (results.length <= constants_1.MAX_RESULTS) {
+                results.forEach((node, index) => {
+                    this.resultModulesHandler.updateModule(type, index, node.data, this.processOverlayLayers.bind(this));
+                });
+            }
+            else {
+                this.resultsCarousel.init(results.map((node) => node.data));
+            }
         }
         processOverlayLayers(layersDict, moduleTag) {
             if (layersDict[constants_1.RELATED_PRODUCTS]) {
@@ -649,12 +678,12 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
         }
         registerOverlayAnimation(layer, moduleTag, name) {
             layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-                const items = this.getRelatedParts(moduleTag, name);
+                const items = this.getPartNumbers(moduleTag, name);
                 if (items.length === 0) {
                     layer.hide();
                 }
                 else if (name === constants_1.ACCESSORIES) {
-                    const hasRelatedProducts = !!this.getRelatedParts(moduleTag, constants_1.RELATED_PRODUCTS).length;
+                    const hasRelatedProducts = !!this.getPartNumbers(moduleTag, constants_1.RELATED_PRODUCTS).length;
                     const hasProductGuide = !!this.getValue(moduleTag, constants_1.PRODUCT_GUIDE);
                     if (hasRelatedProducts || hasProductGuide) {
                         if (layer.getTags().find((tag) => tag === "pos:1")) {
@@ -669,32 +698,34 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
                 }
             });
         }
-        registerOverlayClick(layer, moduleTag, name, link) {
+        registerOverlayClick(layer, moduleTag, overlayName, link) {
             layer.on(this.CerosSDK.EVENTS.CLICKED, (layer) => __awaiter(this, void 0, void 0, function* () {
                 if (this.doubleClickBugHandler.isDoubleClickBug(layer.id))
                     return;
-                const items = this.getRelatedParts(moduleTag, name);
-                if (!items.length)
+                const partNumbers = this.getPartNumbers(moduleTag, overlayName);
+                if (!partNumbers.length)
                     return;
-                yield this.loadCsvData(name, link);
-                // console.log(this.csvData[name]);
-                const parts = this.getExistingParts(name, items);
+                yield this.loadCsvData(overlayName, link);
+                const parts = this.getExistingParts(overlayName, partNumbers);
                 if (!parts.length)
                     return;
-                if (name === constants_1.RELATED_PRODUCTS) {
+                if (overlayName === constants_1.RELATED_PRODUCTS) {
                     this.updateRelatedProductsModules(parts);
+                    this.triggerHotspot(overlayName, parts.length, constants_1.MAX_RELATED_PRODUCTS);
                 }
-                else if (name === constants_1.ACCESSORIES) {
+                else if (overlayName === constants_1.ACCESSORIES) {
                     this.updateAccessoriesModules(parts);
+                    this.triggerHotspot(overlayName, parts.length, constants_1.MAX_ACCESSORIES);
                 }
-                const hotspotCollection = this.experience.findComponentsByTag(`${name}-${parts.length < 6 ? parts.length : "4+"}`);
-                hotspotCollection.click();
             }));
         }
-        getRelatedParts(moduleTag, name) {
+        triggerHotspot(name, length, max) {
+            const hotspotCollection = this.experience.findComponentsByTag(`${name}-${length <= max ? length : `${max + 1}+`}`);
+            hotspotCollection.click();
+        }
+        getPartNumbers(moduleTag, name) {
             const value = this.getValue(moduleTag, name);
-            const items = value ? value.split(constants_1.DIVIDER).map((str) => str.trim()) : [];
-            return items;
+            return value ? value.split(constants_1.DIVIDER).map((str) => str.replace(" ", "")) : [];
         }
         getValue(moduleTag, name) {
             const dict = this.resultModulesHandler.getResultData(moduleTag);
@@ -734,7 +765,7 @@ define('modules/ResultHandler',["require", "exports", "./constants", "./LandinPa
         indexByPartNumber(data) {
             const result = {};
             data.forEach((obj) => {
-                result[obj.part] = obj;
+                result[obj.part.trim()] = obj;
             });
             return result;
         }
@@ -767,7 +798,16 @@ define('modules/questionStrategies/MaskingOptionsWithSubCategoriesStrategy',["re
 });
 
 /// <reference path="../../types/papaparse.d.ts" />
-define('modules/QuizContext',["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1) {
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+define('modules/QuizContext',["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy", "./ModuleHandler"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1, ModuleHandler_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
@@ -781,13 +821,18 @@ define('modules/QuizContext',["require", "exports", "./constants", "./Observer",
             this.accessoriesLink = accessoriesLink;
             this.PapaParse = PapaParse;
             this.questions = {};
+            this.imgLargeOverlayCollection = this.experience.findLayersByTag(constants_1.IMG_LRG);
+            this.imgLrgLink = new Observer_1.Observable("");
+            this.imgLrgCloseHotspotCollection = this.experience.findLayersByTag(`${constants_1.IMG_LRG}-close`);
             this.currentNode = new Observer_1.Observable(this.nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
             this.backLayersCollection = this.experience.findLayersByTag(constants_1.BACK);
             this.navCollecttion = this.experience.findComponentsByTag(constants_1.NAV);
             this.pathTextCollection = this.experience.findComponentsByTag(constants_1.PATH);
             this.resetCollection = this.experience.findLayersByTag(constants_1.RESET);
-            this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor, relatedProductsLink, accessoriesLink, PapaParse);
+            this.mcaseAdapterCtaCollection = this.experience.findLayersByTag(`${constants_1.MCASE_ADAPTER}-cta`);
+            this.resultHandler = new ResultHandler_1.ResultHandler(experience, CerosSDK, this.currentNode, distributor, relatedProductsLink, accessoriesLink, PapaParse, this.imgLrgLink);
+            this.mcaseAdapterModuleHandler = new ModuleHandler_1.ModuleHandler(constants_1.MCASE_ADAPTER, experience, CerosSDK, distributor, this.resultHandler.landingPageProxy, this.imgLrgLink);
             this.doubleClickHandler = new DoubleClickBugHandler_1.DoubleClickBugHandler();
             this.init();
         }
@@ -795,6 +840,22 @@ define('modules/QuizContext',["require", "exports", "./constants", "./Observer",
             this.subscribeCurrentNodeObserver();
             this.subscribeToCerosEvents();
             this.assignQuestionsStrategy();
+            this.registerImageOverlay();
+        }
+        registerImageOverlay() {
+            this.imgLargeOverlayCollection.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+                ModuleHandler_1.ModuleHandler.handleModuleImage(layer, {
+                    image: this.imgLrgLink.value,
+                });
+            });
+            this.imgLrgCloseHotspotCollection.on(this.CerosSDK.EVENTS.CLICKED, () => {
+                this.imgLrgLink.value = "";
+            });
+            this.imgLrgLink.subscribe((link) => {
+                this.imgLargeOverlayCollection.layers.forEach((layer) => {
+                    ModuleHandler_1.ModuleHandler.handleModuleImage(layer, { image: link });
+                });
+            });
         }
         subscribeCurrentNodeObserver() {
             this.currentNode.subscribe(this.handleNodeChange.bind(this));
@@ -823,6 +884,24 @@ define('modules/QuizContext',["require", "exports", "./constants", "./Observer",
             this.backLayersCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleBackNavigation.bind(this));
             this.navCollecttion.on(this.CerosSDK.EVENTS.CLICKED, this.handleRandomNavigation.bind(this));
             this.resetCollection.on(this.CerosSDK.EVENTS.CLICKED, this.resetQuiz.bind(this));
+            this.mcaseAdapterCtaCollection.on(this.CerosSDK.EVENTS.CLICKED, this.handleMcaseAdapter.bind(this));
+        }
+        handleMcaseAdapter(layer) {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (this.doubleClickHandler.isDoubleClickBug(layer.id))
+                    return;
+                const partNum = layer.getPayload().trim();
+                yield this.resultHandler.loadCsvData(constants_1.RELATED_PRODUCTS, this.relatedProductsLink);
+                const data = this.resultHandler.csvData[constants_1.RELATED_PRODUCTS][partNum];
+                if (data) {
+                    this.mcaseAdapterModuleHandler.updateModule(1, 0, data);
+                    const hotspotCollection = this.experience.findComponentsByTag(`${constants_1.MCASE_ADAPTER}-1`);
+                    hotspotCollection.click();
+                }
+                else {
+                    console.error(`Could not find part ${partNum} in related products sheet`);
+                }
+            });
         }
         resetQuiz() {
             this.currentNode.value = this.nodeTree.root;

@@ -10,6 +10,7 @@ import {
   RESET,
   MCASE_ADAPTER,
   RELATED_PRODUCTS,
+  IMG_LRG,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
@@ -35,6 +36,12 @@ export class QuizContext {
   private doubleClickHandler: DoubleClickBugHandler;
   private mcaseAdapterModuleHandler: ModuleHandler;
   private mcaseAdapterCtaCollection: CerosLayerCollection;
+  private imgLargeOverlayCollection = this.experience.findLayersByTag(IMG_LRG);
+
+  private imgLrgLink: Observable<string> = new Observable("");
+  private imgLrgCloseHotspotCollection = this.experience.findLayersByTag(
+    `${IMG_LRG}-close`
+  );
 
   constructor(
     public CerosSDK: CerosSDK,
@@ -61,7 +68,8 @@ export class QuizContext {
       distributor,
       relatedProductsLink,
       accessoriesLink,
-      PapaParse
+      PapaParse,
+      this.imgLrgLink
     );
 
     this.mcaseAdapterModuleHandler = new ModuleHandler(
@@ -69,7 +77,8 @@ export class QuizContext {
       experience,
       CerosSDK,
       distributor,
-      this.resultHandler.landingPageProxy
+      this.resultHandler.landingPageProxy,
+      this.imgLrgLink
     );
 
     this.doubleClickHandler = new DoubleClickBugHandler();
@@ -81,6 +90,28 @@ export class QuizContext {
     this.subscribeCurrentNodeObserver();
     this.subscribeToCerosEvents();
     this.assignQuestionsStrategy();
+    this.registerImageOverlay();
+  }
+
+  registerImageOverlay() {
+    this.imgLargeOverlayCollection.on(
+      this.CerosSDK.EVENTS.ANIMATION_STARTED,
+      (layer: CerosLayer) => {
+        ModuleHandler.handleModuleImage(layer, {
+          image: this.imgLrgLink.value,
+        });
+      }
+    );
+
+    this.imgLrgCloseHotspotCollection.on(this.CerosSDK.EVENTS.CLICKED, () => {
+      this.imgLrgLink.value = "";
+    });
+
+    this.imgLrgLink.subscribe((link: string) => {
+      this.imgLargeOverlayCollection.layers.forEach((layer) => {
+        ModuleHandler.handleModuleImage(layer, { image: link });
+      });
+    });
   }
 
   subscribeCurrentNodeObserver() {

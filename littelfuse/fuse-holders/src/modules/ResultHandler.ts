@@ -1,12 +1,13 @@
 import {
   ACCESSORIES,
-  DESCRIPTION,
   DIVIDER,
   MAX_ACCESSORIES,
   MAX_RELATED_PRODUCTS,
   PRODUCT_GUIDE,
   RELATED_PRODUCTS,
-  SPECS,
+  IMG_LRG,
+  RESULTS,
+  MAX_RESULTS,
 } from "./constants";
 import { Node } from "./Node";
 import { Observable } from "./Observer";
@@ -27,6 +28,7 @@ export class ResultHandler {
   private resultModulesHandler: ModuleHandler;
   private relatedProductsModulesHandler: ModuleHandler;
   private accessoriesModulesHandler: ModuleHandler;
+  private resultsCarousel: Carousel;
   private accessoriesCarousel: Carousel;
   private relatedProductsCarousel: Carousel;
   private doubleClickBugHandler: DoubleClickBugHandler =
@@ -39,15 +41,17 @@ export class ResultHandler {
     private distributor: string,
     private relatedProductsLink: string,
     private accessoriesLink: string,
-    private PapaParse: typeof window.Papa
+    private PapaParse: typeof window.Papa,
+    private imgLrgLink: Observable<string>
   ) {
     this.landingPageProxy = new LandingPageProxy();
     this.resultModulesHandler = new ModuleHandler(
-      "module",
+      RESULTS,
       experience,
       CerosSDK,
       distributor,
-      this.landingPageProxy
+      this.landingPageProxy,
+      this.imgLrgLink
     );
 
     this.relatedProductsModulesHandler = new ModuleHandler(
@@ -55,7 +59,8 @@ export class ResultHandler {
       experience,
       CerosSDK,
       distributor,
-      this.landingPageProxy
+      this.landingPageProxy,
+      this.imgLrgLink
     );
 
     this.accessoriesModulesHandler = new ModuleHandler(
@@ -63,7 +68,8 @@ export class ResultHandler {
       experience,
       CerosSDK,
       distributor,
-      this.landingPageProxy
+      this.landingPageProxy,
+      this.imgLrgLink
     );
 
     this.accessoriesCarousel = new Carousel(
@@ -81,26 +87,44 @@ export class ResultHandler {
       experience,
       this.relatedProductsModulesHandler
     );
+
+    this.resultsCarousel = new Carousel(
+      MAX_RESULTS,
+      RESULTS,
+      CerosSDK,
+      experience,
+      this.resultModulesHandler
+    );
   }
 
-  showResultModule(type: number) {
-    this.updateResultModules(type);
+  showResultModule(length: number) {
+    this.updateResultModules(length);
 
-    const moduleResultHotspot = this.experience.findComponentsByTag(
-      `module-${type}`
-    );
-    moduleResultHotspot.click();
+    this.triggerHotspot(RESULTS, length, MAX_RESULTS);
+  }
+
+  sortNodesBySales() {
+    return this.currentNodeObservable.value.children.sort((a, b) => {
+      const aSales = isNaN(Number(a.data.sales)) ? 0 : Number(a.data.sales);
+      const bSales = isNaN(Number(b.data.sales)) ? 0 : Number(b.data.sales);
+      return bSales - aSales;
+    });
   }
 
   updateResultModules(type: number) {
-    this.currentNodeObservable.value.children.forEach((node, index) => {
-      this.resultModulesHandler.updateModule(
-        type,
-        index,
-        node.data,
-        this.processOverlayLayers.bind(this)
-      );
-    });
+    const results = this.sortNodesBySales();
+    if (results.length <= MAX_RESULTS) {
+      results.forEach((node, index) => {
+        this.resultModulesHandler.updateModule(
+          type,
+          index,
+          node.data,
+          this.processOverlayLayers.bind(this)
+        );
+      });
+    } else {
+      this.resultsCarousel.init(results.map((node) => node.data));
+    }
   }
 
   processOverlayLayers(
@@ -168,11 +192,11 @@ export class ResultHandler {
     name: Overlay
   ) {
     layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-      const items = this.getRelatedParts(moduleTag, name);
+      const items = this.getPartNumbers(moduleTag, name);
       if (items.length === 0) {
         layer.hide();
       } else if (name === ACCESSORIES) {
-        const hasRelatedProducts = !!this.getRelatedParts(
+        const hasRelatedProducts = !!this.getPartNumbers(
           moduleTag,
           RELATED_PRODUCTS
         ).length;
@@ -195,42 +219,43 @@ export class ResultHandler {
   registerOverlayClick(
     layer: CerosLayer,
     moduleTag: string,
-    name: Overlay,
+    overlayName: Overlay,
     link: string
   ) {
     layer.on(this.CerosSDK.EVENTS.CLICKED, async (layer) => {
       if (this.doubleClickBugHandler.isDoubleClickBug(layer.id)) return;
 
-      const items = this.getRelatedParts(moduleTag, name);
+      const partNumbers = this.getPartNumbers(moduleTag, overlayName);
 
-      if (!items.length) return;
+      if (!partNumbers.length) return;
 
-      await this.loadCsvData(name, link);
+      await this.loadCsvData(overlayName, link);
 
-      // console.log(this.csvData[name]);
-
-      const parts = this.getExistingParts(name, items);
+      const parts = this.getExistingParts(overlayName, partNumbers);
 
       if (!parts.length) return;
 
-      if (name === RELATED_PRODUCTS) {
+      if (overlayName === RELATED_PRODUCTS) {
         this.updateRelatedProductsModules(parts);
-      } else if (name === ACCESSORIES) {
+        this.triggerHotspot(overlayName, parts.length, MAX_RELATED_PRODUCTS);
+      } else if (overlayName === ACCESSORIES) {
         this.updateAccessoriesModules(parts);
+        this.triggerHotspot(overlayName, parts.length, MAX_ACCESSORIES);
       }
-
-      const hotspotCollection = this.experience.findComponentsByTag(
-        `${name}-${parts.length < 6 ? parts.length : "4+"}`
-      );
-
-      hotspotCollection.click();
     });
   }
 
-  getRelatedParts(moduleTag: string, name: string) {
+  triggerHotspot(name: string, length: number, max: number) {
+    const hotspotCollection = this.experience.findComponentsByTag(
+      `${name}-${length <= max ? length : `${max + 1}+`}`
+    );
+
+    hotspotCollection.click();
+  }
+
+  getPartNumbers(moduleTag: string, name: string) {
     const value = this.getValue(moduleTag, name);
-    const items = value ? value.split(DIVIDER).map((str) => str.trim()) : [];
-    return items;
+    return value ? value.split(DIVIDER).map((str) => str.replace(" ", "")) : [];
   }
 
   getValue(moduleTag: string, name: string) {
@@ -275,7 +300,7 @@ export class ResultHandler {
   indexByPartNumber(data: Record<string, string>[]) {
     const result: { [key: string]: Record<string, string> } = {};
     data.forEach((obj) => {
-      result[obj.part] = obj;
+      result[obj.part.trim()] = obj;
     });
     return result;
   }

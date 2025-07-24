@@ -66,7 +66,13 @@ export const BACK = "back";
 export const NAV = "nav";
 export const RELATED_PRODUCTS = "related products";
 export const ACCESSORIES = "accessories";
+export const RESULTS = "module";
 export const DIVIDER = ";";
 export const MAX_RELATED_PRODUCTS = 2;
 export const MAX_ACCESSORIES = 4;
+export const MAX_RESULTS = 5;
 export const MCASE_ADAPTER = "mcase-adapter";
+export const IMG_LRG = "img lrg";
+
+export const DEFAULT_IMAGE =
+  "https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/fuse-holders/Image+Not+Available.jpg";

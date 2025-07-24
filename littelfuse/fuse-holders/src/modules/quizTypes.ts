@@ -1,3 +1,5 @@
+import { RESULTS, RELATED_PRODUCTS, ACCESSORIES } from "./constants";
+
 export type QuestionStrategyName =
   | "hiding"
   | "masking"
@@ -15,4 +17,4 @@ export type FieldNodes = {
 
 export type CsvData = { [key: string]: string };
 
-export type Overlay = "accessories" | "related products";
+export type Overlay = typeof ACCESSORIES | typeof RELATED_PRODUCTS;
