@@ -9,9 +9,9 @@ export class NodeTree {
     this.root = new Node("Root");
   }
 
-  buildTree(data: Record<string, string>[]) {
+  buildTree(data: Record<string, string>[], fieldNames: string[]) {
     data.forEach((obj) => {
-      this.addBranch(this.root, obj);
+      this.addBranch(this.root, obj, fieldNames);
     });
 
     console.log(this.root);
@@ -29,17 +29,26 @@ export class NodeTree {
     }
   }
 
-  addBranch(node: Node, obj: Record<string, string>) {
+  addBranch(node: Node, obj: Record<string, string>, fieldNames: string[]) {
     let parent = node;
-    const fieldNames = Object.keys(this.fields);
     for (let i = 0; i < fieldNames.length; i++) {
       const key = fieldNames[i].trim();
-      // for (let i = 0; i < this.fields.length; i++) {
-      //   const key = this.fields[i].trim();
-      // const val = obj[key].trim();
-      const val = obj[key].trim();
-      if (this.fields[fieldNames[i]].type === "result") {
+      const val = obj[key]?.trim?.();
+      if (!val) continue;
+
+      if (this.fields[key].type === "result") {
         parent = this.addNewNode(val, key, parent, obj);
+      } else if (this.fields[key].multiValue) {
+        const remainingFields = fieldNames.slice(i + 1);
+        const values = obj[key].split(",").map((val) => val.trim());
+
+        values.forEach((value) => {
+          const node = this.addNewNode(value, key, parent);
+
+          this.addBranch(node, obj, remainingFields);
+        });
+
+        return;
       } else {
         parent = this.addNewNode(val, key, parent);
       }

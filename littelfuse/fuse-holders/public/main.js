@@ -34,7 +34,7 @@ if (typeof require !== "undefined" && typeof require === "function") {
                 download: true,
                 header: true,
                 complete: (result) => {
-                    nodeTree.buildTree(result.data);
+                    nodeTree.buildTree(result.data, constants.path1Fields);
                     new QuizModule.QuizContext(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse, path2Link);
                 },
             });

@@ -27,6 +27,14 @@ export class Node {
     );
   }
 
+  findAllChildrenThatIncludeValue(value: string) {
+    return (
+      this.children.filter((child) =>
+        child.value.toLowerCase().includes(value.toLowerCase())
+      ) || null
+    );
+  }
+
   findParentByName(name: string) {
     let node: Node | null = this;
 

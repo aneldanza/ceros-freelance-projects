@@ -28,7 +28,8 @@ export const fieldNodesDict: FieldNodes = {
   "application load": {
     type: "question",
     pathText: "Application Load: {{}}",
-    questionStrategy: "masking-with-mulitiple-cell-values",
+    questionStrategy: "masking",
+    multiValue: true,
   },
   "application amps": {
     type: "question",

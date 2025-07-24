@@ -13,6 +13,7 @@ export type Field = {
   questionStrategy?: QuestionStrategyName;
   skipif?: string[];
   skipBackIf?: Record<string, string[]>;
+  multiValue?: boolean;
 };
 export type FieldNodes = {
   [key: string]: Field;

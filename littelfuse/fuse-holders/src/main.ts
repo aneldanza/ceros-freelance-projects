@@ -49,7 +49,7 @@ if (typeof require !== "undefined" && typeof require === "function") {
           download: true,
           header: true,
           complete: (result: Papa.ParseResult<unknown>) => {
-            nodeTree.buildTree(result.data);
+            nodeTree.buildTree(result.data, constants.path1Fields);
             new QuizModule.QuizContext(
               CerosSDK,
               experience,

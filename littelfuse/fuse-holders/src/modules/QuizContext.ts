@@ -23,6 +23,7 @@ import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { ModuleHandler } from "./ModuleHandler";
 import { QuestionStrategyFactory } from "./questionStrategies/QuestionStrategyFactory";
+import { MaskingOptionsStrategyWithMultipleCellValues } from "./questionStrategies/MaskOptionsStrateyWithMultipleCellValues";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -219,7 +220,7 @@ export class QuizContext {
     }
   }
 
-  updateCurrentNodeValue = (nextNode: Node, qName: string, answer: string) => {
+  updateCurrentNodeValue(nextNode: Node, qName: string, answer: string) {
     if (
       fieldNodesDict[qName].skipif &&
       fieldNodesDict[qName].skipif.find((str) => str === answer) &&
@@ -229,14 +230,14 @@ export class QuizContext {
     } else {
       this.currentNode.value = nextNode;
     }
-  };
+  }
 
-  getNextNode = async (
+  async getNextNode(
     qName: string,
     answer: string,
     question: QuestionStrategy,
     comp: CerosComponent
-  ) => {
+  ) {
     if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
       //load path2 csv data
 
@@ -256,9 +257,9 @@ export class QuizContext {
 
       return this.currentTree.findChild(this.currentNode.value, key, value);
     }
-  };
+  }
 
-  loadCsvDataIntoNodeTree = () => {
+  loadCsvDataIntoNodeTree() {
     return new Promise<NodeTree>((resolve, reject) => {
       const path2FieldNodesDict = stepsFromFieldNames(
         path2Fields,
@@ -270,7 +271,7 @@ export class QuizContext {
         header: true,
         download: true,
         complete: (result) => {
-          tree.buildTree(result.data);
+          tree.buildTree(result.data, path2Fields);
           resolve(tree);
         },
         error: (error: any) => {
@@ -278,7 +279,7 @@ export class QuizContext {
         },
       });
     });
-  };
+  }
 
   handleBackNavigation(layer: CerosLayer) {
     // Prevent double-click bug

@@ -17,6 +17,9 @@ define(["require", "exports"], function (require, exports) {
         findChildThatIncludesValue(value) {
             return (this.children.find((child) => child.value.toLowerCase().includes(value.toLowerCase())) || null);
         }
+        findAllChildrenThatIncludeValue(value) {
+            return (this.children.filter((child) => child.value.toLowerCase().includes(value.toLowerCase())) || null);
+        }
         findParentByName(name) {
             let node = this;
             while (node) {

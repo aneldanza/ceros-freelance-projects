@@ -25,47 +25,6 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
             this.imgLargeOverlayCollection = this.experience.findLayersByTag(constants_1.IMG_LRG);
             this.imgLrgLink = new Observer_1.Observable("");
             this.imgLrgCloseHotspotCollection = this.experience.findLayersByTag(`${constants_1.IMG_LRG}-close`);
-            this.updateCurrentNodeValue = (nextNode, qName, answer) => {
-                if (constants_1.fieldNodesDict[qName].skipif &&
-                    constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer) &&
-                    nextNode.children.length) {
-                    this.currentNode.value = nextNode.children[0];
-                }
-                else {
-                    this.currentNode.value = nextNode;
-                }
-            };
-            this.getNextNode = (qName, answer, question, comp) => __awaiter(this, void 0, void 0, function* () {
-                if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
-                    //load path2 csv data
-                    this.currentTree = yield this.loadCsvDataIntoNodeTree();
-                    this.currentNode.value = this.currentTree.root;
-                    return this.currentTree.findChild(this.currentNode.value, "value", answer);
-                }
-                else {
-                    const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
-                        ? { key: "elementId", value: comp.id }
-                        : { key: "value", value: answer };
-                    return this.currentTree.findChild(this.currentNode.value, key, value);
-                }
-            });
-            this.loadCsvDataIntoNodeTree = () => {
-                return new Promise((resolve, reject) => {
-                    const path2FieldNodesDict = (0, utils_1.stepsFromFieldNames)(constants_1.path2Fields, constants_1.fieldNodesDict);
-                    const tree = new NodeTree_1.NodeTree(path2FieldNodesDict);
-                    this.PapaParse.parse(this.path2Link, {
-                        header: true,
-                        download: true,
-                        complete: (result) => {
-                            tree.buildTree(result.data);
-                            resolve(tree);
-                        },
-                        error: (error) => {
-                            reject(error);
-                        },
-                    });
-                });
-            };
             this.currentTree = nodeTree;
             this.currentNode = new Observer_1.Observable(nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
@@ -158,6 +117,49 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
                 else {
                     console.error(`coudn't find node with ${qName} and value ${answer} id: ${comp.id}`);
                 }
+            });
+        }
+        updateCurrentNodeValue(nextNode, qName, answer) {
+            if (constants_1.fieldNodesDict[qName].skipif &&
+                constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer) &&
+                nextNode.children.length) {
+                this.currentNode.value = nextNode.children[0];
+            }
+            else {
+                this.currentNode.value = nextNode;
+            }
+        }
+        getNextNode(qName, answer, question, comp) {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
+                    //load path2 csv data
+                    this.currentTree = yield this.loadCsvDataIntoNodeTree();
+                    this.currentNode.value = this.currentTree.root;
+                    return this.currentTree.findChild(this.currentNode.value, "value", answer);
+                }
+                else {
+                    const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
+                        ? { key: "elementId", value: comp.id }
+                        : { key: "value", value: answer };
+                    return this.currentTree.findChild(this.currentNode.value, key, value);
+                }
+            });
+        }
+        loadCsvDataIntoNodeTree() {
+            return new Promise((resolve, reject) => {
+                const path2FieldNodesDict = (0, utils_1.stepsFromFieldNames)(constants_1.path2Fields, constants_1.fieldNodesDict);
+                const tree = new NodeTree_1.NodeTree(path2FieldNodesDict);
+                this.PapaParse.parse(this.path2Link, {
+                    header: true,
+                    download: true,
+                    complete: (result) => {
+                        tree.buildTree(result.data, constants_1.path2Fields);
+                        resolve(tree);
+                    },
+                    error: (error) => {
+                        reject(error);
+                    },
+                });
             });
         }
         handleBackNavigation(layer) {
