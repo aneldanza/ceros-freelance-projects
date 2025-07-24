@@ -26,6 +26,16 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
             this.imgLargeOverlayCollection = this.experience.findLayersByTag(constants_1.IMG_LRG);
             this.imgLrgLink = new Observer_1.Observable("");
             this.imgLrgCloseHotspotCollection = this.experience.findLayersByTag(`${constants_1.IMG_LRG}-close`);
+            this.updateCurrentNodeValue = (nextNode, qName, answer) => {
+                if (constants_1.fieldNodesDict[qName].skipif &&
+                    constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer) &&
+                    nextNode.children.length) {
+                    this.currentNode.value = nextNode.children[0];
+                }
+                else {
+                    this.currentNode.value = nextNode;
+                }
+            };
             this.getNextNode = (qName, answer, question, comp) => __awaiter(this, void 0, void 0, function* () {
                 if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
                     //load path2 csv data
@@ -155,19 +165,12 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
                     console.error(`Could not find question field ${qName}`);
                     return;
                 }
-                const node = yield this.getNextNode(qName, answer, question, comp);
-                if (node) {
-                    if (constants_1.fieldNodesDict[qName].skipif &&
-                        constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer)) {
-                        const nextNode = node.children[0];
-                        this.currentNode.value = nextNode;
-                    }
-                    else {
-                        this.currentNode.value = node;
-                    }
+                const nextNode = yield this.getNextNode(qName, answer, question, comp);
+                if (nextNode) {
+                    this.updateCurrentNodeValue(nextNode, qName, answer);
                 }
                 else {
-                    console.error(`coudn't find node with ${qName} and value `);
+                    console.error(`coudn't find node with ${qName} and value ${answer} id: ${comp.id}`);
                 }
             });
         }

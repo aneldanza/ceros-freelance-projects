@@ -225,22 +225,28 @@ export class QuizContext {
       return;
     }
 
-    const node = await this.getNextNode(qName, answer, question, comp);
+    const nextNode = await this.getNextNode(qName, answer, question, comp);
 
-    if (node) {
-      if (
-        fieldNodesDict[qName].skipif &&
-        fieldNodesDict[qName].skipif.find((str) => str === answer)
-      ) {
-        const nextNode = node.children[0];
-        this.currentNode.value = nextNode;
-      } else {
-        this.currentNode.value = node;
-      }
+    if (nextNode) {
+      this.updateCurrentNodeValue(nextNode, qName, answer);
     } else {
-      console.error(`coudn't find node with ${qName} and value `);
+      console.error(
+        `coudn't find node with ${qName} and value ${answer} id: ${comp.id}`
+      );
     }
   }
+
+  updateCurrentNodeValue = (nextNode: Node, qName: string, answer: string) => {
+    if (
+      fieldNodesDict[qName].skipif &&
+      fieldNodesDict[qName].skipif.find((str) => str === answer) &&
+      nextNode.children.length
+    ) {
+      this.currentNode.value = nextNode.children[0];
+    } else {
+      this.currentNode.value = nextNode;
+    }
+  };
 
   getNextNode = async (
     qName: string,
