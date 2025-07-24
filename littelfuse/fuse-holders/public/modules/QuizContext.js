@@ -13,7 +13,7 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
     class QuizContext {
-        constructor(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse, path2Link, path2NodeTree) {
+        constructor(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse, path2Link) {
             this.CerosSDK = CerosSDK;
             this.experience = experience;
             this.distributor = distributor;
@@ -21,7 +21,6 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
             this.accessoriesLink = accessoriesLink;
             this.PapaParse = PapaParse;
             this.path2Link = path2Link;
-            this.path2NodeTree = path2NodeTree;
             this.questions = {};
             this.imgLargeOverlayCollection = this.experience.findLayersByTag(constants_1.IMG_LRG);
             this.imgLrgLink = new Observer_1.Observable("");

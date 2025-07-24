@@ -19,13 +19,9 @@ import { Node } from "./Node";
 import { getValueFromTags, capitalize, stepsFromFieldNames } from "./utils";
 import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrategy";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
-import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
 import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
-import { MaskingOptionsWithSubcategoriesStrategy } from "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy";
 import { ModuleHandler } from "./ModuleHandler";
-import { SliderOptionsStrategy } from "./questionStrategies/SliderOptionsStrategy";
-import { MaskingOptionsStrategyWithMultipleCellValues } from "./questionStrategies/MaskOptionsStrateyWithMultipleCellValues";
 import { QuestionStrategyFactory } from "./questionStrategies/QuestionStrategyFactory";
 
 export class QuizContext {
@@ -56,8 +52,7 @@ export class QuizContext {
     private relatedProductsLink: string,
     private accessoriesLink: string,
     private PapaParse: typeof window.Papa,
-    private path2Link: string,
-    private path2NodeTree: NodeTree
+    private path2Link: string
   ) {
     this.currentTree = nodeTree;
     this.currentNode = new Observable<Node>(nodeTree.root);
