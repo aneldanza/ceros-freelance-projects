@@ -25,6 +25,8 @@ import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { MaskingOptionsWithSubcategoriesStrategy } from "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy";
 import { ModuleHandler } from "./ModuleHandler";
 import { SliderOptionsStrategy } from "./questionStrategies/SliderOptionsStrategy";
+import { MaskingOptionsStrategyWithMultipleCellValues } from "./questionStrategies/MaskOptionsStrateyWithMultipleCellValues";
+import { QuestionStrategyFactory } from "./questionStrategies/QuestionStrategyFactory";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -128,29 +130,15 @@ export class QuizContext {
   assignQuestionsStrategy() {
     for (const fieldName in fieldNodesDict) {
       const field = fieldNodesDict[fieldName];
-      let strategy: QuestionStrategy;
 
       if (field.type === "question") {
-        if (field.questionStrategy === "hiding") {
-          strategy = new HidingOptionsStrategy(fieldName, this.experience);
-        } else if (field.questionStrategy === "masking-with-subcategories") {
-          strategy = new MaskingOptionsWithSubcategoriesStrategy(
-            fieldName,
-            this.experience,
-            this.currentNode,
-            this.CerosSDK
-          );
-        } else if (field.questionStrategy === "slider") {
-          // assign sliderStrategy
-          strategy = new SliderOptionsStrategy(fieldName, this.experience);
-        } else {
-          strategy = new MaskingOptionsStrategy(
-            fieldName,
-            this.experience,
-            this.currentNode,
-            this.CerosSDK
-          );
-        }
+        const strategy = QuestionStrategyFactory.create(
+          fieldName,
+          field,
+          this.experience,
+          this.currentNode,
+          this.CerosSDK
+        );
 
         this.questions[fieldName] = strategy;
       }

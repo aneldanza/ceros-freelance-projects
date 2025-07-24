@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy", "./ModuleHandler", "./questionStrategies/SliderOptionsStrategy"], function (require, exports, constants_1, NodeTree_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1, ModuleHandler_1, SliderOptionsStrategy_1) {
+define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./ModuleHandler", "./questionStrategies/QuestionStrategyFactory"], function (require, exports, constants_1, NodeTree_1, Observer_1, utils_1, HidingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, ModuleHandler_1, QuestionStrategyFactory_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
@@ -108,21 +108,8 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
         assignQuestionsStrategy() {
             for (const fieldName in constants_1.fieldNodesDict) {
                 const field = constants_1.fieldNodesDict[fieldName];
-                let strategy;
                 if (field.type === "question") {
-                    if (field.questionStrategy === "hiding") {
-                        strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience);
-                    }
-                    else if (field.questionStrategy === "masking-with-subcategories") {
-                        strategy = new MaskingOptionsWithSubCategoriesStrategy_1.MaskingOptionsWithSubcategoriesStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
-                    }
-                    else if (field.questionStrategy === "slider") {
-                        // assign sliderStrategy
-                        strategy = new SliderOptionsStrategy_1.SliderOptionsStrategy(fieldName, this.experience);
-                    }
-                    else {
-                        strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
-                    }
+                    const strategy = QuestionStrategyFactory_1.QuestionStrategyFactory.create(fieldName, field, this.experience, this.currentNode, this.CerosSDK);
                     this.questions[fieldName] = strategy;
                 }
             }

@@ -19,6 +19,14 @@ export class Node {
     );
   }
 
+  findChildThatIncludesValue(value: string) {
+    return (
+      this.children.find((child) =>
+        child.value.toLowerCase().includes(value.toLowerCase())
+      ) || null
+    );
+  }
+
   findParentByName(name: string) {
     let node: Node | null = this;
 
