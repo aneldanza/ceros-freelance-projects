@@ -1,8 +1,65 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DEFAULT_IMAGE = exports.IMG_LRG = exports.MCASE_ADAPTER = exports.MAX_RESULTS = exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.RESULTS = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.RESET = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = void 0;
+    exports.DEFAULT_IMAGE = exports.IMG_LRG = exports.MCASE_ADAPTER = exports.MAX_RESULTS = exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.RESULTS = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.RESET = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = exports.path1Fields = exports.path2Fields = void 0;
+    exports.path2Fields = [
+        "fuse type",
+        "application voltage",
+        "application load",
+        "application amps",
+        "fuse style",
+    ];
+    exports.path1Fields = [
+        "fuse type",
+        "fuse style",
+        "max voltage",
+        "max current",
+        "circuit option",
+        "style",
+        "mounting method",
+        "protection",
+        "part",
+    ];
+    // export const path2FieldNodesDict: FieldNodes = {
+    //   "fuse type": {
+    //     type: "question",
+    //     pathText: "Guide me",
+    //   },
+    //   "application voltage": {
+    //     type: "question",
+    //     pathText: "Application Voltage: {{}}",
+    //   },
+    //   "application load": {
+    //     type: "question",
+    //     pathText: "Application Load: {{}}",
+    //     questionStrategy: "masking",
+    //   },
+    //   "application amps": {
+    //     type: "question",
+    //     pathText: "Application Amps: {{}}",
+    //     questionStrategy: "slider",
+    //   },
+    //   "fuse style": {
+    //     type: "question",
+    //     pathText: "Fuse Style: {{}}",
+    //     questionStrategy: "masking-with-subcategories",
+    //   },
+    // };
     exports.fieldNodesDict = {
+        "application voltage": {
+            type: "question",
+            pathText: "Application Voltage: {{}}",
+        },
+        "application load": {
+            type: "question",
+            pathText: "Application Load: {{}}",
+            questionStrategy: "masking",
+        },
+        "application amps": {
+            type: "question",
+            pathText: "Application Amps: {{}}",
+            questionStrategy: "slider",
+        },
         "fuse type": {
             type: "question",
             pathText: "Fuse Type: {{}}",

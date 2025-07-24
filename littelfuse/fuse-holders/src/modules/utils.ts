@@ -1,7 +1,6 @@
-import { DELIMETER } from "./constants";
-import { NodeTree } from "./NodeTree";
+import { DELIMETER, fieldNodesDict } from "./constants";
 
-import { Node } from "./Node";
+import { FieldNodes } from "./quizTypes";
 
 export const getValueFromTags = (
   tags: string[],
@@ -27,4 +26,12 @@ export const capitalize = (text: string) => {
     .map((word: string) => word[0].toUpperCase() + word.slice(1));
 
   return words.join(" ");
+};
+
+export const stepsFromFieldNames = (
+  fieldNames: string[],
+  allSteps: FieldNodes
+) => {
+  const entries = fieldNames.map((name) => [name, allSteps[name]]);
+  return Object.fromEntries(entries);
 };

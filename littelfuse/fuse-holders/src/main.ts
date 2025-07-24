@@ -10,6 +10,7 @@ const link = script.getAttribute("data-link") || "";
 const distributor = script.getAttribute("data-distributor") || "";
 const relatedProductsLink = script.getAttribute("data-related-products") || "";
 const accessoriesLink = script.getAttribute("data-accessories") || "";
+const path2Link = script.getAttribute("data-path2") || "";
 
 if (typeof require !== "undefined" && typeof require === "function") {
   require.config({
@@ -27,16 +28,22 @@ if (typeof require !== "undefined" && typeof require === "function") {
     "modules/QuizContext",
     "modules/NodeTree",
     "modules/constants",
+    "modules/utils",
   ], function (
     CerosSDK: CerosSDK,
     PapaParse: typeof window.Papa,
     QuizModule: any,
     NodeTreeModule: any,
-    constants: any
+    constants: any,
+    utils: any
   ) {
     CerosSDK.findExperience()
       .done((experience: Experience) => {
-        const nodeTree = new NodeTreeModule.NodeTree(constants.fieldNodesDict);
+        const path1FieldsNodesDict = utils.stepsFromFieldNames(
+          constants.path1Fields,
+          constants.fieldNodesDict
+        );
+        const nodeTree = new NodeTreeModule.NodeTree(path1FieldsNodesDict);
 
         PapaParse.parse(link, {
           download: true,
@@ -50,7 +57,8 @@ if (typeof require !== "undefined" && typeof require === "function") {
               distributor,
               relatedProductsLink,
               accessoriesLink,
-              PapaParse
+              PapaParse,
+              path2Link
             );
           },
         });

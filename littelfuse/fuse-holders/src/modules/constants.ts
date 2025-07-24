@@ -1,6 +1,66 @@
 import { FieldNodes } from "./quizTypes";
 
+export const path2Fields: string[] = [
+  "fuse type",
+  "application voltage",
+  "application load",
+  "application amps",
+  "fuse style",
+];
+
+export const path1Fields: string[] = [
+  "fuse type",
+  "fuse style",
+  "max voltage",
+  "max current",
+  "circuit option",
+  "style",
+  "mounting method",
+  "protection",
+  "part",
+];
+
+// export const path2FieldNodesDict: FieldNodes = {
+//   "fuse type": {
+//     type: "question",
+//     pathText: "Guide me",
+//   },
+//   "application voltage": {
+//     type: "question",
+//     pathText: "Application Voltage: {{}}",
+//   },
+//   "application load": {
+//     type: "question",
+//     pathText: "Application Load: {{}}",
+//     questionStrategy: "masking",
+//   },
+//   "application amps": {
+//     type: "question",
+//     pathText: "Application Amps: {{}}",
+//     questionStrategy: "slider",
+//   },
+//   "fuse style": {
+//     type: "question",
+//     pathText: "Fuse Style: {{}}",
+//     questionStrategy: "masking-with-subcategories",
+//   },
+// };
+
 export const fieldNodesDict: FieldNodes = {
+  "application voltage": {
+    type: "question",
+    pathText: "Application Voltage: {{}}",
+  },
+  "application load": {
+    type: "question",
+    pathText: "Application Load: {{}}",
+    questionStrategy: "masking",
+  },
+  "application amps": {
+    type: "question",
+    pathText: "Application Amps: {{}}",
+    questionStrategy: "slider",
+  },
   "fuse type": {
     type: "question",
     pathText: "Fuse Type: {{}}",

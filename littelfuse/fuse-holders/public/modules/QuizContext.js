@@ -8,24 +8,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-define(["require", "exports", "./constants", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy", "./ModuleHandler"], function (require, exports, constants_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1, ModuleHandler_1) {
+define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./utils", "./questionStrategies/HidingOptionsStrategy", "./questionStrategies/MaskingOptionsStrategy", "./ResultHandler", "./DoubleClickBugHandler", "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy", "./ModuleHandler", "./questionStrategies/SliderOptionsStrategy"], function (require, exports, constants_1, NodeTree_1, Observer_1, utils_1, HidingOptionsStrategy_1, MaskingOptionsStrategy_1, ResultHandler_1, DoubleClickBugHandler_1, MaskingOptionsWithSubCategoriesStrategy_1, ModuleHandler_1, SliderOptionsStrategy_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.QuizContext = void 0;
     class QuizContext {
-        constructor(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse) {
+        constructor(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse, path2Link, path2NodeTree) {
             this.CerosSDK = CerosSDK;
             this.experience = experience;
-            this.nodeTree = nodeTree;
             this.distributor = distributor;
             this.relatedProductsLink = relatedProductsLink;
             this.accessoriesLink = accessoriesLink;
             this.PapaParse = PapaParse;
+            this.path2Link = path2Link;
+            this.path2NodeTree = path2NodeTree;
             this.questions = {};
             this.imgLargeOverlayCollection = this.experience.findLayersByTag(constants_1.IMG_LRG);
             this.imgLrgLink = new Observer_1.Observable("");
             this.imgLrgCloseHotspotCollection = this.experience.findLayersByTag(`${constants_1.IMG_LRG}-close`);
-            this.currentNode = new Observer_1.Observable(this.nodeTree.root);
+            this.loadCsvDataIntoNodeTree = () => {
+                return new Promise((resolve, reject) => {
+                    const path2FieldNodesDict = (0, utils_1.stepsFromFieldNames)(constants_1.path2Fields, constants_1.fieldNodesDict);
+                    const tree = new NodeTree_1.NodeTree(path2FieldNodesDict);
+                    this.PapaParse.parse(this.path2Link, {
+                        header: true,
+                        download: true,
+                        complete: (result) => {
+                            tree.buildTree(result.data);
+                            resolve(tree);
+                        },
+                        error: (error) => {
+                            reject(error);
+                        },
+                    });
+                });
+            };
+            this.currentTree = nodeTree;
+            this.currentNode = new Observer_1.Observable(nodeTree.root);
             this.answerCollection = this.experience.findComponentsByTag(constants_1.OPTION);
             this.backLayersCollection = this.experience.findLayersByTag(constants_1.BACK);
             this.navCollecttion = this.experience.findComponentsByTag(constants_1.NAV);
@@ -73,6 +92,10 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                     else if (field.questionStrategy === "masking-with-subcategories") {
                         strategy = new MaskingOptionsWithSubCategoriesStrategy_1.MaskingOptionsWithSubcategoriesStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
                     }
+                    else if (field.questionStrategy === "slider") {
+                        // assign sliderStrategy
+                        strategy = new SliderOptionsStrategy_1.SliderOptionsStrategy(fieldName, this.experience);
+                    }
                     else {
                         strategy = new MaskingOptionsStrategy_1.MaskingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
                     }
@@ -105,35 +128,46 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             });
         }
         resetQuiz() {
-            this.currentNode.value = this.nodeTree.root;
+            this.currentNode.value = this.currentTree.root;
         }
         handleAnswerClick(comp) {
-            if (this.doubleClickHandler.isDoubleClickBug(comp.id))
-                return;
-            const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
-            const question = this.questions[qName];
-            const answer = comp.getPayload().trim();
-            if (!question) {
-                console.error(`Could not find question field ${qName}`);
-                return;
-            }
-            const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
-                ? { key: "elementId", value: comp.id }
-                : { key: "value", value: answer };
-            const node = this.nodeTree.findChild(this.currentNode.value, key, value);
-            if (node) {
-                if (constants_1.fieldNodesDict[qName].skipif &&
-                    constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer)) {
-                    const nextNode = node.children[0];
-                    this.currentNode.value = nextNode;
+            return __awaiter(this, void 0, void 0, function* () {
+                if (this.doubleClickHandler.isDoubleClickBug(comp.id))
+                    return;
+                const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
+                const question = this.questions[qName];
+                const answer = comp.getPayload().trim();
+                let node;
+                if (!question) {
+                    console.error(`Could not find question field ${qName}`);
+                    return;
+                }
+                if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
+                    //load path2 csv data
+                    this.currentTree = yield this.loadCsvDataIntoNodeTree();
+                    this.currentNode.value = this.currentTree.root;
+                    node = this.currentTree.findChild(this.currentNode.value, "value", answer);
                 }
                 else {
-                    this.currentNode.value = node;
+                    const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
+                        ? { key: "elementId", value: comp.id }
+                        : { key: "value", value: answer };
+                    node = this.currentTree.findChild(this.currentNode.value, key, value);
                 }
-            }
-            else {
-                console.error(`coudn't find node with ${qName} and value ${value}`);
-            }
+                if (node) {
+                    if (constants_1.fieldNodesDict[qName].skipif &&
+                        constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer)) {
+                        const nextNode = node.children[0];
+                        this.currentNode.value = nextNode;
+                    }
+                    else {
+                        this.currentNode.value = node;
+                    }
+                }
+                else {
+                    console.error(`coudn't find node with ${qName} and value `);
+                }
+            });
         }
         handleBackNavigation(layer) {
             // Prevent double-click bug

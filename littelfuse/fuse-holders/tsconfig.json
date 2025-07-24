@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES6",
-    "lib": ["ES6", "DOM"],
+    "lib": ["ES2019", "DOM"],
     "module": "amd",
     "outDir": "./public",
     "rootDir": "./src",

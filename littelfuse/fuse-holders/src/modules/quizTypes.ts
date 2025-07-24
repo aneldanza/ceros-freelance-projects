@@ -3,7 +3,8 @@ import { RESULTS, RELATED_PRODUCTS, ACCESSORIES } from "./constants";
 export type QuestionStrategyName =
   | "hiding"
   | "masking"
-  | "masking-with-subcategories";
+  | "masking-with-subcategories"
+  | "slider";
 
 export type FieldNodes = {
   [key: string]: {

@@ -11,11 +11,12 @@ import {
   MCASE_ADAPTER,
   RELATED_PRODUCTS,
   IMG_LRG,
+  path2Fields,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
 import { Node } from "./Node";
-import { getValueFromTags, capitalize } from "./utils";
+import { getValueFromTags, capitalize, stepsFromFieldNames } from "./utils";
 import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrategy";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
 import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
@@ -23,6 +24,7 @@ import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { MaskingOptionsWithSubcategoriesStrategy } from "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy";
 import { ModuleHandler } from "./ModuleHandler";
+import { SliderOptionsStrategy } from "./questionStrategies/SliderOptionsStrategy";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -42,17 +44,21 @@ export class QuizContext {
   private imgLrgCloseHotspotCollection = this.experience.findLayersByTag(
     `${IMG_LRG}-close`
   );
+  private currentTree: NodeTree;
 
   constructor(
     public CerosSDK: CerosSDK,
     public experience: Experience,
-    private nodeTree: NodeTree,
+    nodeTree: NodeTree,
     public distributor: string,
     private relatedProductsLink: string,
     private accessoriesLink: string,
-    private PapaParse: typeof window.Papa
+    private PapaParse: typeof window.Papa,
+    private path2Link: string,
+    private path2NodeTree: NodeTree
   ) {
-    this.currentNode = new Observable<Node>(this.nodeTree.root);
+    this.currentTree = nodeTree;
+    this.currentNode = new Observable<Node>(nodeTree.root);
     this.answerCollection = this.experience.findComponentsByTag(OPTION);
     this.backLayersCollection = this.experience.findLayersByTag(BACK);
     this.navCollecttion = this.experience.findComponentsByTag(NAV);
@@ -134,6 +140,9 @@ export class QuizContext {
             this.currentNode,
             this.CerosSDK
           );
+        } else if (field.questionStrategy === "slider") {
+          // assign sliderStrategy
+          strategy = new SliderOptionsStrategy(fieldName, this.experience);
         } else {
           strategy = new MaskingOptionsStrategy(
             fieldName,
@@ -142,6 +151,7 @@ export class QuizContext {
             this.CerosSDK
           );
         }
+
         this.questions[fieldName] = strategy;
       }
     }
@@ -200,27 +210,41 @@ export class QuizContext {
   }
 
   resetQuiz() {
-    this.currentNode.value = this.nodeTree.root;
+    this.currentNode.value = this.currentTree.root;
   }
 
-  handleAnswerClick(comp: CerosComponent) {
+  async handleAnswerClick(comp: CerosComponent) {
     if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
 
     const qName = getValueFromTags(comp.getTags(), QUESTION);
     const question = this.questions[qName];
     const answer = comp.getPayload().trim();
+    let node: Node | undefined;
 
     if (!question) {
       console.error(`Could not find question field ${qName}`);
       return;
     }
 
-    const { key, value }: { key: "elementId" | "value"; value: string } =
-      question instanceof HidingOptionsStrategy
-        ? { key: "elementId", value: comp.id }
-        : { key: "value", value: answer };
+    if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
+      //load path2 csv data
 
-    const node = this.nodeTree.findChild(this.currentNode.value, key, value);
+      this.currentTree = await this.loadCsvDataIntoNodeTree();
+      this.currentNode.value = this.currentTree.root;
+
+      node = this.currentTree.findChild(
+        this.currentNode.value,
+        "value",
+        answer
+      );
+    } else {
+      const { key, value }: { key: "elementId" | "value"; value: string } =
+        question instanceof HidingOptionsStrategy
+          ? { key: "elementId", value: comp.id }
+          : { key: "value", value: answer };
+
+      node = this.currentTree.findChild(this.currentNode.value, key, value);
+    }
 
     if (node) {
       if (
@@ -233,9 +257,31 @@ export class QuizContext {
         this.currentNode.value = node;
       }
     } else {
-      console.error(`coudn't find node with ${qName} and value ${value}`);
+      console.error(`coudn't find node with ${qName} and value `);
     }
   }
+
+  loadCsvDataIntoNodeTree = () => {
+    return new Promise<NodeTree>((resolve, reject) => {
+      const path2FieldNodesDict = stepsFromFieldNames(
+        path2Fields,
+        fieldNodesDict
+      );
+      const tree = new NodeTree(path2FieldNodesDict);
+
+      this.PapaParse.parse(this.path2Link, {
+        header: true,
+        download: true,
+        complete: (result) => {
+          tree.buildTree(result.data);
+          resolve(tree);
+        },
+        error: (error: any) => {
+          reject(error);
+        },
+      });
+    });
+  };
 
   handleBackNavigation(layer: CerosLayer) {
     // Prevent double-click bug

@@ -9,6 +9,7 @@ const link = script.getAttribute("data-link") || "";
 const distributor = script.getAttribute("data-distributor") || "";
 const relatedProductsLink = script.getAttribute("data-related-products") || "";
 const accessoriesLink = script.getAttribute("data-accessories") || "";
+const path2Link = script.getAttribute("data-path2") || "";
 if (typeof require !== "undefined" && typeof require === "function") {
     require.config({
         baseUrl: "http://127.0.0.1:5173/",
@@ -23,16 +24,18 @@ if (typeof require !== "undefined" && typeof require === "function") {
         "modules/QuizContext",
         "modules/NodeTree",
         "modules/constants",
-    ], function (CerosSDK, PapaParse, QuizModule, NodeTreeModule, constants) {
+        "modules/utils",
+    ], function (CerosSDK, PapaParse, QuizModule, NodeTreeModule, constants, utils) {
         CerosSDK.findExperience()
             .done((experience) => {
-            const nodeTree = new NodeTreeModule.NodeTree(constants.fieldNodesDict);
+            const path1FieldsNodesDict = utils.stepsFromFieldNames(constants.path1Fields, constants.fieldNodesDict);
+            const nodeTree = new NodeTreeModule.NodeTree(path1FieldsNodesDict);
             PapaParse.parse(link, {
                 download: true,
                 header: true,
                 complete: (result) => {
                     nodeTree.buildTree(result.data);
-                    new QuizModule.QuizContext(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse);
+                    new QuizModule.QuizContext(CerosSDK, experience, nodeTree, distributor, relatedProductsLink, accessoriesLink, PapaParse, path2Link);
                 },
             });
         })
