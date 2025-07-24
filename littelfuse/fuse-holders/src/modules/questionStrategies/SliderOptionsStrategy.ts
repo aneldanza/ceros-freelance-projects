@@ -3,11 +3,7 @@ import { QuestionStrategy } from "./QuestionStrategy";
 
 export class SliderOptionsStrategy extends QuestionStrategy {
   displayAnswerOptions(node: Node): void {
-    const sliderValues = [
-      0.5, 1.5, 2.25, 3, 3.75, 5.5, 7.5, 12, 15, 19, 23, 26, 30, 38, 45, 53, 60,
-      75, 94, 113, 131, 150, 169, 188, 206, 225, 263, 300, 319, 338, 375, 450,
-      488,
-    ];
+    const sliderValues = node.children.map((node) => Number(node.value));
 
     const interval = setInterval(() => {
       const slider = document.getElementById(
