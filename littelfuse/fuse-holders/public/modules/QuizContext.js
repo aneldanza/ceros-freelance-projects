@@ -26,6 +26,20 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
             this.imgLargeOverlayCollection = this.experience.findLayersByTag(constants_1.IMG_LRG);
             this.imgLrgLink = new Observer_1.Observable("");
             this.imgLrgCloseHotspotCollection = this.experience.findLayersByTag(`${constants_1.IMG_LRG}-close`);
+            this.getNextNode = (qName, answer, question, comp) => __awaiter(this, void 0, void 0, function* () {
+                if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
+                    //load path2 csv data
+                    this.currentTree = yield this.loadCsvDataIntoNodeTree();
+                    this.currentNode.value = this.currentTree.root;
+                    return this.currentTree.findChild(this.currentNode.value, "value", answer);
+                }
+                else {
+                    const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
+                        ? { key: "elementId", value: comp.id }
+                        : { key: "value", value: answer };
+                    return this.currentTree.findChild(this.currentNode.value, key, value);
+                }
+            });
             this.loadCsvDataIntoNodeTree = () => {
                 return new Promise((resolve, reject) => {
                     const path2FieldNodesDict = (0, utils_1.stepsFromFieldNames)(constants_1.path2Fields, constants_1.fieldNodesDict);
@@ -137,23 +151,11 @@ define(["require", "exports", "./constants", "./NodeTree", "./Observer", "./util
                 const qName = (0, utils_1.getValueFromTags)(comp.getTags(), constants_1.QUESTION);
                 const question = this.questions[qName];
                 const answer = comp.getPayload().trim();
-                let node;
                 if (!question) {
                     console.error(`Could not find question field ${qName}`);
                     return;
                 }
-                if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
-                    //load path2 csv data
-                    this.currentTree = yield this.loadCsvDataIntoNodeTree();
-                    this.currentNode.value = this.currentTree.root;
-                    node = this.currentTree.findChild(this.currentNode.value, "value", answer);
-                }
-                else {
-                    const { key, value } = question instanceof HidingOptionsStrategy_1.HidingOptionsStrategy
-                        ? { key: "elementId", value: comp.id }
-                        : { key: "value", value: answer };
-                    node = this.currentTree.findChild(this.currentNode.value, key, value);
-                }
+                const node = yield this.getNextNode(qName, answer, question, comp);
                 if (node) {
                     if (constants_1.fieldNodesDict[qName].skipif &&
                         constants_1.fieldNodesDict[qName].skipif.find((str) => str === answer)) {

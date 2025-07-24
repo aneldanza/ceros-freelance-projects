@@ -20,32 +20,6 @@ export const path1Fields: string[] = [
   "part",
 ];
 
-// export const path2FieldNodesDict: FieldNodes = {
-//   "fuse type": {
-//     type: "question",
-//     pathText: "Guide me",
-//   },
-//   "application voltage": {
-//     type: "question",
-//     pathText: "Application Voltage: {{}}",
-//   },
-//   "application load": {
-//     type: "question",
-//     pathText: "Application Load: {{}}",
-//     questionStrategy: "masking",
-//   },
-//   "application amps": {
-//     type: "question",
-//     pathText: "Application Amps: {{}}",
-//     questionStrategy: "slider",
-//   },
-//   "fuse style": {
-//     type: "question",
-//     pathText: "Fuse Style: {{}}",
-//     questionStrategy: "masking-with-subcategories",
-//   },
-// };
-
 export const fieldNodesDict: FieldNodes = {
   "application voltage": {
     type: "question",

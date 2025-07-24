@@ -219,32 +219,13 @@ export class QuizContext {
     const qName = getValueFromTags(comp.getTags(), QUESTION);
     const question = this.questions[qName];
     const answer = comp.getPayload().trim();
-    let node: Node | undefined;
 
     if (!question) {
       console.error(`Could not find question field ${qName}`);
       return;
     }
 
-    if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
-      //load path2 csv data
-
-      this.currentTree = await this.loadCsvDataIntoNodeTree();
-      this.currentNode.value = this.currentTree.root;
-
-      node = this.currentTree.findChild(
-        this.currentNode.value,
-        "value",
-        answer
-      );
-    } else {
-      const { key, value }: { key: "elementId" | "value"; value: string } =
-        question instanceof HidingOptionsStrategy
-          ? { key: "elementId", value: comp.id }
-          : { key: "value", value: answer };
-
-      node = this.currentTree.findChild(this.currentNode.value, key, value);
-    }
+    const node = await this.getNextNode(qName, answer, question, comp);
 
     if (node) {
       if (
@@ -260,6 +241,33 @@ export class QuizContext {
       console.error(`coudn't find node with ${qName} and value `);
     }
   }
+
+  getNextNode = async (
+    qName: string,
+    answer: string,
+    question: QuestionStrategy,
+    comp: CerosComponent
+  ) => {
+    if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
+      //load path2 csv data
+
+      this.currentTree = await this.loadCsvDataIntoNodeTree();
+      this.currentNode.value = this.currentTree.root;
+
+      return this.currentTree.findChild(
+        this.currentNode.value,
+        "value",
+        answer
+      );
+    } else {
+      const { key, value }: { key: "elementId" | "value"; value: string } =
+        question instanceof HidingOptionsStrategy
+          ? { key: "elementId", value: comp.id }
+          : { key: "value", value: answer };
+
+      return this.currentTree.findChild(this.currentNode.value, key, value);
+    }
+  };
 
   loadCsvDataIntoNodeTree = () => {
     return new Promise<NodeTree>((resolve, reject) => {
