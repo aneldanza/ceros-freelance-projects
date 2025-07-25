@@ -16,31 +16,37 @@ export class SliderOptionsStrategy extends QuestionStrategy {
 
         if (sliderValues.length > 1) {
           if (!sliderContainer.querySelector("#customSlider")) {
-            const slider = this.createSlider(sliderValues.length - 1);
-
-            sliderContainer.prepend(slider);
-
-            slider.addEventListener("input", () => {
-              const index = parseInt(slider.value, 10);
-              // output.textContent = `${sliderValues[index]}`;
-              this.updateSliderBackground(index, sliderValues, slider);
-              this.updateSliderValuePosition(
-                sliderValues,
-                output,
-                index,
-                slider
-              );
-            });
-
-            this.updateSliderBackground(0, sliderValues, slider);
-            this.updateSliderValuePosition(sliderValues, output, 0, slider);
+            this.displaySlider(sliderValues, sliderContainer, output);
           }
+        } else {
+          output.style.fontSize = "45px";
+          output.style.fontWeight = "bold";
+          output.style.color = "#707070";
+          // Initial state
+          output.textContent = `${sliderValues[0]}`;
         }
-
-        // Initial state
-        output.textContent = `${sliderValues[0]}`;
       }
     }, 200);
+  }
+
+  displaySlider(
+    sliderValues: number[],
+    sliderContainer: HTMLElement,
+    output: HTMLElement
+  ) {
+    const slider = this.createSlider(sliderValues.length - 1);
+
+    sliderContainer.prepend(slider);
+
+    slider.addEventListener("input", () => {
+      const index = parseInt(slider.value, 10);
+      // output.textContent = `${sliderValues[index]}`;
+      this.updateSliderBackground(index, sliderValues, slider);
+      this.updateSliderValuePosition(sliderValues, output, index, slider);
+    });
+
+    this.updateSliderBackground(0, sliderValues, slider);
+    this.updateSliderValuePosition(sliderValues, output, 0, slider);
   }
 
   updateSliderValuePosition(
