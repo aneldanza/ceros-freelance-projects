@@ -68,7 +68,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
                 let strategy;
                 if (field.type === "question") {
                     if (field.questionStrategy === "hiding") {
-                        strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience);
+                        strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
                     }
                     else if (field.questionStrategy === "masking-with-subcategories") {
                         strategy = new MaskingOptionsWithSubCategoriesStrategy_1.MaskingOptionsWithSubcategoriesStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);

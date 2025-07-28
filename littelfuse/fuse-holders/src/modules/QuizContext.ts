@@ -126,7 +126,12 @@ export class QuizContext {
 
       if (field.type === "question") {
         if (field.questionStrategy === "hiding") {
-          strategy = new HidingOptionsStrategy(fieldName, this.experience);
+          strategy = new HidingOptionsStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
         } else if (field.questionStrategy === "masking-with-subcategories") {
           strategy = new MaskingOptionsWithSubcategoriesStrategy(
             fieldName,

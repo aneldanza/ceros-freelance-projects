@@ -1,5 +1,6 @@
 import { QuestionStrategy } from "./QuestionStrategy";
 import { Node } from "../Node";
+import { Observable } from "../Observer";
 
 export class HidingOptionsStrategy extends QuestionStrategy {
   private isMobile: boolean;
@@ -7,7 +8,12 @@ export class HidingOptionsStrategy extends QuestionStrategy {
   private evenOptions: CerosLayerCollection;
   private oddOptions: CerosLayerCollection;
 
-  constructor(name: string, experience: Experience) {
+  constructor(
+    name: string,
+    experience: Experience,
+    private currentNodeObservable: Observable<Node>,
+    private CerosSDK: CerosSDK
+  ) {
     super(name, experience);
 
     this.isMobile =
