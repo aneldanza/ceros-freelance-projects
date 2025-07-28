@@ -4,6 +4,8 @@ import { Node } from "../Node";
 export class HidingOptionsStrategy extends QuestionStrategy {
   private isMobile: boolean;
   private isTablet: boolean;
+  private evenOptions: CerosLayerCollection;
+  private oddOptions: CerosLayerCollection;
 
   constructor(name: string, experience: Experience) {
     super(name, experience);
@@ -13,6 +15,14 @@ export class HidingOptionsStrategy extends QuestionStrategy {
 
     this.isTablet =
       this.experience.findComponentsByTag("tablet").components.length > 0;
+
+    this.evenOptions = this.experience.findLayersByTag(
+      `${name.toLowerCase()}_even`
+    );
+
+    this.oddOptions = this.experience.findLayersByTag(
+      `${name.toLowerCase()}_odd`
+    );
   }
 
   displayAnswerOptions(node: Node): void {
@@ -20,33 +30,22 @@ export class HidingOptionsStrategy extends QuestionStrategy {
       (a, b) => Number(a.value) - Number(b.value)
     );
 
-    const evenOptions = this.experience.findLayersByTag(
-      `${node.children[0].name.toLowerCase()}_even`
-    );
-    const oddOptions = this.experience.findLayersByTag(
-      `${node.children[0].name.toLowerCase()}_odd`
-    );
-
     if (this.isMobile || this.isTablet) {
       console.log("MOBILE LAYOUT!");
     } else {
-      this.displayDesktopLayoutOptions(oddOptions, evenOptions, sortedNodes);
+      this.displayDesktopLayoutOptions(sortedNodes);
     }
   }
 
-  displayDesktopLayoutOptions(
-    oddOptions: CerosLayerCollection,
-    evenOptions: CerosLayerCollection,
-    sortedNodes: Node[]
-  ) {
+  displayDesktopLayoutOptions(sortedNodes: Node[]) {
     if (sortedNodes.length % 2 === 0) {
-      oddOptions.hide();
-      evenOptions.show();
-      this.handleTextOptions(evenOptions, sortedNodes);
+      this.oddOptions.hide();
+      this.evenOptions.show();
+      this.handleTextOptions(this.evenOptions, sortedNodes);
     } else {
-      oddOptions.show();
-      evenOptions.hide();
-      this.handleTextOptions(oddOptions, sortedNodes);
+      this.oddOptions.show();
+      this.evenOptions.hide();
+      this.handleTextOptions(this.oddOptions, sortedNodes);
     }
   }
 
