@@ -246,6 +246,7 @@ export class QuizContext {
     if (!parent) return;
 
     const name = current.name;
+    console.log(`clicked back to ${current.name}`);
     const field = fieldNodesDict[name];
 
     // Check if skipBackIf logic applies

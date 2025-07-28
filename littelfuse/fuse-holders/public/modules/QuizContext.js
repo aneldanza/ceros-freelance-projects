@@ -144,6 +144,7 @@ define(["require", "exports", "./constants", "./Observer", "./utils", "./questio
             if (!parent)
                 return;
             const name = current.name;
+            console.log(`clicked back to ${current.name}`);
             const field = constants_1.fieldNodesDict[name];
             // Check if skipBackIf logic applies
             if (field && field.skipBackIf) {
