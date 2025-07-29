@@ -126,7 +126,12 @@ export class QuizContext {
 
       if (field.type === "question") {
         if (field.questionStrategy === "hiding") {
-          strategy = new HidingOptionsStrategy(fieldName, this.experience);
+          strategy = new HidingOptionsStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
         } else if (field.questionStrategy === "masking-with-subcategories") {
           strategy = new MaskingOptionsWithSubcategoriesStrategy(
             fieldName,
@@ -246,6 +251,7 @@ export class QuizContext {
     if (!parent) return;
 
     const name = current.name;
+    console.log(`clicked back to ${current.name}`);
     const field = fieldNodesDict[name];
 
     // Check if skipBackIf logic applies

@@ -31,13 +31,13 @@ define(["require", "exports"], function (require, exports) {
             type: "question",
             pathText: "Style: {{}}",
             questionStrategy: "masking",
-            skipif: ["PCBA", "Fuse Block / PDM"],
+            skipif: ["PCBA", "Fuse Block"],
         },
         "mounting method": {
             type: "question",
             pathText: "Mounting: {{}}",
             questionStrategy: "masking-with-subcategories",
-            skipBackIf: { style: ["PCBA", "Fuse Block / PDM"] },
+            skipBackIf: { style: ["PCBA", "Fuse Block"] },
         },
         protection: {
             type: "question",
