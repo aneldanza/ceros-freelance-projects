@@ -31,13 +31,13 @@ define('modules/constants',["require", "exports"], function (require, exports) {
             type: "question",
             pathText: "Style: {{}}",
             questionStrategy: "masking",
-            skipif: ["PCBA", "Fuse Block / PDM"],
+            skipif: ["PCBA", "Fuse Block"],
         },
         "mounting method": {
             type: "question",
             pathText: "Mounting: {{}}",
             questionStrategy: "masking-with-subcategories",
-            skipBackIf: { style: ["PCBA", "Fuse Block / PDM"] },
+            skipBackIf: { style: ["PCBA", "Fuse Block"] },
         },
         protection: {
             type: "question",
@@ -155,34 +155,36 @@ define('modules/questionStrategies/HidingOptionsStrategy',["require", "exports",
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.HidingOptionsStrategy = void 0;
     class HidingOptionsStrategy extends QuestionStrategy_1.QuestionStrategy {
-        constructor(name, experience) {
+        constructor(name, experience, currentNodeObservable, CerosSDK) {
             super(name, experience);
+            this.currentNodeObservable = currentNodeObservable;
+            this.CerosSDK = CerosSDK;
             this.isMobile =
                 this.experience.findComponentsByTag("mobile").components.length > 0;
             this.isTablet =
                 this.experience.findComponentsByTag("tablet").components.length > 0;
+            this.evenOptions = this.experience.findLayersByTag(`${name.toLowerCase()}_even`);
+            this.oddOptions = this.experience.findLayersByTag(`${name.toLowerCase()}_odd`);
         }
         displayAnswerOptions(node) {
             const sortedNodes = node.children.sort((a, b) => Number(a.value) - Number(b.value));
-            const evenOptions = this.experience.findLayersByTag(`${node.children[0].name.toLowerCase()}_even`);
-            const oddOptions = this.experience.findLayersByTag(`${node.children[0].name.toLowerCase()}_odd`);
             if (this.isMobile || this.isTablet) {
                 console.log("MOBILE LAYOUT!");
             }
             else {
-                this.displayDesktopLayoutOptions(oddOptions, evenOptions, sortedNodes);
+                this.displayDesktopLayoutOptions(sortedNodes);
             }
         }
-        displayDesktopLayoutOptions(oddOptions, evenOptions, sortedNodes) {
+        displayDesktopLayoutOptions(sortedNodes) {
             if (sortedNodes.length % 2 === 0) {
-                oddOptions.hide();
-                evenOptions.show();
-                this.handleTextOptions(evenOptions, sortedNodes);
+                this.oddOptions.hide();
+                this.evenOptions.show();
+                this.handleTextOptions(this.evenOptions, sortedNodes);
             }
             else {
-                oddOptions.show();
-                evenOptions.hide();
-                this.handleTextOptions(oddOptions, sortedNodes);
+                this.oddOptions.show();
+                this.evenOptions.hide();
+                this.handleTextOptions(this.oddOptions, sortedNodes);
             }
         }
         handleTextOptions(options, nodes) {
@@ -867,7 +869,7 @@ define('modules/QuizContext',["require", "exports", "./constants", "./Observer",
                 let strategy;
                 if (field.type === "question") {
                     if (field.questionStrategy === "hiding") {
-                        strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience);
+                        strategy = new HidingOptionsStrategy_1.HidingOptionsStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
                     }
                     else if (field.questionStrategy === "masking-with-subcategories") {
                         strategy = new MaskingOptionsWithSubCategoriesStrategy_1.MaskingOptionsWithSubcategoriesStrategy(fieldName, this.experience, this.currentNode, this.CerosSDK);
@@ -943,6 +945,7 @@ define('modules/QuizContext',["require", "exports", "./constants", "./Observer",
             if (!parent)
                 return;
             const name = current.name;
+            console.log(`clicked back to ${current.name}`);
             const field = constants_1.fieldNodesDict[name];
             // Check if skipBackIf logic applies
             if (field && field.skipBackIf) {
