@@ -8,12 +8,7 @@ export class HidingOptionsStrategy extends QuestionStrategy {
   private evenOptions: CerosLayerCollection;
   private oddOptions: CerosLayerCollection;
 
-  constructor(
-    name: string,
-    experience: Experience,
-    private currentNodeObservable: Observable<Node>,
-    private CerosSDK: CerosSDK
-  ) {
+  constructor(name: string, experience: Experience) {
     super(name, experience);
 
     this.isMobile =
