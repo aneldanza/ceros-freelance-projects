@@ -24,6 +24,7 @@ import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { ModuleHandler } from "./ModuleHandler";
 import { QuestionStrategyFactory } from "./questionStrategies/QuestionStrategyFactory";
 import { MaskingOptionsStrategyWithMultipleCellValues } from "./questionStrategies/MaskOptionsStrateyWithMultipleCellValues";
+import { SliderOptionsStrategy } from "./questionStrategies/SliderOptionsStrategy";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -250,6 +251,24 @@ export class QuizContext {
         "value",
         answer
       );
+    } else if (qName === "application amps") {
+      const sliderStrategy = this.questions[
+        "application amps"
+      ] as SliderOptionsStrategy;
+
+      const value = sliderStrategy.slider
+        ? sliderStrategy.sliderValues.value[
+            parseInt(sliderStrategy.slider.value)
+          ].toString()
+        : "";
+
+      if (value) {
+        return this.currentTree.findChild(
+          this.currentNode.value,
+          "value",
+          value
+        );
+      }
     } else {
       const { key, value }: { key: "elementId" | "value"; value: string } =
         question instanceof HidingOptionsStrategy

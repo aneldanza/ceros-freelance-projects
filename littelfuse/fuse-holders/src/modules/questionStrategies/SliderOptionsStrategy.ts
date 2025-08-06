@@ -5,10 +5,10 @@ import { QuestionStrategy } from "./QuestionStrategy";
 export class SliderOptionsStrategy extends QuestionStrategy {
   private currentIndex: Observable<number>;
   private nextButtonMask: CerosLayerCollection;
-  private sliderValues: Observable<number[]>;
+  public sliderValues: Observable<number[]>;
   private sliderContainer: HTMLInputElement | null;
   private output: HTMLElement | null;
-  private slider: HTMLInputElement | null;
+  public slider: HTMLInputElement | null;
 
   constructor(name: string, experience: Experience) {
     super(name, experience);
