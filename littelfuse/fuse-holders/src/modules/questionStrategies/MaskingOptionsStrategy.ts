@@ -14,6 +14,8 @@ export class MaskingOptionsStrategy extends QuestionStrategy {
     this.maskCollection = this.experience.findLayersByTag(`mask:${this.name}`);
   }
 
+  reset(): void {}
+
   displayAnswerOptions(node: Node): void {
     this.maskCollection.layers.forEach((comp: CerosLayer) => {
       this.handleMasks(comp, node);

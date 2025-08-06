@@ -195,6 +195,7 @@ export class QuizContext {
 
   resetQuiz() {
     this.currentNode.value = this.currentTree.root;
+    this.questions["application amps"].reset();
   }
 
   async handleAnswerClick(comp: CerosComponent) {

@@ -26,6 +26,8 @@ export class HidingOptionsStrategy extends QuestionStrategy {
     );
   }
 
+  reset(): void {}
+
   displayAnswerOptions(node: Node): void {
     const sortedNodes = node.children.sort(
       (a, b) => Number(a.value) - Number(b.value)
