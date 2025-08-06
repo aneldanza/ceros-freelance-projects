@@ -128,6 +128,7 @@ export class QuizContext {
       const field = fieldNodesDict[fieldName];
 
       if (field.type === "question") {
+<<<<<<< HEAD
         const strategy = QuestionStrategyFactory.create(
           fieldName,
           field,
@@ -136,6 +137,30 @@ export class QuizContext {
           this.CerosSDK
         );
 
+=======
+        if (field.questionStrategy === "hiding") {
+          strategy = new HidingOptionsStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
+        } else if (field.questionStrategy === "masking-with-subcategories") {
+          strategy = new MaskingOptionsWithSubcategoriesStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
+        } else {
+          strategy = new MaskingOptionsStrategy(
+            fieldName,
+            this.experience,
+            this.currentNode,
+            this.CerosSDK
+          );
+        }
+>>>>>>> develop
         this.questions[fieldName] = strategy;
       }
     }
@@ -290,6 +315,7 @@ export class QuizContext {
     if (!parent) return;
 
     const name = current.name;
+    console.log(`clicked back to ${current.name}`);
     const field = fieldNodesDict[name];
 
     // Check if skipBackIf logic applies
