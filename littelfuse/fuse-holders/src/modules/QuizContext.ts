@@ -377,6 +377,7 @@ export class QuizContext {
 
   isLastQuestion(node: Node) {
     const childNode = node.children[0];
-    return Object.keys(childNode.data).length;
+    // return Object.keys(childNode.data).length;
+    return childNode.name === "part";
   }
 }

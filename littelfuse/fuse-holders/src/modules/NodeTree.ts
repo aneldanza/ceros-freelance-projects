@@ -36,7 +36,10 @@ export class NodeTree {
       const val = obj[key]?.trim?.();
       if (!val) continue;
 
-      if (this.fields[key].type === "result") {
+      if (
+        this.fields[key].type === "result" ||
+        this.fields[key].questionStrategy === "segments"
+      ) {
         parent = this.addNewNode(val, key, parent, obj);
       } else if (this.fields[key].multiValue) {
         const remainingFields = fieldNames.slice(i + 1);

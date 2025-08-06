@@ -5,7 +5,7 @@ export const path2Fields: string[] = [
   "application voltage",
   "application load",
   "application amps",
-  "fuse style",
+  "application fuse style",
 ];
 
 export const path1Fields: string[] = [
@@ -35,6 +35,11 @@ export const fieldNodesDict: FieldNodes = {
     type: "question",
     pathText: "Application Amps: {{}}",
     questionStrategy: "slider",
+  },
+  "application fuse style": {
+    type: "question",
+    pathText: "Fuse Style: {{}}",
+    questionStrategy: "segments",
   },
   "fuse type": {
     type: "question",

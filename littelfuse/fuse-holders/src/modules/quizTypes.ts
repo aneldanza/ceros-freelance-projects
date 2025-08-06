@@ -5,7 +5,8 @@ export type QuestionStrategyName =
   | "masking"
   | "masking-with-subcategories"
   | "masking-with-mulitiple-cell-values"
-  | "slider";
+  | "slider"
+  | "segments";
 
 export type Field = {
   type: "question" | "result";
