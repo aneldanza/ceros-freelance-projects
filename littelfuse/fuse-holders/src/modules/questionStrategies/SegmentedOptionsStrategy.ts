@@ -17,7 +17,12 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
     this.isTablet =
       this.experience.findComponentsByTag("tablet").components.length > 0;
 
-    this.partModuleHandler = new PartModuleHandler(PARTS, experience, CerosSDK);
+    this.partModuleHandler = new PartModuleHandler(
+      PARTS,
+      experience,
+      CerosSDK,
+      name
+    );
   }
 
   displayAnswerOptions(node: Node): void {

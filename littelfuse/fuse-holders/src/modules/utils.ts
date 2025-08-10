@@ -1,4 +1,4 @@
-import { DELIMETER, fieldNodesDict } from "./constants";
+import { DELIMETER, DEFAULT_IMAGE } from "./constants";
 
 import { FieldNodes } from "./quizTypes";
 
@@ -44,4 +44,14 @@ export const getModuleTag = (
   return length > 1
     ? `${length}-${moduleName}-${index + 1}`
     : `${length}-${moduleName}`;
+};
+
+export const setImageUrl = (imgStr: string, img: CerosLayer) => {
+  try {
+    new URL(imgStr);
+    img.setUrl(imgStr);
+  } catch (e) {
+    console.error(e);
+    img.setUrl(DEFAULT_IMAGE);
+  }
 };

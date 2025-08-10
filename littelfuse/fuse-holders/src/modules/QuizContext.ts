@@ -205,7 +205,7 @@ export class QuizContext {
 
     const qName = getValueFromTags(comp.getTags(), QUESTION);
     const question = this.questions[qName];
-    const answer = comp.getPayload().trim();
+    const answer = comp.getPayload().trim() || "";
 
     if (!question) {
       console.error(`Could not find question field ${qName}`);

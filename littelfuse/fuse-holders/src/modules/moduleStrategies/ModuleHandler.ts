@@ -1,5 +1,5 @@
 import { CsvData } from "../quizTypes";
-import { getModuleTag } from "../utils";
+import { getModuleTag, setImageUrl } from "../utils";
 import { DEFAULT_IMAGE } from "../constants";
 
 export abstract class ModuleHandler {
@@ -23,13 +23,7 @@ export abstract class ModuleHandler {
   static handleModuleImage(img: CerosLayer, data: CsvData) {
     const imgStr = data.image;
 
-    try {
-      new URL(imgStr);
-      img.setUrl(imgStr);
-    } catch (e) {
-      console.error(e);
-      img.setUrl(DEFAULT_IMAGE);
-    }
+    setImageUrl(imgStr, img);
   }
 
   updateModule(
@@ -71,6 +65,35 @@ export abstract class ModuleHandler {
     console.log(this.moduleDict);
 
     module.show();
+  }
+
+  showImageFromUrl(
+    moduleTag: string,
+    callback: (img: CerosLayer, obj: CsvData) => void,
+    imgArray: CerosLayer[],
+    onClickCallback?: (moduleTag: string) => void
+  ) {
+    imgArray.forEach((layer) => {
+      const obj = this.getResultData(moduleTag);
+      callback(layer, obj.data);
+
+      this.isNew &&
+        layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+          const obj = this.getResultData(moduleTag);
+          callback(layer, obj.data);
+        });
+
+      onClickCallback &&
+        this.isNew &&
+        layer.on(this.CerosSDK.EVENTS.CLICKED, (layer) => {
+          onClickCallback(moduleTag);
+        });
+    });
+  }
+
+  getResultData(moduleTag: string) {
+    const type = moduleTag.split("-")[0];
+    return this.moduleDict[type][moduleTag];
   }
 
   abstract processLayers(

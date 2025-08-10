@@ -102,7 +102,8 @@ export class ProductModuleHandler extends ModuleHandler {
       this.showImageFromUrl(
         moduleTag,
         ModuleHandler.handleModuleImage,
-        layersDict[IMAGE]
+        layersDict[IMAGE],
+        this.imageClickCallback.bind(this)
       );
 
     layersDict[PART] &&
@@ -142,28 +143,34 @@ export class ProductModuleHandler extends ModuleHandler {
       this.updateResultTextbox(DESCRIPTION, moduleTag, layersDict[DESCRIPTION]);
   }
 
-  showImageFromUrl(
-    moduleTag: string,
-    callback: (img: CerosLayer, obj: CsvData) => void,
-    imgArray: CerosLayer[]
-  ) {
-    imgArray.forEach((layer) => {
-      const obj = this.getResultData(moduleTag);
-      callback(layer, obj.data);
+  // showImageFromUrl(
+  //   moduleTag: string,
+  //   callback: (img: CerosLayer, obj: CsvData) => void,
+  //   imgArray: CerosLayer[]
+  // ) {
+  //   imgArray.forEach((layer) => {
+  //     const obj = this.getResultData(moduleTag);
+  //     callback(layer, obj.data);
 
-      this.isNew &&
-        layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
-          const obj = this.getResultData(moduleTag);
-          callback(layer, obj.data);
-        });
+  //     this.isNew &&
+  //       layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+  //         const obj = this.getResultData(moduleTag);
+  //         callback(layer, obj.data);
+  //       });
 
-      this.isNew &&
-        layer.on(this.CerosSDK.EVENTS.CLICKED, (layer) => {
-          const currentObj = this.getResultData(moduleTag);
-          this.imgLrgLink.value = currentObj.data.image;
-          this.imgLargeHotspotCollection.click();
-        });
-    });
+  //     this.isNew &&
+  //       layer.on(this.CerosSDK.EVENTS.CLICKED, (layer) => {
+  //         const currentObj = this.getResultData(moduleTag);
+  //         this.imgLrgLink.value = currentObj.data.image;
+  //         this.imgLargeHotspotCollection.click();
+  //       });
+  //   });
+  // }
+
+  imageClickCallback(moduleTag: string) {
+    const currentObj = this.getResultData(moduleTag);
+    this.imgLrgLink.value = currentObj.data.image;
+    this.imgLargeHotspotCollection.click();
   }
 
   updateResultTextbox(
