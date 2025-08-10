@@ -37,11 +37,11 @@ export const stepsFromFieldNames = (
 };
 
 export const getModuleTag = (
-  type: number,
+  length: number,
   index: number,
   moduleName: string
 ) => {
-  return type > 1
-    ? `${type}-${moduleName}-${index + 1}`
-    : `${type}-${moduleName}`;
+  return length > 1
+    ? `${length}-${moduleName}-${index + 1}`
+    : `${length}-${moduleName}`;
 };
