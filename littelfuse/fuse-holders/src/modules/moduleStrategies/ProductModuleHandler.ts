@@ -10,38 +10,42 @@ import {
   PRODUCT_GUIDE,
   SERIES,
   SPECS,
-} from "./constants";
-import { LandingPageProxy } from "./LandinPageProxy";
-import { Observable } from "./Observer";
-import { CsvData } from "./quizTypes";
+} from "../constants";
+import { LandingPageProxy } from "../LandinPageProxy";
+import { ModuleHandler } from "./ModuleHandler";
+import { Observable } from "../Observer";
+import { CsvData } from "../quizTypes";
+import { getModuleTag } from "../utils";
 
-export class ModuleHandler {
-  public moduleDict: {
-    [key: string]: {
-      [key: string]: {
-        data: CsvData;
-        layers: Record<string, CerosLayer[]>;
-      };
-    };
-  } = {};
+export class ProductModuleHandler extends ModuleHandler {
+  // public moduleDict: {
+  //   [key: string]: {
+  //     [key: string]: {
+  //       data: CsvData;
+  //       layers: Record<string, CerosLayer[]>;
+  //     };
+  //   };
+  // } = {};
 
-  private isNew: boolean = false;
+  // private isNew: boolean = false;
 
   private imgLargeHotspotCollection = this.experience.findComponentsByTag(
     `${IMG_LRG}-1`
   );
 
   constructor(
-    private moduleName: string,
-    private experience: Experience,
-    private CerosSDK: CerosSDK,
+    moduleName: string,
+    experience: Experience,
+    CerosSDK: CerosSDK,
     private distributor: string,
     private landingPageProxy: LandingPageProxy,
     private imgLrgLink: Observable<string>
-  ) {}
+  ) {
+    super(moduleName, experience, CerosSDK);
+  }
 
   hideModule(type: number, index: number) {
-    const moduleTag = this.getModuleTag(type, index);
+    const moduleTag = getModuleTag(type, index, this.moduleName);
     const module = this.experience.findLayersByTag(moduleTag);
 
     if (!module.layers.length) {
@@ -52,52 +56,46 @@ export class ModuleHandler {
     module.hide();
   }
 
-  updateModule(
-    type: number,
-    index: number,
-    data: CsvData,
-    processOverlayLayers?: (
-      layersDict: Record<string, CerosLayer[]>,
-      moduleTag: string
-    ) => void
-  ) {
-    const moduleTag = this.getModuleTag(type, index);
-    const module = this.experience.findLayersByTag(moduleTag);
+  // updateModule(
+  //   type: number,
+  //   index: number,
+  //   data: CsvData,
+  //   processOverlayLayers?: (
+  //     layersDict: Record<string, CerosLayer[]>,
+  //     moduleTag: string
+  //   ) => void
+  // ) {
+  //   const moduleTag = getModuleTag(type, index, this.moduleName);
+  //   const module = this.experience.findLayersByTag(moduleTag);
 
-    if (!module.layers.length) {
-      console.error(`No module found with tag: ${moduleTag}`);
-      return;
-    }
+  //   if (!module.layers.length) {
+  //     console.error(`No module found with tag: ${moduleTag}`);
+  //     return;
+  //   }
 
-    const collection = module.layers[0].findAllComponents();
-    const layersDict = collection.layersByTag;
+  //   const collection = module.layers[0].findAllComponents();
+  //   const layersDict = collection.layersByTag;
 
-    const size = type.toString();
+  //   const size = type.toString();
 
-    this.moduleDict[size] = this.moduleDict[size] || {};
-    this.isNew = !this.moduleDict[size][moduleTag];
+  //   this.moduleDict[size] = this.moduleDict[size] || {};
+  //   this.isNew = !this.moduleDict[size][moduleTag];
 
-    // Ensure the entry exists before assignment
-    if (!this.moduleDict[size][moduleTag]) {
-      this.moduleDict[size][moduleTag] = { data: {} as CsvData, layers: {} };
-    }
+  //   // Ensure the entry exists before assignment
+  //   if (!this.moduleDict[size][moduleTag]) {
+  //     this.moduleDict[size][moduleTag] = { data: {} as CsvData, layers: {} };
+  //   }
 
-    this.moduleDict[size][moduleTag].data = data;
-    this.moduleDict[size][moduleTag].layers = layersDict;
+  //   this.moduleDict[size][moduleTag].data = data;
+  //   this.moduleDict[size][moduleTag].layers = layersDict;
 
-    this.processLayers(layersDict, moduleTag);
-    processOverlayLayers && processOverlayLayers(layersDict, moduleTag);
+  //   this.processLayers(layersDict, moduleTag);
+  //   processOverlayLayers && processOverlayLayers(layersDict, moduleTag);
 
-    console.log(this.moduleDict);
+  //   console.log(this.moduleDict);
 
-    module.show();
-  }
-
-  getModuleTag(type: number, index: number) {
-    return type > 1
-      ? `${type}-${this.moduleName}-${index + 1}`
-      : `${type}-${this.moduleName}`;
-  }
+  //   module.show();
+  // }
 
   processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
     layersDict[IMAGE] &&
@@ -206,17 +204,17 @@ export class ModuleHandler {
     });
   }
 
-  static handleModuleImage(img: CerosLayer, data: CsvData) {
-    const imgStr = data.image;
+  // static handleModuleImage(img: CerosLayer, data: CsvData) {
+  //   const imgStr = data.image;
 
-    try {
-      new URL(imgStr);
-      img.setUrl(imgStr);
-    } catch (e) {
-      console.error(e);
-      img.setUrl(DEFAULT_IMAGE);
-    }
-  }
+  //   try {
+  //     new URL(imgStr);
+  //     img.setUrl(imgStr);
+  //   } catch (e) {
+  //     console.error(e);
+  //     img.setUrl(DEFAULT_IMAGE);
+  //   }
+  // }
 
   getResultData(moduleTag: string) {
     const type = moduleTag.split("-")[0];

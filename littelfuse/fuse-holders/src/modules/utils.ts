@@ -35,3 +35,13 @@ export const stepsFromFieldNames = (
   const entries = fieldNames.map((name) => [name, allSteps[name]]);
   return Object.fromEntries(entries);
 };
+
+export const getModuleTag = (
+  type: number,
+  index: number,
+  moduleName: string
+) => {
+  return type > 1
+    ? `${type}-${moduleName}-${index + 1}`
+    : `${type}-${moduleName}`;
+};

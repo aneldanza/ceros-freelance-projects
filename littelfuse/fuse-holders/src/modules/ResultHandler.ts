@@ -13,7 +13,7 @@ import { Node } from "./Node";
 import { Observable } from "./Observer";
 import { LandingPageProxy } from "./LandinPageProxy";
 import { CsvData, Overlay } from "./quizTypes";
-import { ModuleHandler } from "./ModuleHandler";
+import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { Carousel } from "./Carousel";
 
@@ -25,9 +25,9 @@ export class ResultHandler {
     accessories: {},
   };
 
-  private resultModulesHandler: ModuleHandler;
-  private relatedProductsModulesHandler: ModuleHandler;
-  private accessoriesModulesHandler: ModuleHandler;
+  private resultModulesHandler: ProductModuleHandler;
+  private relatedProductsModulesHandler: ProductModuleHandler;
+  private accessoriesModulesHandler: ProductModuleHandler;
   private resultsCarousel: Carousel;
   private accessoriesCarousel: Carousel;
   private relatedProductsCarousel: Carousel;
@@ -45,7 +45,7 @@ export class ResultHandler {
     private imgLrgLink: Observable<string>
   ) {
     this.landingPageProxy = new LandingPageProxy();
-    this.resultModulesHandler = new ModuleHandler(
+    this.resultModulesHandler = new ProductModuleHandler(
       RESULTS,
       experience,
       CerosSDK,
@@ -54,7 +54,7 @@ export class ResultHandler {
       this.imgLrgLink
     );
 
-    this.relatedProductsModulesHandler = new ModuleHandler(
+    this.relatedProductsModulesHandler = new ProductModuleHandler(
       RELATED_PRODUCTS,
       experience,
       CerosSDK,
@@ -63,7 +63,7 @@ export class ResultHandler {
       this.imgLrgLink
     );
 
-    this.accessoriesModulesHandler = new ModuleHandler(
+    this.accessoriesModulesHandler = new ProductModuleHandler(
       ACCESSORIES,
       experience,
       CerosSDK,

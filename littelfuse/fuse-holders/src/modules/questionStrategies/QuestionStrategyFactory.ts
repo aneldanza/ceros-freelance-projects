@@ -35,7 +35,7 @@ export class QuestionStrategyFactory {
       case "slider":
         return new SliderOptionsStrategy(fieldName, experience);
       case "segments":
-        return new SegmentedOptionsStrategy(fieldName, experience);
+        return new SegmentedOptionsStrategy(fieldName, experience, CerosSDK);
       case "masking":
       default:
         return new MaskingOptionsStrategy(

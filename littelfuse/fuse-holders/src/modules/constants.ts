@@ -5,7 +5,7 @@ export const path2Fields: string[] = [
   "application voltage",
   "application load",
   "application amps",
-  "application fuse style",
+  "fuse style-path2",
 ];
 
 export const path1Fields: string[] = [
@@ -36,7 +36,7 @@ export const fieldNodesDict: FieldNodes = {
     pathText: "Application Amps: {{}}",
     questionStrategy: "slider",
   },
-  "application fuse style": {
+  "fuse style-path2": {
     type: "question",
     pathText: "Fuse Style: {{}}",
     questionStrategy: "segments",
@@ -107,12 +107,14 @@ export const NAV = "nav";
 export const RELATED_PRODUCTS = "related products";
 export const ACCESSORIES = "accessories";
 export const RESULTS = "module";
+export const PARTS = "part module";
 export const DIVIDER = ";";
 export const MAX_RELATED_PRODUCTS = 2;
 export const MAX_ACCESSORIES = 4;
 export const MAX_RESULTS = 5;
 export const MCASE_ADAPTER = "mcase-adapter";
 export const IMG_LRG = "img lrg";
+export const PATH2 = "path2";
 
 export const DEFAULT_IMAGE =
   "https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/fuse-holders/Image+Not+Available.jpg";

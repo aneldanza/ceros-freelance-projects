@@ -1,4 +1,4 @@
-import { ModuleHandler } from "./ModuleHandler";
+import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { Observable } from "./Observer";
 import { CsvData, Overlay } from "./quizTypes";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
@@ -30,7 +30,7 @@ export class Carousel {
     private name: Overlay | typeof RESULTS,
     private CerosSDK: CerosSDK,
     private experience: Experience,
-    private moduleHandler: ModuleHandler
+    private moduleHandler: ProductModuleHandler
   ) {
     this.registerNavigationEvents();
   }

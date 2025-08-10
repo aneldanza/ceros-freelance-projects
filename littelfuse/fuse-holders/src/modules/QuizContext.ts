@@ -21,10 +21,11 @@ import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrateg
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
 import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
-import { ModuleHandler } from "./ModuleHandler";
+import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { QuestionStrategyFactory } from "./questionStrategies/QuestionStrategyFactory";
 import { MaskingOptionsStrategyWithMultipleCellValues } from "./questionStrategies/MaskOptionsStrateyWithMultipleCellValues";
 import { SliderOptionsStrategy } from "./questionStrategies/SliderOptionsStrategy";
+import { ModuleHandler } from "./moduleStrategies/ModuleHandler";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -36,7 +37,7 @@ export class QuizContext {
   private resetCollection: CerosLayerCollection;
   private resultHandler: ResultHandler;
   private doubleClickHandler: DoubleClickBugHandler;
-  private mcaseAdapterModuleHandler: ModuleHandler;
+  private mcaseAdapterModuleHandler: ProductModuleHandler;
   private mcaseAdapterCtaCollection: CerosLayerCollection;
   private imgLargeOverlayCollection = this.experience.findLayersByTag(IMG_LRG);
 
@@ -77,7 +78,7 @@ export class QuizContext {
       this.imgLrgLink
     );
 
-    this.mcaseAdapterModuleHandler = new ModuleHandler(
+    this.mcaseAdapterModuleHandler = new ProductModuleHandler(
       MCASE_ADAPTER,
       experience,
       CerosSDK,
