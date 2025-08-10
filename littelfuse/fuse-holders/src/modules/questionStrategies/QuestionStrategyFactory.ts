@@ -5,6 +5,7 @@ import { MaskingOptionsWithSubcategoriesStrategy } from "./MaskingOptionsWithSub
 import { HidingOptionsStrategy } from "./HidingOptionsStrategy";
 import { SliderOptionsStrategy } from "./SliderOptionsStrategy";
 import type { Field } from "../quizTypes";
+import { SegmentedOptionsStrategy } from "./SegmentedOptionsStrategy";
 
 export class QuestionStrategyFactory {
   static create(
@@ -33,6 +34,8 @@ export class QuestionStrategyFactory {
         );
       case "slider":
         return new SliderOptionsStrategy(fieldName, experience);
+      case "segments":
+        return new SegmentedOptionsStrategy(fieldName, experience);
       case "masking":
       default:
         return new MaskingOptionsStrategy(
