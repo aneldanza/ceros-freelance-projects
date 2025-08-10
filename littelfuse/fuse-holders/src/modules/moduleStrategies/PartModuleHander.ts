@@ -1,5 +1,5 @@
 import { ModuleHandler } from "./ModuleHandler";
-import { IMAGE } from "../constants";
+import { FUSE_STYLE_INFO, IMAGE } from "../constants";
 import { CsvData } from "../quizTypes";
 import { setImageUrl } from "../utils";
 
@@ -23,6 +23,16 @@ export class PartModuleHandler extends ModuleHandler {
         moduleTag,
         this.displayPartImage.bind(this),
         layersDict[IMAGE]
+      );
+
+    layersDict[this.qName] &&
+      this.updateResultTextbox(this.qName, moduleTag, layersDict[this.qName]);
+
+    layersDict[FUSE_STYLE_INFO] &&
+      this.updateResultTextbox(
+        FUSE_STYLE_INFO,
+        moduleTag,
+        layersDict[FUSE_STYLE_INFO]
       );
   }
 

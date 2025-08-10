@@ -91,6 +91,23 @@ export abstract class ModuleHandler {
     });
   }
 
+  updateResultTextbox(
+    key: string,
+    moduleTag: string,
+    txtboxArray: CerosLayer[]
+  ) {
+    txtboxArray.forEach((layer) => {
+      const obj = this.getResultData(moduleTag);
+      layer.setText(obj.data[key]);
+
+      this.isNew &&
+        layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
+          const obj = this.getResultData(moduleTag);
+          txtBox.setText(obj.data[key]);
+        });
+    });
+  }
+
   getResultData(moduleTag: string) {
     const type = moduleTag.split("-")[0];
     return this.moduleDict[type][moduleTag];

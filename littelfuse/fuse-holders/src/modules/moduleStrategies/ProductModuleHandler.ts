@@ -14,7 +14,6 @@ import {
 import { LandingPageProxy } from "../LandinPageProxy";
 import { ModuleHandler } from "./ModuleHandler";
 import { Observable } from "../Observer";
-import { CsvData } from "../quizTypes";
 import { getModuleTag } from "../utils";
 
 export class ProductModuleHandler extends ModuleHandler {
@@ -97,22 +96,22 @@ export class ProductModuleHandler extends ModuleHandler {
     this.imgLargeHotspotCollection.click();
   }
 
-  updateResultTextbox(
-    key: string,
-    moduleTag: string,
-    txtboxArray: CerosLayer[]
-  ) {
-    txtboxArray.forEach((layer) => {
-      const obj = this.getResultData(moduleTag);
-      layer.setText(obj.data[key]);
+  // updateResultTextbox(
+  //   key: string,
+  //   moduleTag: string,
+  //   txtboxArray: CerosLayer[]
+  // ) {
+  //   txtboxArray.forEach((layer) => {
+  //     const obj = this.getResultData(moduleTag);
+  //     layer.setText(obj.data[key]);
 
-      this.isNew &&
-        layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
-          const obj = this.getResultData(moduleTag);
-          txtBox.setText(obj.data[key]);
-        });
-    });
-  }
+  //     this.isNew &&
+  //       layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
+  //         const obj = this.getResultData(moduleTag);
+  //         txtBox.setText(obj.data[key]);
+  //       });
+  //   });
+  // }
 
   registerResultClcikEvent(
     layerArray: CerosLayer[],
