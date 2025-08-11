@@ -108,6 +108,7 @@ export const RELATED_PRODUCTS = "related products";
 export const ACCESSORIES = "accessories";
 export const RESULTS = "module";
 export const PARTS = "part module";
+export const SEGMENTS = "segment";
 export const DIVIDER = ";";
 export const MAX_RELATED_PRODUCTS = 2;
 export const MAX_ACCESSORIES = 4;
