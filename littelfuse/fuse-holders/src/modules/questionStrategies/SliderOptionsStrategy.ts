@@ -10,8 +10,9 @@ export class SliderOptionsStrategy extends QuestionStrategy {
   private output: HTMLElement | null;
   public slider: HTMLInputElement | null;
 
-  constructor(name: string, experience: Experience) {
-    super(name, experience);
+  constructor(name: string, experience: Experience, CerosSDK: CerosSDK) {
+    super(name, experience, CerosSDK);
+
     this.currentIndex = new Observable(0);
     this.sliderValues = new Observable([0]);
     this.nextButtonMask = experience.findLayersByTag(`${name}-mask`);
@@ -28,6 +29,24 @@ export class SliderOptionsStrategy extends QuestionStrategy {
         this.nextButtonMask.show();
       }
     });
+
+    this.registerCerosEvents();
+  }
+
+  registerCerosEvents() {
+    this.optionsCollection.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.handleOptionClick.bind(this)
+    );
+  }
+
+  handleOptionClick(_: CerosComponent): void {
+    const answer = this.sliderValues.value[this.currentIndex.value].toString();
+
+    const array = this.selectedOption.value.split(":");
+    array[1] = this.key;
+    array[2] = answer;
+    this.selectedOption.value = array.join(":");
   }
 
   reset() {

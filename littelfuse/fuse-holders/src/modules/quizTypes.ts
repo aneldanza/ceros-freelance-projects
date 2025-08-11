@@ -23,3 +23,8 @@ export type FieldNodes = {
 export type CsvData = { [key: string]: string };
 
 export type Overlay = typeof ACCESSORIES | typeof RELATED_PRODUCTS;
+
+export interface AnswerSelection {
+  key: "value" | "elementId";
+  value: string;
+}

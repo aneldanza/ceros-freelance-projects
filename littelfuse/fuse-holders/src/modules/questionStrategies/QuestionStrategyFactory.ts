@@ -17,23 +17,23 @@ export class QuestionStrategyFactory {
   ): QuestionStrategy {
     switch (field.questionStrategy) {
       case "hiding":
-        return new HidingOptionsStrategy(fieldName, experience);
+        return new HidingOptionsStrategy(fieldName, experience, CerosSDK);
       case "masking-with-subcategories":
         return new MaskingOptionsWithSubcategoriesStrategy(
           fieldName,
           experience,
-          currentNode,
-          CerosSDK
+          CerosSDK,
+          currentNode
         );
       case "masking-with-mulitiple-cell-values":
         return new MaskingOptionsStrategyWithMultipleCellValues(
           fieldName,
           experience,
-          currentNode,
-          CerosSDK
+          CerosSDK,
+          currentNode
         );
       case "slider":
-        return new SliderOptionsStrategy(fieldName, experience);
+        return new SliderOptionsStrategy(fieldName, experience, CerosSDK);
       case "segments":
         return new SegmentedOptionsStrategy(fieldName, experience, CerosSDK);
       case "masking":
@@ -41,8 +41,8 @@ export class QuestionStrategyFactory {
         return new MaskingOptionsStrategy(
           fieldName,
           experience,
-          currentNode,
-          CerosSDK
+          CerosSDK,
+          currentNode
         );
     }
   }

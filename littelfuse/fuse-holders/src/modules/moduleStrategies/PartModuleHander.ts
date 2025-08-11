@@ -2,13 +2,15 @@ import { ModuleHandler } from "./ModuleHandler";
 import { FUSE_STYLE_INFO, IMAGE } from "../constants";
 import { CsvData } from "../quizTypes";
 import { setImageUrl } from "../utils";
+import { Observable } from "../Observer";
 
 export class PartModuleHandler extends ModuleHandler {
   constructor(
     moduleName: string,
     experience: Experience,
     CerosSDK: CerosSDK,
-    private qName: string
+    private qName: string,
+    private selectedOption: Observable<string>
   ) {
     super(moduleName, experience, CerosSDK);
   }
@@ -34,6 +36,28 @@ export class PartModuleHandler extends ModuleHandler {
         moduleTag,
         layersDict[FUSE_STYLE_INFO]
       );
+
+    layersDict[`q:${this.qName}`] &&
+      this.registerOptionClick(this.qName, moduleTag, layersDict[this.qName]);
+  }
+
+  registerOptionClick(
+    key: string,
+    moduleTag: string,
+    layerArray: CerosLayer[]
+  ) {
+    layerArray.forEach((layer) => {
+      layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
+        const obj = this.getResultData(moduleTag);
+
+        const answer = obj.data[key];
+
+        const array = this.selectedOption.value.split(":");
+
+        array[2] = answer;
+        this.selectedOption.value = array.join(":");
+      });
+    });
   }
 
   displayPartImage(imgLayer: CerosLayer, data: CsvData) {

@@ -9,7 +9,7 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
   private partModuleHandler: PartModuleHandler;
   private navModuleHandler: NavModuleHandler;
   private fuseTypeInfoCollection: CerosComponentCollection;
-  private currentSegment: Observable<string>;
+  public currentSegment: Observable<string>;
   private segments: {
     [key: string]: {
       nodes: Node[];
@@ -17,12 +17,8 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
     };
   } = {};
 
-  constructor(
-    name: string,
-    experience: Experience,
-    private CerosSDK: CerosSDK
-  ) {
-    super(name, experience);
+  constructor(name: string, experience: Experience, CerosSDK: CerosSDK) {
+    super(name, experience, CerosSDK);
 
     this.currentSegment = new Observable("");
 
@@ -30,7 +26,8 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
       PARTS,
       experience,
       CerosSDK,
-      name
+      name,
+      this.selectedOption
     );
 
     this.navModuleHandler = new NavModuleHandler(

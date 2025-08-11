@@ -26,6 +26,8 @@ import { QuestionStrategyFactory } from "./questionStrategies/QuestionStrategyFa
 import { MaskingOptionsStrategyWithMultipleCellValues } from "./questionStrategies/MaskOptionsStrateyWithMultipleCellValues";
 import { SliderOptionsStrategy } from "./questionStrategies/SliderOptionsStrategy";
 import { ModuleHandler } from "./moduleStrategies/ModuleHandler";
+import { SegmentedOptionsStrategy } from "./questionStrategies/SegmentedOptionsStrategy";
+import { AnswerSelection } from "./quizTypes";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
@@ -139,15 +141,17 @@ export class QuizContext {
         );
 
         this.questions[fieldName] = strategy;
+
+        strategy.selectedOption.subscribe(this.handleSelectedAnswer.bind(this));
       }
     }
   }
 
   subscribeToCerosEvents() {
-    this.answerCollection.on(
-      this.CerosSDK.EVENTS.CLICKED,
-      this.handleAnswerClick.bind(this)
-    );
+    // this.answerCollection.on(
+    //   this.CerosSDK.EVENTS.CLICKED,
+    //   this.handleAnswerClick.bind(this)
+    // );
 
     this.backLayersCollection.on(
       this.CerosSDK.EVENTS.CLICKED,
@@ -200,28 +204,52 @@ export class QuizContext {
     this.questions["application amps"].reset();
   }
 
-  async handleAnswerClick(comp: CerosComponent) {
-    if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
+  async handleSelectedAnswer(selection: string) {
+    console.log(selection);
+    const [qName, key, answer] = selection.split(":");
 
-    const qName = getValueFromTags(comp.getTags(), QUESTION);
-    const question = this.questions[qName];
-    const answer = comp.getPayload().trim() || "";
+    if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
+      //load path2 csv data
 
-    if (!question) {
-      console.error(`Could not find question field ${qName}`);
-      return;
+      this.currentTree = await this.loadCsvDataIntoNodeTree();
+      this.currentNode.value = this.currentTree.root;
     }
 
-    const nextNode = await this.getNextNode(qName, answer, question, comp);
+    const nextNode = this.currentTree.findChild(
+      this.currentNode.value,
+      key as "value" | "elementId",
+      answer
+    );
 
     if (nextNode) {
       this.updateCurrentNodeValue(nextNode, qName, answer);
     } else {
-      console.error(
-        `coudn't find node with ${qName} and value ${answer} id: ${comp.id}`
-      );
+      console.error(`coudn't find node with ${qName} and value ${answer}`);
     }
   }
+
+  // async handleAnswerClick(comp: CerosComponent) {
+  //   if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
+
+  //   const qName = getValueFromTags(comp.getTags(), QUESTION);
+  //   const question = this.questions[qName];
+  //   const answer = comp.getPayload().trim() || "";
+
+  //   if (!question) {
+  //     console.error(`Could not find question field ${qName}`);
+  //     return;
+  //   }
+
+  //   const nextNode = await this.getNextNode(qName, answer, question, comp);
+
+  //   if (nextNode) {
+  //     this.updateCurrentNodeValue(nextNode, qName, answer);
+  //   } else {
+  //     console.error(
+  //       `coudn't find node with ${qName} and value ${answer} id: ${comp.id}`
+  //     );
+  //   }
+  // }
 
   updateCurrentNodeValue(nextNode: Node, qName: string, answer: string) {
     if (
@@ -270,6 +298,9 @@ export class QuizContext {
           value
         );
       }
+    } else if (qName === "fuse style-path2") {
+      const segmentStrategy = this.questions[qName] as SegmentedOptionsStrategy;
+      const value = segmentStrategy.currentSegment.value;
     } else {
       const { key, value }: { key: "elementId" | "value"; value: string } =
         question instanceof HidingOptionsStrategy
