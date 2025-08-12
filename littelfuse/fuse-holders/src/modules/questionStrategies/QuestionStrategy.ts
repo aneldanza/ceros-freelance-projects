@@ -13,7 +13,6 @@ export abstract class QuestionStrategy {
   ) {
     this.optionsCollection = experience.findComponentsByTag(`q:${name}`);
     this.selectedOption = new NonStrictObservable(`${name}:${this.key}:`);
-    console.log(this.selectedOption.value);
   }
 
   abstract displayAnswerOptions(node: Node): void;
