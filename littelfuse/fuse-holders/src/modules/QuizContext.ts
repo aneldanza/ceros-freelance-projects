@@ -11,6 +11,7 @@ import {
   RELATED_PRODUCTS,
   IMG_LRG,
   path2Fields,
+  transitionFields,
 } from "./constants";
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
@@ -193,6 +194,31 @@ export class QuizContext {
     this.currentNode.value = this.currentTree.root;
   }
 
+  transitionToPath1(nextNode: Node) {
+    const steps = 4;
+    let s = 0;
+    let parent = this.path1NodeTree.root;
+
+    while (s < steps) {
+      const name = parent.children[0].name;
+      const path2Name = transitionFields[name];
+      const value = nextNode?.data[path2Name];
+      if (value) {
+        const node = parent.findChildByValueProperty(value);
+        if (node) {
+          parent = node;
+        } else {
+          console.log(
+            `couldn't find node with value ${value} and name ${path2Name}`
+          );
+        }
+      }
+      s++;
+    }
+
+    return parent;
+  }
+
   async handleSelectedAnswer(selection: string) {
     console.log(selection);
     const [qName, key, answer] = selection.split(":");
@@ -214,7 +240,13 @@ export class QuizContext {
     );
 
     if (nextNode) {
-      this.updateCurrentNodeValue(nextNode, qName, answer);
+      if (qName === path2Fields[path2Fields.length - 1]) {
+        const node = this.transitionToPath1(nextNode);
+        console.log(node);
+        this.updateCurrentNodeValue(node, node.name, "");
+      } else {
+        this.updateCurrentNodeValue(nextNode, qName, answer);
+      }
     } else {
       console.error(`coudn't find node with ${qName} and value ${answer}`);
     }

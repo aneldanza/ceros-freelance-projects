@@ -1,5 +1,12 @@
 import { FieldNodes } from "./quizTypes";
 
+export const transitionFields: { [key: string]: string } = {
+  "fuse type": "fuse type-path2",
+  "fuse style": "fuse style-path2",
+  "max voltage": "max voltage",
+  "max current": "max current",
+};
+
 export const path2Fields: string[] = [
   "fuse type",
   "application voltage",
