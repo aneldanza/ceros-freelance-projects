@@ -13,7 +13,7 @@ export class Observer<T> {
 }
 
 export class Observable<T> extends Observer<T> {
-  private _value: T;
+  protected _value: T;
 
   constructor(initialValue: T) {
     super();
@@ -29,5 +29,23 @@ export class Observable<T> extends Observer<T> {
       this._value = newVal;
       this.notify(this._value);
     }
+  }
+}
+
+export class NonStrictObservable<T> extends Observer<T> {
+  protected _value: T;
+
+  constructor(initialValue: T) {
+    super();
+    this._value = initialValue;
+  }
+
+  get value() {
+    return this._value;
+  }
+
+  set value(newVal: T) {
+    this._value = newVal;
+    this.notify(this._value);
   }
 }
