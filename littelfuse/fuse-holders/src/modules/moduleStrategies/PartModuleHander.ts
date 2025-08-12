@@ -38,7 +38,11 @@ export class PartModuleHandler extends ModuleHandler {
       );
 
     layersDict[`q:${this.qName}`] &&
-      this.registerOptionClick(this.qName, moduleTag, layersDict[this.qName]);
+      this.registerOptionClick(
+        this.qName,
+        moduleTag,
+        layersDict[`q:${this.qName}`]
+      );
   }
 
   registerOptionClick(
@@ -49,7 +53,6 @@ export class PartModuleHandler extends ModuleHandler {
     layerArray.forEach((layer) => {
       layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
         const obj = this.getResultData(moduleTag);
-
         const answer = obj.data[key];
 
         const array = this.selectedOption.value.split(":");
