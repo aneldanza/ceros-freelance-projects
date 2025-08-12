@@ -32,8 +32,6 @@ export class MaskingOptionsStrategy extends QuestionStrategy {
     this.selectedOption.value = array.join(":");
   }
 
-  reset(): void {}
-
   displayAnswerOptions(node: Node): void {
     this.maskCollection.layers.forEach((comp: CerosLayer) => {
       this.handleMasks(comp, node);

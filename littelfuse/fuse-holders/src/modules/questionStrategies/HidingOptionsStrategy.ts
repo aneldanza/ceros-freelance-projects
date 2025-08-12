@@ -43,7 +43,6 @@ export class HidingOptionsStrategy extends QuestionStrategy {
     array[2] = answer;
     this.selectedOption.value = array.join(":");
   }
-  reset(): void {}
 
   displayAnswerOptions(node: Node): void {
     const sortedNodes = node.children.sort(

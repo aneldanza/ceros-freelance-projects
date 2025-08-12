@@ -1,11 +1,10 @@
 import { Node } from "../Node";
-import { Observable } from "../Observer";
-import { AnswerSelection } from "../quizTypes";
+import { NonStrictObservable } from "../Observer";
 
 export abstract class QuestionStrategy {
   protected optionsCollection: CerosComponentCollection;
   public key: "value" | "elementId" = "value";
-  public selectedOption: Observable<string>;
+  public selectedOption: NonStrictObservable<string>;
 
   constructor(
     public name: string,
@@ -13,10 +12,9 @@ export abstract class QuestionStrategy {
     protected CerosSDK: CerosSDK
   ) {
     this.optionsCollection = experience.findComponentsByTag(`q:${name}`);
-    this.selectedOption = new Observable(`${name}:${this.key}:`);
+    this.selectedOption = new NonStrictObservable(`${name}:${this.key}:`);
+    console.log(this.selectedOption.value);
   }
 
   abstract displayAnswerOptions(node: Node): void;
-
-  abstract reset(): void;
 }

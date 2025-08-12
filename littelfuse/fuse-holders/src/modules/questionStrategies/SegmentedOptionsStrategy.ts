@@ -133,6 +133,4 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
 
     hotspotCollection.click();
   }
-
-  reset(): void {}
 }

@@ -3,7 +3,6 @@
 import {
   PATH,
   OPTION,
-  QUESTION,
   BACK,
   fieldNodesDict,
   NAV,
@@ -16,22 +15,16 @@ import {
 import { NodeTree } from "./NodeTree";
 import { Observable } from "./Observer";
 import { Node } from "./Node";
-import { getValueFromTags, capitalize, stepsFromFieldNames } from "./utils";
-import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrategy";
+import { capitalize, stepsFromFieldNames } from "./utils";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
 import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { QuestionStrategyFactory } from "./questionStrategies/QuestionStrategyFactory";
-import { MaskingOptionsStrategyWithMultipleCellValues } from "./questionStrategies/MaskOptionsStrateyWithMultipleCellValues";
-import { SliderOptionsStrategy } from "./questionStrategies/SliderOptionsStrategy";
 import { ModuleHandler } from "./moduleStrategies/ModuleHandler";
-import { SegmentedOptionsStrategy } from "./questionStrategies/SegmentedOptionsStrategy";
-import { AnswerSelection } from "./quizTypes";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
-  private answerCollection: CerosComponentCollection;
   private backLayersCollection: CerosLayerCollection;
   private navCollecttion: CerosComponentCollection;
   private pathTextCollection: CerosComponentCollection;
@@ -48,6 +41,8 @@ export class QuizContext {
     `${IMG_LRG}-close`
   );
   private currentTree: NodeTree;
+  private path1NodeTree: NodeTree;
+  private path2NodeTree: NodeTree | null = null;
 
   constructor(
     public CerosSDK: CerosSDK,
@@ -60,8 +55,8 @@ export class QuizContext {
     private path2Link: string
   ) {
     this.currentTree = nodeTree;
+    this.path1NodeTree = nodeTree;
     this.currentNode = new Observable<Node>(nodeTree.root);
-    this.answerCollection = this.experience.findComponentsByTag(OPTION);
     this.backLayersCollection = this.experience.findLayersByTag(BACK);
     this.navCollecttion = this.experience.findComponentsByTag(NAV);
     this.pathTextCollection = this.experience.findComponentsByTag(PATH);
@@ -148,11 +143,6 @@ export class QuizContext {
   }
 
   subscribeToCerosEvents() {
-    // this.answerCollection.on(
-    //   this.CerosSDK.EVENTS.CLICKED,
-    //   this.handleAnswerClick.bind(this)
-    // );
-
     this.backLayersCollection.on(
       this.CerosSDK.EVENTS.CLICKED,
       this.handleBackNavigation.bind(this)
@@ -201,17 +191,19 @@ export class QuizContext {
 
   resetQuiz() {
     this.currentNode.value = this.currentTree.root;
-    this.questions["application amps"].reset();
   }
 
   async handleSelectedAnswer(selection: string) {
     console.log(selection);
     const [qName, key, answer] = selection.split(":");
 
-    if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
-      //load path2 csv data
-
-      this.currentTree = await this.loadCsvDataIntoNodeTree();
+    if (qName === "fuse type") {
+      if (answer.toLowerCase() === "guide me") {
+        //load path2 csv data
+        this.currentTree = await this.loadCsvDataIntoNodeTree();
+      } else {
+        this.currentTree = this.path1NodeTree;
+      }
       this.currentNode.value = this.currentTree.root;
     }
 
@@ -228,29 +220,6 @@ export class QuizContext {
     }
   }
 
-  // async handleAnswerClick(comp: CerosComponent) {
-  //   if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
-
-  //   const qName = getValueFromTags(comp.getTags(), QUESTION);
-  //   const question = this.questions[qName];
-  //   const answer = comp.getPayload().trim() || "";
-
-  //   if (!question) {
-  //     console.error(`Could not find question field ${qName}`);
-  //     return;
-  //   }
-
-  //   const nextNode = await this.getNextNode(qName, answer, question, comp);
-
-  //   if (nextNode) {
-  //     this.updateCurrentNodeValue(nextNode, qName, answer);
-  //   } else {
-  //     console.error(
-  //       `coudn't find node with ${qName} and value ${answer} id: ${comp.id}`
-  //     );
-  //   }
-  // }
-
   updateCurrentNodeValue(nextNode: Node, qName: string, answer: string) {
     if (
       fieldNodesDict[qName].skipif &&
@@ -263,55 +232,10 @@ export class QuizContext {
     }
   }
 
-  async getNextNode(
-    qName: string,
-    answer: string,
-    question: QuestionStrategy,
-    comp: CerosComponent
-  ) {
-    if (qName === "fuse type" && answer.toLowerCase() === "guide me") {
-      //load path2 csv data
-
-      this.currentTree = await this.loadCsvDataIntoNodeTree();
-      this.currentNode.value = this.currentTree.root;
-
-      return this.currentTree.findChild(
-        this.currentNode.value,
-        "value",
-        answer
-      );
-    } else if (qName === "application amps") {
-      const sliderStrategy = this.questions[
-        "application amps"
-      ] as SliderOptionsStrategy;
-
-      const value = sliderStrategy.slider
-        ? sliderStrategy.sliderValues.value[
-            parseInt(sliderStrategy.slider.value)
-          ].toString()
-        : "";
-
-      if (value) {
-        return this.currentTree.findChild(
-          this.currentNode.value,
-          "value",
-          value
-        );
-      }
-    } else if (qName === "fuse style-path2") {
-      const segmentStrategy = this.questions[qName] as SegmentedOptionsStrategy;
-      const value = segmentStrategy.currentSegment.value;
-    } else {
-      const { key, value }: { key: "elementId" | "value"; value: string } =
-        question instanceof HidingOptionsStrategy
-          ? { key: "elementId", value: comp.id }
-          : { key: "value", value: answer };
-
-      return this.currentTree.findChild(this.currentNode.value, key, value);
-    }
-  }
-
   loadCsvDataIntoNodeTree() {
+    if (this.path2NodeTree) {
+      return this.path2NodeTree;
+    }
     return new Promise<NodeTree>((resolve, reject) => {
       const path2FieldNodesDict = stepsFromFieldNames(
         path2Fields,
@@ -324,6 +248,7 @@ export class QuizContext {
         download: true,
         complete: (result) => {
           tree.buildTree(result.data, path2Fields);
+          this.path2NodeTree = tree;
           resolve(tree);
         },
         error: (error: any) => {
@@ -409,7 +334,7 @@ export class QuizContext {
 
   isLastQuestion(node: Node) {
     const childNode = node.children[0];
-    // return Object.keys(childNode.data).length;
+
     return childNode.name === "part";
   }
 }

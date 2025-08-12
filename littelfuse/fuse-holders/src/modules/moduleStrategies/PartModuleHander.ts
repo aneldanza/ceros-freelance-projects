@@ -2,7 +2,7 @@ import { ModuleHandler } from "./ModuleHandler";
 import { FUSE_STYLE_INFO, IMAGE } from "../constants";
 import { CsvData } from "../quizTypes";
 import { setImageUrl } from "../utils";
-import { Observable } from "../Observer";
+import { NonStrictObservable } from "../Observer";
 
 export class PartModuleHandler extends ModuleHandler {
   constructor(
@@ -10,7 +10,7 @@ export class PartModuleHandler extends ModuleHandler {
     experience: Experience,
     CerosSDK: CerosSDK,
     private qName: string,
-    private selectedOption: Observable<string>
+    private selectedOption: NonStrictObservable<string>
   ) {
     super(moduleName, experience, CerosSDK);
   }
@@ -61,7 +61,6 @@ export class PartModuleHandler extends ModuleHandler {
   }
 
   displayPartImage(imgLayer: CerosLayer, data: CsvData) {
-    console.log(data);
     const strUrl = data[`${this.qName.split("-")[0]} image`];
     setImageUrl(strUrl, imgLayer);
   }
