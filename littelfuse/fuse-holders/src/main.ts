@@ -26,7 +26,7 @@ if (typeof require !== "undefined" && typeof require === "function") {
     "CerosSDK",
     "PapaParse",
     "modules/QuizContext",
-    "modules/NodeTree",
+    "modules/lib/NodeTree",
     "modules/constants",
     "modules/utils",
   ], function (

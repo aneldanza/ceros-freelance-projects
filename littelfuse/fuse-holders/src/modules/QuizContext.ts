@@ -2,7 +2,7 @@
 
 import {
   PATH,
-  OPTION,
+  PATH2,
   BACK,
   fieldNodesDict,
   NAV,
@@ -12,6 +12,7 @@ import {
   IMG_LRG,
   path2Fields,
   transitionFields,
+  PATH1,
 } from "./constants";
 import { NodeTree } from "./lib/NodeTree";
 import { Observable } from "./Observer";
@@ -65,6 +66,7 @@ export class QuizContext {
     this.mcaseAdapterCtaCollection = this.experience.findLayersByTag(
       `${MCASE_ADAPTER}-cta`
     );
+
     this.resultHandler = new ResultHandler(
       experience,
       CerosSDK,
@@ -195,7 +197,6 @@ export class QuizContext {
   }
 
   async handleSelectedAnswer(selection: string) {
-    console.log(selection);
     const [qName, key, answer] = selection.split(":");
 
     if (qName === "fuse type") {
@@ -299,15 +300,27 @@ export class QuizContext {
   }
 
   handleNodeChange(node: Node) {
-    if (node.children) {
+    if (node.children.length) {
       if (this.isLastQuestion(node)) {
         this.resultHandler.showResultModule(node.children.length);
+        this.handlePathNavigation(this.resultHandler);
       } else {
-        console.log(this.currentNode.value);
         const childNodeName = node.children[0].name.toLowerCase();
-        this.questions[childNodeName] &&
-          this.questions[childNodeName].displayAnswerOptions(node);
+        const step = this.questions[childNodeName];
+        if (step) {
+          step.displayAnswerOptions(node);
+          this.handlePathNavigation(step);
+        }
       }
+      console.log(this.currentNode.value);
+    }
+  }
+
+  handlePathNavigation(handler: QuestionStrategy | ResultHandler) {
+    if (this.currentTree === this.path2NodeTree) {
+      handler.displayPathNavigation(PATH2);
+    } else {
+      handler.displayPathNavigation(PATH1);
     }
   }
 

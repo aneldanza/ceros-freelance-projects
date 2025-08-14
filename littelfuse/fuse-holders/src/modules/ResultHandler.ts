@@ -8,6 +8,7 @@ import {
   IMG_LRG,
   RESULTS,
   MAX_RESULTS,
+  PART,
 } from "./constants";
 import { Node } from "./lib/Node";
 import { Observable } from "./Observer";
@@ -18,6 +19,7 @@ import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { Carousel } from "./Carousel";
 
 export class ResultHandler {
+  public pathNavigationCollection: CerosLayerCollection;
   public landingPageProxy: LandingPageProxy;
 
   public csvData: Record<Overlay, Record<string, CsvData>> = {
@@ -44,6 +46,7 @@ export class ResultHandler {
     private PapaParse: typeof window.Papa,
     private imgLrgLink: Observable<string>
   ) {
+    this.pathNavigationCollection = experience.findLayersByTag(`nav:${PART}`);
     this.landingPageProxy = new LandingPageProxy();
     this.resultModulesHandler = new ProductModuleHandler(
       RESULTS,
@@ -95,6 +98,16 @@ export class ResultHandler {
       experience,
       this.resultModulesHandler
     );
+  }
+
+  displayPathNavigation(pathName: string) {
+    this.pathNavigationCollection.layers.forEach((layer: CerosLayer) => {
+      if (layer.getPayload().trim() === pathName) {
+        layer.show();
+      } else {
+        layer.hide();
+      }
+    });
   }
 
   showResultModule(length: number) {

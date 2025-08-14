@@ -30,17 +30,17 @@ export const path1Fields: string[] = [
 export const fieldNodesDict: FieldNodes = {
   "application voltage": {
     type: "question",
-    pathText: "Application Voltage: {{}}",
+    pathText: "Voltage: {{}}",
   },
   "application load": {
     type: "question",
-    pathText: "Application Load: {{}}",
+    pathText: "Load: {{}}",
     questionStrategy: "masking",
     multiValue: true,
   },
   "application amps": {
     type: "question",
-    pathText: "Application Amps: {{}}",
+    pathText: "Amps: {{}}",
     questionStrategy: "slider",
   },
   "fuse style-path2": {
@@ -137,6 +137,7 @@ export const MAX_RESULTS = 5;
 export const MCASE_ADAPTER = "mcase-adapter";
 export const IMG_LRG = "img lrg";
 export const PATH2 = "path2";
+export const PATH1 = "path1";
 export const FUSE_STYLE_INFO = "fuse style info";
 export const FUSE_TYPE_INFO = "fuse type info";
 
