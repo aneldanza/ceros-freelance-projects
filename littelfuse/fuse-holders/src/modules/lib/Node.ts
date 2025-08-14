@@ -4,7 +4,6 @@ export class Node {
   public children: Node[] = [];
   public elementId: string = "";
   public data: CsvData = {};
-  public portal?: { __portal: boolean; __target: Node; portalNode: Node };
 
   constructor(
     public name: string,
