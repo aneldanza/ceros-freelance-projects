@@ -3,8 +3,8 @@ import { FieldNodes } from "./quizTypes";
 export const transitionFields: { [key: string]: string } = {
   "fuse type": "fuse type-path2",
   "fuse style": "fuse style-path2",
-  "max voltage": "max voltage",
-  "max current": "max current",
+  "max voltage": "max voltage-path2",
+  "max current": "max current-path2",
 };
 
 export const path2Fields: string[] = [
@@ -48,7 +48,21 @@ export const fieldNodesDict: FieldNodes = {
     pathText: "Fuse Style: {{}}",
     questionStrategy: "segments",
   },
+  "max voltage-path2": {
+    type: "question",
+    pathText: "Volts: {{}}V DC",
+    breakKeys: true,
+  },
+  "max current-path2": {
+    type: "question",
+    pathText: "Amps: {{}}A",
+    breakKeys: true,
+  },
   "fuse type": {
+    type: "question",
+    pathText: "Fuse Type: {{}}",
+  },
+  "fuse type-path2": {
     type: "question",
     pathText: "Fuse Type: {{}}",
   },
