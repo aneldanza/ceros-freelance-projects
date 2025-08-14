@@ -15,6 +15,7 @@ export type Field = {
   skipif?: string[];
   skipBackIf?: Record<string, string[]>;
   multiValue?: boolean;
+  breakKeys?: boolean;
 };
 export type FieldNodes = {
   [key: string]: Field;
@@ -28,3 +29,7 @@ export interface AnswerSelection {
   key: "value" | "elementId";
   value: string;
 }
+
+export type Row = Record<string, string>;
+
+export type TransitionFields = { [p1Field: string]: string };

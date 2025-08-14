@@ -1,5 +1,5 @@
 import { QuestionStrategy } from "./QuestionStrategy";
-import { Node } from "../Node";
+import { Node } from "../lib/Node";
 import { Observable } from "../Observer";
 
 export class HidingOptionsStrategy extends QuestionStrategy {

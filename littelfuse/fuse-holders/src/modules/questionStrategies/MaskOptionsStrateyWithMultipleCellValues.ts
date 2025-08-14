@@ -1,4 +1,4 @@
-import { Node } from "../Node";
+import { Node } from "../lib/Node";
 import { MaskingOptionsStrategy } from "./MaskingOptionsStrategy";
 
 export class MaskingOptionsStrategyWithMultipleCellValues extends MaskingOptionsStrategy {

@@ -9,7 +9,7 @@ import {
   RESULTS,
   MAX_RESULTS,
 } from "./constants";
-import { Node } from "./Node";
+import { Node } from "./lib/Node";
 import { Observable } from "./Observer";
 import { LandingPageProxy } from "./LandinPageProxy";
 import { CsvData, Overlay } from "./quizTypes";

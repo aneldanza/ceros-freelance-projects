@@ -1,4 +1,4 @@
-import { Node } from "../Node";
+import { Node } from "../lib/Node";
 import { Observable } from "../Observer";
 import { QuestionStrategy } from "./QuestionStrategy";
 

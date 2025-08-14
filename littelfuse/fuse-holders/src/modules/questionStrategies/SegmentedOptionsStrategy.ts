@@ -1,7 +1,7 @@
 import { FUSE_TYPE_INFO, PARTS, PATH2, SEGMENTS } from "../constants";
 import { NavModuleHandler } from "../moduleStrategies/NavModuleHandler";
 import { PartModuleHandler } from "../moduleStrategies/PartModuleHander";
-import { Node } from "../Node";
+import { Node } from "../lib/Node";
 import { Observable } from "../Observer";
 import { QuestionStrategy } from "./QuestionStrategy";
 

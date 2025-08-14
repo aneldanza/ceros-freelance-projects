@@ -1,5 +1,5 @@
 import { MaskingOptionsStrategy } from "./MaskingOptionsStrategy";
-import { Node } from "../Node";
+import { Node } from "../lib/Node";
 
 export class MaskingOptionsWithSubcategoriesStrategy extends MaskingOptionsStrategy {
   displayAnswerOptions(node: Node): void {
