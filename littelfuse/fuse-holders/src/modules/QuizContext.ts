@@ -13,9 +13,9 @@ import {
   path2Fields,
   transitionFields,
 } from "./constants";
-import { NodeTree } from "./NodeTree";
+import { NodeTree } from "./lib/NodeTree";
 import { Observable } from "./Observer";
-import { Node } from "./Node";
+import { Node } from "./lib/Node";
 import { capitalize, stepsFromFieldNames } from "./utils";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
 import { ResultHandler } from "./ResultHandler";
@@ -194,31 +194,6 @@ export class QuizContext {
     this.currentNode.value = this.currentTree.root;
   }
 
-  transitionToPath1(nextNode: Node) {
-    const steps = 4;
-    let s = 0;
-    let parent = this.path1NodeTree.root;
-
-    while (s < steps) {
-      const name = parent.children[0].name;
-      const path2Name = transitionFields[name];
-      const value = nextNode?.data[path2Name];
-      if (value) {
-        const node = parent.findChildByValueProperty(value);
-        if (node) {
-          parent = node;
-        } else {
-          console.log(
-            `couldn't find node with value ${value} and name ${path2Name}`
-          );
-        }
-      }
-      s++;
-    }
-
-    return parent;
-  }
-
   async handleSelectedAnswer(selection: string) {
     console.log(selection);
     const [qName, key, answer] = selection.split(":");
@@ -240,13 +215,7 @@ export class QuizContext {
     );
 
     if (nextNode) {
-      if (qName === path2Fields[path2Fields.length - 1]) {
-        const node = this.transitionToPath1(nextNode);
-        console.log(node);
-        this.updateCurrentNodeValue(node, node.name, "");
-      } else {
-        this.updateCurrentNodeValue(nextNode, qName, answer);
-      }
+      this.updateCurrentNodeValue(nextNode, qName, answer);
     } else {
       console.error(`coudn't find node with ${qName} and value ${answer}`);
     }
@@ -265,27 +234,26 @@ export class QuizContext {
   }
 
   loadCsvDataIntoNodeTree() {
-    if (this.path2NodeTree) {
-      return this.path2NodeTree;
-    }
-    return new Promise<NodeTree>((resolve, reject) => {
-      const path2FieldNodesDict = stepsFromFieldNames(
-        path2Fields,
-        fieldNodesDict
-      );
-      const tree = new NodeTree(path2FieldNodesDict);
+    if (this.path2NodeTree) return Promise.resolve(this.path2NodeTree);
 
+    const tree = new NodeTree(fieldNodesDict);
+
+    return new Promise<NodeTree>((resolve, reject) => {
       this.PapaParse.parse(this.path2Link, {
         header: true,
         download: true,
         complete: (result) => {
           tree.buildTree(result.data, path2Fields);
+          tree.mergeDataWithFields(
+            this.path1NodeTree,
+            tree.root,
+            transitionFields
+          );
           this.path2NodeTree = tree;
+
           resolve(tree);
         },
-        error: (error: any) => {
-          reject(error);
-        },
+        error: (error: any) => reject(error),
       });
     });
   }
