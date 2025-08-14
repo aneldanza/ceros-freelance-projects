@@ -1,4 +1,4 @@
-import { Node } from "../Node";
+import { Node } from "../lib/Node";
 import { NonStrictObservable } from "../Observer";
 
 export abstract class QuestionStrategy {
