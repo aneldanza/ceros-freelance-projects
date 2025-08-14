@@ -290,6 +290,8 @@ export class QuizContext {
   }
 
   handleRandomNavigation(comp: CerosComponent) {
+    if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
+
     const name = comp.getPayload().toLowerCase();
     const node = this.currentNode.value.findParentByName(name);
     if (node && node.parent) {
