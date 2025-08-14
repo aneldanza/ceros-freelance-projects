@@ -2,14 +2,14 @@ import { FUSE_TYPE_INFO, PARTS, PATH2, SEGMENTS } from "../constants";
 import { NavModuleHandler } from "../moduleStrategies/NavModuleHandler";
 import { PartModuleHandler } from "../moduleStrategies/PartModuleHandler";
 import { Node } from "../lib/Node";
-import { Observable } from "../Observer";
+import { NonStrictObservable, Observable } from "../Observer";
 import { QuestionStrategy } from "./QuestionStrategy";
 
 export class SegmentedOptionsStrategy extends QuestionStrategy {
   private partModuleHandler: PartModuleHandler;
   private navModuleHandler: NavModuleHandler;
   private fuseTypeInfoCollection: CerosComponentCollection;
-  public currentSegment: Observable<string>;
+  public currentSegment: NonStrictObservable<string>;
   private segments: {
     [key: string]: {
       nodes: Node[];
@@ -20,7 +20,7 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
   constructor(name: string, experience: Experience, CerosSDK: CerosSDK) {
     super(name, experience, CerosSDK);
 
-    this.currentSegment = new Observable("");
+    this.currentSegment = new NonStrictObservable("");
 
     this.partModuleHandler = new PartModuleHandler(
       PARTS,

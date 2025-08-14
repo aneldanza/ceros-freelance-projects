@@ -1,4 +1,4 @@
-import { Observable } from "../Observer";
+import { NonStrictObservable } from "../Observer";
 import { ModuleHandler } from "./ModuleHandler";
 
 export class NavModuleHandler extends ModuleHandler {
@@ -6,7 +6,7 @@ export class NavModuleHandler extends ModuleHandler {
     moduleName: string,
     experience: Experience,
     CerosSDK: CerosSDK,
-    private currentSegment: Observable<string>
+    private currentSegment: NonStrictObservable<string>
   ) {
     super(moduleName, experience, CerosSDK);
   }
