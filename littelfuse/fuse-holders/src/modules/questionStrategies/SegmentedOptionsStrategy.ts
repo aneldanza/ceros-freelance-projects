@@ -1,26 +1,15 @@
 import { FUSE_TYPE_INFO, PARTS, PATH2, SEGMENTS } from "../constants";
-import { NavModuleHandler } from "../moduleStrategies/NavModuleHandler";
 import { PartModuleHandler } from "../moduleStrategies/PartModuleHandler";
 import { Node } from "../lib/Node";
-import { NonStrictObservable, Observable } from "../Observer";
 import { QuestionStrategy } from "./QuestionStrategy";
+import { TabNavHandler } from "./TabNavHandler";
 
 export class SegmentedOptionsStrategy extends QuestionStrategy {
   private partModuleHandler: PartModuleHandler;
-  private navModuleHandler: NavModuleHandler;
-  private fuseTypeInfoCollection: CerosComponentCollection;
-  public currentSegment: NonStrictObservable<string>;
-  private segments: {
-    [key: string]: {
-      nodes: Node[];
-      nav: { [key: string]: CerosComponentCollection };
-    };
-  } = {};
+  private tabNavHandler: TabNavHandler;
 
   constructor(name: string, experience: Experience, CerosSDK: CerosSDK) {
     super(name, experience, CerosSDK);
-
-    this.currentSegment = new NonStrictObservable("");
 
     this.partModuleHandler = new PartModuleHandler(
       PARTS,
@@ -30,99 +19,29 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
       this.selectedOption
     );
 
-    this.navModuleHandler = new NavModuleHandler(
-      SEGMENTS,
+    this.tabNavHandler = new TabNavHandler(
       experience,
       CerosSDK,
-      this.currentSegment
-    );
-
-    this.fuseTypeInfoCollection =
-      experience.findComponentsByTag(FUSE_TYPE_INFO);
-
-    this.subscribeToSegmentChange();
-  }
-
-  subscribeToSegmentChange() {
-    this.currentSegment.subscribe(this.displayModules.bind(this));
-    this.currentSegment.subscribe(this.updateFuseTypeInfo.bind(this));
-  }
-
-  registerAnimations() {
-    this.fuseTypeInfoCollection.on(
-      this.CerosSDK.EVENTS.ANIMATION_STARTED,
-      (comp) => {
-        if (this.segments[this.currentSegment.value].nodes.length) {
-          const fuseType =
-            this.segments[this.currentSegment.value].nodes[0].data[
-              FUSE_TYPE_INFO
-            ];
-          comp.setText(fuseType);
-        }
-      }
+      this.showResultModules.bind(this),
+      SEGMENTS,
+      FUSE_TYPE_INFO,
+      `fuse type-${PATH2}`
     );
   }
 
   displayAnswerOptions(node: Node): void {
-    this.segments = {};
-    this.mapSegments(node.children);
-    this.updateNavigation();
-
-    this.triggerHotspot(SEGMENTS, Object.keys(this.segments).length, 3);
-
-    this.currentSegment.value = Object.keys(this.segments)[0];
+    this.tabNavHandler.display(node);
   }
 
-  mapSegments(nodes: Node[]) {
-    nodes.forEach((node) => {
-      const type = node.data[`fuse type-${PATH2}`].trim();
-      this.segments[type] = this.segments[type] || {};
-      this.segments[type].nodes = this.segments[type].nodes || [];
-      this.segments[type].nodes.push(node);
-    });
+  showResultModules(length: number, nodes: Node[]) {
+    this.updateResultModules(length, nodes);
+
+    this.triggerHotspot(PARTS, length, 3);
   }
 
-  updateNavigation() {
-    const length = Object.keys(this.segments).length;
-
-    if (length) {
-      this.updateNavModules(length);
-      this.triggerHotspot(SEGMENTS, length, 3);
-    }
-  }
-
-  displayModules() {
-    const length = this.segments[this.currentSegment.value]
-      ? this.segments[this.currentSegment.value].nodes.length
-      : 0;
-
-    if (length) {
-      this.updateResultModules(length);
-
-      this.triggerHotspot(PARTS, length, 3);
-    } else {
-      console.log("No options in segement " + this.currentSegment.value);
-    }
-  }
-
-  updateFuseTypeInfo() {
-    const fuseType =
-      this.segments[this.currentSegment.value].nodes[0].data[FUSE_TYPE_INFO];
-
-    this.fuseTypeInfoCollection.setText(fuseType);
-  }
-
-  updateResultModules(type: number) {
-    const nodes = this.segments[this.currentSegment.value].nodes;
+  updateResultModules(type: number, nodes: Node[]) {
     nodes.forEach((node, index) => {
       this.partModuleHandler.updateModule(type, index, node.data);
-    });
-  }
-
-  updateNavModules(length: number) {
-    const fuseTypes = Object.keys(this.segments);
-    fuseTypes.forEach((fuseType, index) => {
-      this.navModuleHandler.updateModule(length, index, { name: fuseType });
     });
   }
 
