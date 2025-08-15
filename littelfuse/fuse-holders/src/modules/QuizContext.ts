@@ -304,7 +304,9 @@ export class QuizContext {
   handleNodeChange(node: Node) {
     if (node.children.length) {
       if (this.isLastQuestion(node)) {
-        this.resultHandler.showResultModule(node.children.length);
+        const pathName =
+          this.currentTree === this.path1NodeTree ? PATH1 : PATH2;
+        this.resultHandler.showResultModule(node.children.length, pathName);
         this.handlePathNavigation(this.resultHandler);
       } else {
         const childNodeName = node.children[0].name.toLowerCase();

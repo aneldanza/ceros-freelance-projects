@@ -24,7 +24,7 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
       CerosSDK,
       this.showResultModules.bind(this),
       SEGMENTS,
-      FUSE_TYPE_INFO,
+      "FUSE_TYPE_INFO",
       `fuse type-${PATH2}`
     );
   }

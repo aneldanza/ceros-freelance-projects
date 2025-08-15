@@ -5,10 +5,10 @@ import {
   MAX_RELATED_PRODUCTS,
   PRODUCT_GUIDE,
   RELATED_PRODUCTS,
-  IMG_LRG,
   RESULTS,
   MAX_RESULTS,
   PART,
+  PATH2,
 } from "./constants";
 import { Node } from "./lib/Node";
 import { Observable } from "./Observer";
@@ -17,11 +17,12 @@ import { CsvData, Overlay } from "./quizTypes";
 import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { Carousel } from "./Carousel";
+import { TabNavHandler } from "./questionStrategies/TabNavHandler";
 
 export class ResultHandler {
   public pathNavigationCollection: CerosLayerCollection;
   public landingPageProxy: LandingPageProxy;
-
+  private tabNavHandler: TabNavHandler | null = null;
   public csvData: Record<Overlay, Record<string, CsvData>> = {
     "related products": {},
     accessories: {},
@@ -110,22 +111,55 @@ export class ResultHandler {
     });
   }
 
-  showResultModule(length: number) {
-    this.updateResultModules(length);
+  getTabNavHandler() {
+    if (!this.tabNavHandler) {
+      const tabNavHandler = new TabNavHandler(
+        this.experience,
+        this.CerosSDK,
+        this.showPath2Results.bind(this),
+        "tab",
+        "",
+        "max current"
+      );
+      this.tabNavHandler = tabNavHandler;
+    }
+    return this.tabNavHandler;
+  }
+
+  showResultModule(length: number, pathName: string) {
+    // this.updateResultModules(length);
+
+    // this.triggerHotspot(RESULTS, length, MAX_RESULTS);
+    if (pathName === PATH2) {
+      const tabNavHandler = this.getTabNavHandler();
+      tabNavHandler.display(this.currentNodeObservable.value);
+    } else {
+      this.showPath1Results(length);
+    }
+  }
+
+  showPath1Results(length: number) {
+    this.updateResultModules(length, this.currentNodeObservable.value.children);
 
     this.triggerHotspot(RESULTS, length, MAX_RESULTS);
   }
 
-  sortNodesBySales() {
-    return this.currentNodeObservable.value.children.sort((a, b) => {
+  showPath2Results(length: number, nodes: Node[]) {
+    this.updateResultModules(length, nodes);
+
+    this.triggerHotspot(RESULTS, length, MAX_RESULTS);
+  }
+
+  sortNodesBySales(nodes: Node[]) {
+    return nodes.sort((a, b) => {
       const aSales = isNaN(Number(a.data.sales)) ? 0 : Number(a.data.sales);
       const bSales = isNaN(Number(b.data.sales)) ? 0 : Number(b.data.sales);
       return bSales - aSales;
     });
   }
 
-  updateResultModules(type: number) {
-    const results = this.sortNodesBySales();
+  updateResultModules(type: number, nodes: Node[]) {
+    const results = this.sortNodesBySales(nodes);
     if (results.length <= MAX_RESULTS) {
       results.forEach((node, index) => {
         this.resultModulesHandler.updateModule(
