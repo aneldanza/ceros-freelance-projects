@@ -36,14 +36,19 @@ export class TabNavHandler {
     this.subscribeToSegmentChange();
   }
 
+  init(node: Node) {
+    this.segments = {};
+    this.mapSegments(node.children);
+  }
+
   subscribeToSegmentChange() {
     this.currentSegment.subscribe(this.displayModules.bind(this));
     this.currentSegment.subscribe(this.updateFuseTypeInfo.bind(this));
   }
 
-  display(node: Node): void {
-    this.segments = {};
-    this.mapSegments(node.children);
+  display(): void {
+    // this.segments = {};
+    // this.mapSegments(node.children);
     this.updateNavigation();
 
     this.triggerHotspot(this.tabTag, Object.keys(this.segments).length, 3);

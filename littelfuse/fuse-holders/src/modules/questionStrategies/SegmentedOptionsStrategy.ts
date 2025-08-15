@@ -30,7 +30,8 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
   }
 
   displayAnswerOptions(node: Node): void {
-    this.tabNavHandler.display(node);
+    this.tabNavHandler.init(node);
+    this.tabNavHandler.display();
   }
 
   showResultModules(length: number, nodes: Node[]) {

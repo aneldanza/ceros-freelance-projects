@@ -140,6 +140,7 @@ export const PATH2 = "path2";
 export const PATH1 = "path1";
 export const FUSE_STYLE_INFO = "fuse style info";
 export const FUSE_TYPE_INFO = "fuse type info";
+export const TAB = "tab";
 
 export const DEFAULT_IMAGE =
   "https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/fuse-holders/Image+Not+Available.jpg";

@@ -9,6 +9,7 @@ import {
   MAX_RESULTS,
   PART,
   PATH2,
+  TAB,
 } from "./constants";
 import { Node } from "./lib/Node";
 import { Observable } from "./Observer";
@@ -22,7 +23,7 @@ import { TabNavHandler } from "./questionStrategies/TabNavHandler";
 export class ResultHandler {
   public pathNavigationCollection: CerosLayerCollection;
   public landingPageProxy: LandingPageProxy;
-  private tabNavHandler: TabNavHandler | null = null;
+  private tabNavHandler: TabNavHandler;
   public csvData: Record<Overlay, Record<string, CsvData>> = {
     "related products": {},
     accessories: {},
@@ -99,6 +100,15 @@ export class ResultHandler {
       experience,
       this.resultModulesHandler
     );
+
+    this.tabNavHandler = new TabNavHandler(
+      this.experience,
+      this.CerosSDK,
+      this.showPath2Results.bind(this),
+      TAB,
+      "",
+      "max current"
+    );
   }
 
   displayPathNavigation(pathName: string) {
@@ -117,7 +127,7 @@ export class ResultHandler {
         this.experience,
         this.CerosSDK,
         this.showPath2Results.bind(this),
-        "tab",
+        TAB,
         "",
         "max current"
       );
@@ -131,8 +141,16 @@ export class ResultHandler {
 
     // this.triggerHotspot(RESULTS, length, MAX_RESULTS);
     if (pathName === PATH2) {
-      const tabNavHandler = this.getTabNavHandler();
-      tabNavHandler.display(this.currentNodeObservable.value);
+      this.tabNavHandler.init(this.currentNodeObservable.value);
+
+      // const tabNavHandler = this.getTabNavHandler();
+      // tabNavHandler.display(this.currentNodeObservable.value);
+      // if there is only one tab, display resuls without tab navigation
+      if (Object.keys(this.tabNavHandler.segments).length === 1) {
+        this.showPath1Results(length);
+      } else {
+        this.tabNavHandler.display();
+      }
     } else {
       this.showPath1Results(length);
     }
