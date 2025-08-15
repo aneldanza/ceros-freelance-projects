@@ -2,7 +2,6 @@ import { ModuleHandler } from "./ModuleHandler";
 import { NavModuleHandler } from "./NavModuleHandler";
 import { NonStrictObservable } from "../Observer";
 import { Node } from "../lib/Node";
-import { TAB } from "../constants";
 
 export class TabNavHandler {
   private navModuleHandler: NavModuleHandler;
