@@ -337,7 +337,10 @@ export class QuizContext {
       if (name === "Root") {
         return;
       }
-      const template = fieldNodesDict[name].pathText;
+      const template =
+        name === "fuse type" && this.currentTree === this.path2NodeTree
+          ? "{{}}"
+          : fieldNodesDict[name].pathText;
       const text = template.replace("{{}}", capitalize(value));
       pathArray.push(text);
     });

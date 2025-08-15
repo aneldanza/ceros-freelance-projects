@@ -45,12 +45,12 @@ export const fieldNodesDict: FieldNodes = {
   },
   "fuse style-path2": {
     type: "question",
-    pathText: "Fuse Style: {{}}",
+    pathText: "Style: {{}}",
     questionStrategy: "segments",
   },
   "max voltage-path2": {
     type: "question",
-    pathText: "Volts: {{}}V DC",
+    pathText: "Volts: <={{}}V DC",
     breakKeys: true,
   },
   "max current-path2": {
@@ -64,7 +64,7 @@ export const fieldNodesDict: FieldNodes = {
   },
   "fuse type-path2": {
     type: "question",
-    pathText: "Fuse Type: {{}}",
+    pathText: "{{}}",
   },
   "fuse style": {
     type: "question",
@@ -83,7 +83,7 @@ export const fieldNodesDict: FieldNodes = {
   },
   "circuit option": {
     type: "question",
-    pathText: "Circuit Option: {{}}",
+    pathText: "Circuit: {{}}",
     questionStrategy: "masking",
   },
   style: {
