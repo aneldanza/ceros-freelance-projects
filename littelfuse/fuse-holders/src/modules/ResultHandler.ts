@@ -137,16 +137,13 @@ export class ResultHandler {
   }
 
   showResultModule(length: number, pathName: string) {
-    // this.updateResultModules(length);
-
-    // this.triggerHotspot(RESULTS, length, MAX_RESULTS);
     if (pathName === PATH2) {
       this.tabNavHandler.init(this.currentNodeObservable.value);
 
-      // const tabNavHandler = this.getTabNavHandler();
-      // tabNavHandler.display(this.currentNodeObservable.value);
       // if there is only one tab, display resuls without tab navigation
-      if (Object.keys(this.tabNavHandler.segments).length === 1) {
+      if (
+        this.tabNavHandler.isOneTab(this.currentNodeObservable.value.children)
+      ) {
         this.showPath1Results(length);
       } else {
         this.tabNavHandler.display();

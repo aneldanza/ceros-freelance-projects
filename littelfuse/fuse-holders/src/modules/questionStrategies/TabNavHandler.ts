@@ -110,4 +110,9 @@ export class TabNavHandler {
 
     hotspotCollection.click();
   }
+
+  isOneTab(nodes: Node[]) {
+    const tabName = nodes[0].data[this.tabKey];
+    return nodes.every((child) => child.data[this.tabKey] === tabName);
+  }
 }
