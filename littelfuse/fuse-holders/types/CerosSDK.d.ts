@@ -80,6 +80,7 @@ declare global {
     setText(textContent: string): void;
     setUrl(url: string, useNewImageSize?: boolean): void;
     reset(): void;
+    click(): void;
   }
 
   class CerosComponent extends CerosLayer {
