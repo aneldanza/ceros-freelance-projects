@@ -1,6 +1,7 @@
 import { CsvData } from "../quizTypes";
 import { getModuleTag, setImageUrl } from "../utils";
 import { DEFAULT_IMAGE } from "../constants";
+import { DoubleClickBugHandler } from "../DoubleClickBugHandler";
 
 export abstract class ModuleHandler {
   public moduleDict: {
@@ -13,12 +14,15 @@ export abstract class ModuleHandler {
   } = {};
 
   protected isNew: boolean = false;
+  protected doubleClickBugHandler: DoubleClickBugHandler;
 
   constructor(
     protected moduleName: string,
     protected experience: Experience,
     protected CerosSDK: CerosSDK
-  ) {}
+  ) {
+    this.doubleClickBugHandler = new DoubleClickBugHandler();
+  }
 
   static handleModuleImage(img: CerosLayer, data: CsvData) {
     const imgStr = data.image;

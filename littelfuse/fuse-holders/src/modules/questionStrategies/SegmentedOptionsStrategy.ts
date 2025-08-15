@@ -2,7 +2,7 @@ import { FUSE_TYPE_INFO, PARTS, PATH2, SEGMENTS } from "../constants";
 import { PartModuleHandler } from "../moduleStrategies/PartModuleHandler";
 import { Node } from "../lib/Node";
 import { QuestionStrategy } from "./QuestionStrategy";
-import { TabNavHandler } from "./TabNavHandler";
+import { TabNavHandler } from "../moduleStrategies/TabNavHandler";
 
 export class SegmentedOptionsStrategy extends QuestionStrategy {
   private partModuleHandler: PartModuleHandler;
@@ -24,7 +24,7 @@ export class SegmentedOptionsStrategy extends QuestionStrategy {
       CerosSDK,
       this.showResultModules.bind(this),
       SEGMENTS,
-      "FUSE_TYPE_INFO",
+      FUSE_TYPE_INFO,
       `fuse type-${PATH2}`
     );
   }

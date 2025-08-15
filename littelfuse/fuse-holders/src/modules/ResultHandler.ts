@@ -18,7 +18,7 @@ import { CsvData, Overlay } from "./quizTypes";
 import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { Carousel } from "./Carousel";
-import { TabNavHandler } from "./questionStrategies/TabNavHandler";
+import { TabNavHandler } from "./moduleStrategies/TabNavHandler";
 
 export class ResultHandler {
   public pathNavigationCollection: CerosLayerCollection;
@@ -111,6 +111,8 @@ export class ResultHandler {
     );
   }
 
+  resetView() {}
+
   displayPathNavigation(pathName: string) {
     this.pathNavigationCollection.layers.forEach((layer: CerosLayer) => {
       if (layer.getPayload().trim() === pathName) {
@@ -121,33 +123,18 @@ export class ResultHandler {
     });
   }
 
-  getTabNavHandler() {
-    if (!this.tabNavHandler) {
-      const tabNavHandler = new TabNavHandler(
-        this.experience,
-        this.CerosSDK,
-        this.showPath2Results.bind(this),
-        TAB,
-        "",
-        "max current"
-      );
-      this.tabNavHandler = tabNavHandler;
-    }
-    return this.tabNavHandler;
-  }
-
   showResultModule(length: number, pathName: string) {
     if (pathName === PATH2) {
       this.tabNavHandler.init(this.currentNodeObservable.value);
 
       // if there is only one tab, display resuls without tab navigation
-      if (
-        this.tabNavHandler.isOneTab(this.currentNodeObservable.value.children)
-      ) {
-        this.showPath1Results(length);
-      } else {
-        this.tabNavHandler.display();
-      }
+      // if (
+      //   this.tabNavHandler.isOneTab(this.currentNodeObservable.value.children)
+      // ) {
+      //   this.showPath1Results(length);
+      // } else {
+      this.tabNavHandler.display();
+      // }
     } else {
       this.showPath1Results(length);
     }
