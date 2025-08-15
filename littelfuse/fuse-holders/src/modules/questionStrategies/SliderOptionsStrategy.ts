@@ -5,6 +5,7 @@ import { QuestionStrategy } from "./QuestionStrategy";
 export class SliderOptionsStrategy extends QuestionStrategy {
   private currentIndex: Observable<number>;
   private nextButtonMask: CerosLayerCollection;
+  private nextButton: CerosLayerCollection;
   private sliderValues: number[];
   private sliderContainer: HTMLInputElement | null;
   private output: HTMLElement | null;
@@ -16,6 +17,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
     this.currentIndex = new Observable(0);
     this.sliderValues = [];
     this.nextButtonMask = experience.findLayersByTag(`${name}-mask`);
+    this.nextButton = experience.findLayersByTag(`${name}-next`);
     this.sliderContainer = document.getElementById(
       "slider-container"
     ) as HTMLInputElement;
@@ -42,7 +44,9 @@ export class SliderOptionsStrategy extends QuestionStrategy {
   handleNextButtonDisplay(index: number) {
     if (index > 0) {
       this.nextButtonMask.hide();
+      this.nextButton.show();
     } else {
+      this.nextButton.hide();
       this.nextButtonMask.show();
     }
   }
@@ -72,6 +76,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
       this.slider.remove();
       this.slider = null;
     }
+    this.handleNextButtonDisplay(this.currentIndex.value);
 
     if (this.sliderContainer && this.output) {
       this.displayOutput(nodeValues, this.sliderContainer, this.output);
