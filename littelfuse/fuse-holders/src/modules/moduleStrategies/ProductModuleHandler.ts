@@ -1,7 +1,6 @@
 import {
   BUY_NOW,
   DATASHEET,
-  DEFAULT_IMAGE,
   DESCRIPTION,
   IMAGE,
   IMG_LRG,
