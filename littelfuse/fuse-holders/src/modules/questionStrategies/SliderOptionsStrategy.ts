@@ -6,6 +6,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
   private currentIndex: Observable<number>;
   private nextButtonMask: CerosLayerCollection;
   private nextButton: CerosLayerCollection;
+  private singleOptionCollection: CerosLayerCollection;
   private sliderValues: number[];
   private sliderContainer: HTMLInputElement | null;
   private output: HTMLElement | null;
@@ -18,6 +19,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
     this.sliderValues = [];
     this.nextButtonMask = experience.findLayersByTag(`${name}-mask`);
     this.nextButton = experience.findLayersByTag(`${name}-next`);
+    this.singleOptionCollection = experience.findLayersByTag("single-option");
     this.sliderContainer = document.getElementById(
       "slider-container"
     ) as HTMLInputElement;
@@ -52,7 +54,10 @@ export class SliderOptionsStrategy extends QuestionStrategy {
   }
 
   handleOptionClick(_: CerosComponent): void {
-    const answer = this.sliderValues[this.currentIndex.value].toString();
+    const answer =
+      this.sliderValues.length === 2
+        ? this.sliderValues[1].toString()
+        : this.sliderValues[this.currentIndex.value].toString();
 
     const array = this.selectedOption.value.split(":");
     array[1] = this.key;
@@ -76,7 +81,6 @@ export class SliderOptionsStrategy extends QuestionStrategy {
       this.slider.remove();
       this.slider = null;
     }
-    this.handleNextButtonDisplay(this.currentIndex.value);
 
     if (this.sliderContainer && this.output) {
       this.displayOutput(nodeValues, this.sliderContainer, this.output);
@@ -104,38 +108,35 @@ export class SliderOptionsStrategy extends QuestionStrategy {
     sliderContainer: HTMLInputElement,
     output: HTMLElement
   ) {
+    this.sliderValues = [0, ...nodeValues];
+    console.log(this.sliderValues);
     if (nodeValues.length > 1) {
-      this.displaySlider(sliderContainer, output, nodeValues);
+      this.singleOptionCollection.hide();
+      this.displaySlider(sliderContainer, output);
       if (this.slider) {
         this.currentIndex.value = 0;
         this.slider.style.display = "block";
+        if (this.output) this.output.style.display = "block";
+        this.handleNextButtonDisplay(this.currentIndex.value);
       }
     } else {
-      if (this.slider) {
-        this.slider.style.display = "none";
-      }
+      if (this.slider) this.slider.style.display = "none";
+      if (this.output) this.output.style.display = "none";
+      this.nextButton.hide();
+      this.nextButtonMask.hide();
 
-      this.displaySingleOption(output, nodeValues);
+      this.displaySingleOption(nodeValues);
     }
   }
 
-  displaySingleOption(output: HTMLElement, nodeValues: number[]) {
-    output.style.fontSize = "45px";
-    output.style.fontWeight = "bold";
-    output.style.color = "#707070";
-    output.style.left = "50%";
-    // Initial state
-    output.textContent = `${nodeValues[0]}`;
+  displaySingleOption(nodeValues: number[]) {
+    this.singleOptionCollection.layers.forEach((layer) =>
+      layer.setText(`${nodeValues[0]}`)
+    );
+    this.singleOptionCollection.show();
   }
 
-  displaySlider(
-    sliderContainer: HTMLElement,
-    output: HTMLElement,
-    nodeValues: number[]
-  ) {
-    this.sliderValues = [0, ...nodeValues];
-    console.log(this.sliderValues);
-
+  displaySlider(sliderContainer: HTMLElement, output: HTMLElement) {
     this.registerNewSlider(sliderContainer, output);
   }
 
