@@ -107,11 +107,14 @@ export class ResultHandler {
       this.showPath2Results.bind(this),
       TAB,
       "",
-      "max current"
+      "max current",
+      this.formatTabText
     );
   }
 
-  resetView() {}
+  formatTabText(val: string) {
+    return `${val}A`;
+  }
 
   displayPathNavigation(pathName: string) {
     this.pathNavigationCollection.layers.forEach((layer: CerosLayer) => {

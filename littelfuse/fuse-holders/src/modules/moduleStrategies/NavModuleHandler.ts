@@ -6,7 +6,8 @@ export class NavModuleHandler extends ModuleHandler {
     moduleName: string,
     experience: Experience,
     CerosSDK: CerosSDK,
-    private currentSegment: NonStrictObservable<string>
+    private currentSegment: NonStrictObservable<string>,
+    private textFormat?: (val: string) => string
   ) {
     super(moduleName, experience, CerosSDK);
   }
@@ -15,7 +16,12 @@ export class NavModuleHandler extends ModuleHandler {
     moduleTag: string
   ): void {
     layersDict["name"] &&
-      this.updateResultTextbox("name", moduleTag, layersDict["name"]);
+      this.updateResultTextbox(
+        "name",
+        moduleTag,
+        layersDict["name"],
+        this.textFormat
+      );
 
     layersDict["cta"] &&
       this.registerTabChangeCta("name", moduleTag, layersDict["cta"]);

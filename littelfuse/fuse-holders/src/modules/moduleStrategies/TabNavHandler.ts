@@ -20,7 +20,8 @@ export class TabNavHandler {
     private showResultModule: (length: number, nodes: Node[]) => void,
     private tabTag: string,
     private tabTextTag: string,
-    private tabKey: string
+    private tabKey: string,
+    private textFormat?: (val: string) => string
   ) {
     this.currentSegment = new NonStrictObservable("");
 
@@ -28,7 +29,8 @@ export class TabNavHandler {
       tabTag,
       experience,
       CerosSDK,
-      this.currentSegment
+      this.currentSegment,
+      this.textFormat
     );
 
     this.tabTextComponentCollection =

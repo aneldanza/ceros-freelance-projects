@@ -98,16 +98,19 @@ export abstract class ModuleHandler {
   updateResultTextbox(
     key: string,
     moduleTag: string,
-    txtboxArray: CerosLayer[]
+    txtboxArray: CerosLayer[],
+    format?: (val: string) => string
   ) {
     txtboxArray.forEach((layer) => {
       const obj = this.getResultData(moduleTag);
-      layer.setText(obj.data[key]);
+      const text = format ? format(obj.data[key]) : obj.data[key];
+      layer.setText(text);
 
       this.isNew &&
         layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (txtBox) => {
           const obj = this.getResultData(moduleTag);
-          txtBox.setText(obj.data[key]);
+          const text = format ? format(obj.data[key]) : obj.data[key];
+          txtBox.setText(text);
         });
     });
   }
