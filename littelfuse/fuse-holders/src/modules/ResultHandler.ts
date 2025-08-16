@@ -128,11 +128,11 @@ export class ResultHandler {
       this.tabNavHandler.init(this.currentNodeObservable.value);
 
       // if there is only one tab, display resuls without tab navigation
-      // if (
-      //   this.tabNavHandler.isOneTab(this.currentNodeObservable.value.children)
-      // ) {
-      //   this.showPath1Results(length);
-      // } else {
+      if (
+        this.tabNavHandler.isOneTab(this.currentNodeObservable.value.children)
+      ) {
+        this.showPath1Results(length);
+      }
       this.tabNavHandler.display();
       // }
     } else {

@@ -21,12 +21,14 @@ export abstract class QuestionStrategy {
   abstract displayAnswerOptions(node: Node): void;
 
   displayPathNavigation(pathName: string) {
-    this.pathNavigationCollection.layers.forEach((layer: CerosLayer) => {
-      if (layer.getPayload().trim() === pathName) {
-        layer.show();
-      } else {
-        layer.hide();
-      }
-    });
+    if (pathName === PATH2) {
+      const path2NavCollection =
+        this.experience.findComponentsByTag("show-path2-nav");
+      path2NavCollection.click();
+    } else {
+      const path1NavCollection =
+        this.experience.findComponentsByTag("show-path1-nav");
+      path1NavCollection.click();
+    }
   }
 }
