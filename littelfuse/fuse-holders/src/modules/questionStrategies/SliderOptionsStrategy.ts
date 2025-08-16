@@ -151,6 +151,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
         this.currentIndex.value = parseInt(target.value, 10);
       }
     });
+    this.updateSliderValuePosition();
   }
 
   updateSliderValuePosition() {
@@ -171,7 +172,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
       this.output.style.left = `${sliderLeft + thumbX}px`;
       this.output.textContent =
         this.currentIndex.value === 0
-          ? ""
+          ? "A"
           : `${this.sliderValues[this.currentIndex.value]}A`;
     }
   }
@@ -180,7 +181,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
     if (this.slider) {
       const percent =
         (this.currentIndex.value / (this.sliderValues.length - 1)) * 100;
-      const trackStyle = `linear-gradient(to right, #008752 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
+      const trackStyle = `linear-gradient(to right, #5CC883 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
       this.slider.style.background = trackStyle;
     }
   }
