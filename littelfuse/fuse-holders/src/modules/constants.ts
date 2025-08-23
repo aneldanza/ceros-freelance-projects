@@ -134,6 +134,7 @@ export const DIVIDER = ";";
 export const MAX_RELATED_PRODUCTS = 2;
 export const MAX_ACCESSORIES = 4;
 export const MAX_RESULTS = 5;
+export const MAX_TABS = 4;
 export const MCASE_ADAPTER = "mcase-adapter";
 export const IMG_LRG = "img lrg";
 export const PATH2 = "path2";

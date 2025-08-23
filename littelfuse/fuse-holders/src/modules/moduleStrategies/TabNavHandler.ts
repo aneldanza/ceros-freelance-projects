@@ -1,6 +1,7 @@
 import { NavModuleHandler } from "./NavModuleHandler";
 import { NonStrictObservable } from "../Observer";
 import { Node } from "../lib/Node";
+import { MAX_TABS } from "../constants";
 
 export class TabNavHandler {
   private navModuleHandler: NavModuleHandler;
@@ -96,7 +97,7 @@ export class TabNavHandler {
 
     if (length) {
       this.updateNavModules(length);
-      this.triggerHotspot(this.tabTag, length, 3);
+      this.triggerHotspot(this.tabTag, length, MAX_TABS);
     }
   }
 
