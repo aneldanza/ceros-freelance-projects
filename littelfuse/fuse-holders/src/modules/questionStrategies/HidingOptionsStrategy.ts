@@ -1,6 +1,5 @@
 import { QuestionStrategy } from "./QuestionStrategy";
-import { Node } from "../Node";
-import { Observable } from "../Observer";
+import { Node } from "../lib/Node";
 
 export class HidingOptionsStrategy extends QuestionStrategy {
   private isMobile: boolean;
@@ -8,13 +7,9 @@ export class HidingOptionsStrategy extends QuestionStrategy {
   private evenOptions: CerosLayerCollection;
   private oddOptions: CerosLayerCollection;
 
-  constructor(
-    name: string,
-    experience: Experience,
-    private currentNodeObservable: Observable<Node>,
-    private CerosSDK: CerosSDK
-  ) {
-    super(name, experience);
+  constructor(name: string, experience: Experience, CerosSDK: CerosSDK) {
+    super(name, experience, CerosSDK);
+    this.key = "elementId";
 
     this.isMobile =
       this.experience.findComponentsByTag("mobile").components.length > 0;
@@ -29,6 +24,23 @@ export class HidingOptionsStrategy extends QuestionStrategy {
     this.oddOptions = this.experience.findLayersByTag(
       `${name.toLowerCase()}_odd`
     );
+
+    this.registerCerosEvents();
+  }
+
+  registerCerosEvents() {
+    this.optionsCollection.on(
+      this.CerosSDK.EVENTS.CLICKED,
+      this.handleOptionClick.bind(this)
+    );
+  }
+
+  handleOptionClick(comp: CerosComponent): void {
+    const answer = comp.id;
+    const array = this.selectedOption.value.split(":");
+    array[1] = this.key;
+    array[2] = answer;
+    this.selectedOption.value = array.join(":");
   }
 
   displayAnswerOptions(node: Node): void {

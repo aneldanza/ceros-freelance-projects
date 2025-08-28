@@ -1,0 +1,49 @@
+import { QuestionStrategy } from "./QuestionStrategy";
+import { MaskingOptionsStrategy } from "./MaskingOptionsStrategy";
+import { MaskingOptionsStrategyWithMultipleCellValues } from "./MaskOptionsStrateyWithMultipleCellValues";
+import { MaskingOptionsWithSubcategoriesStrategy } from "./MaskingOptionsWithSubCategoriesStrategy";
+import { HidingOptionsStrategy } from "./HidingOptionsStrategy";
+import { SliderOptionsStrategy } from "./SliderOptionsStrategy";
+import type { Field } from "../quizTypes";
+import { SegmentedOptionsStrategy } from "./SegmentedOptionsStrategy";
+
+export class QuestionStrategyFactory {
+  static create(
+    fieldName: string,
+    field: Field,
+    experience: any,
+    currentNode: any,
+    CerosSDK: any
+  ): QuestionStrategy {
+    switch (field.questionStrategy) {
+      case "hiding":
+        return new HidingOptionsStrategy(fieldName, experience, CerosSDK);
+      case "masking-with-subcategories":
+        return new MaskingOptionsWithSubcategoriesStrategy(
+          fieldName,
+          experience,
+          CerosSDK,
+          currentNode
+        );
+      case "masking-with-mulitiple-cell-values":
+        return new MaskingOptionsStrategyWithMultipleCellValues(
+          fieldName,
+          experience,
+          CerosSDK,
+          currentNode
+        );
+      case "slider":
+        return new SliderOptionsStrategy(fieldName, experience, CerosSDK);
+      case "segments":
+        return new SegmentedOptionsStrategy(fieldName, experience, CerosSDK);
+      case "masking":
+      default:
+        return new MaskingOptionsStrategy(
+          fieldName,
+          experience,
+          CerosSDK,
+          currentNode
+        );
+    }
+  }
+}

@@ -2,8 +2,7 @@
 
 import {
   PATH,
-  OPTION,
-  QUESTION,
+  PATH2,
   BACK,
   fieldNodesDict,
   NAV,
@@ -11,22 +10,23 @@ import {
   MCASE_ADAPTER,
   RELATED_PRODUCTS,
   IMG_LRG,
+  path2Fields,
+  transitionFields,
+  PATH1,
 } from "./constants";
-import { NodeTree } from "./NodeTree";
+import { NodeTree } from "./lib/NodeTree";
 import { Observable } from "./Observer";
-import { Node } from "./Node";
-import { getValueFromTags, capitalize } from "./utils";
-import { HidingOptionsStrategy } from "./questionStrategies/HidingOptionsStrategy";
+import { Node } from "./lib/Node";
+import { capitalize, stepsFromFieldNames } from "./utils";
 import { QuestionStrategy } from "./questionStrategies/QuestionStrategy";
-import { MaskingOptionsStrategy } from "./questionStrategies/MaskingOptionsStrategy";
 import { ResultHandler } from "./ResultHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
-import { MaskingOptionsWithSubcategoriesStrategy } from "./questionStrategies/MaskingOptionsWithSubCategoriesStrategy";
-import { ModuleHandler } from "./ModuleHandler";
+import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
+import { QuestionStrategyFactory } from "./questionStrategies/QuestionStrategyFactory";
+import { ModuleHandler } from "./moduleStrategies/ModuleHandler";
 
 export class QuizContext {
   private currentNode: Observable<Node>;
-  private answerCollection: CerosComponentCollection;
   private backLayersCollection: CerosLayerCollection;
   private navCollecttion: CerosComponentCollection;
   private pathTextCollection: CerosComponentCollection;
@@ -34,7 +34,7 @@ export class QuizContext {
   private resetCollection: CerosLayerCollection;
   private resultHandler: ResultHandler;
   private doubleClickHandler: DoubleClickBugHandler;
-  private mcaseAdapterModuleHandler: ModuleHandler;
+  private mcaseAdapterModuleHandler: ProductModuleHandler;
   private mcaseAdapterCtaCollection: CerosLayerCollection;
   private imgLargeOverlayCollection = this.experience.findLayersByTag(IMG_LRG);
 
@@ -42,18 +42,23 @@ export class QuizContext {
   private imgLrgCloseHotspotCollection = this.experience.findLayersByTag(
     `${IMG_LRG}-close`
   );
+  private currentTree: NodeTree;
+  private path1NodeTree: NodeTree;
+  private path2NodeTree: NodeTree | null = null;
 
   constructor(
     public CerosSDK: CerosSDK,
     public experience: Experience,
-    private nodeTree: NodeTree,
+    nodeTree: NodeTree,
     public distributor: string,
     private relatedProductsLink: string,
     private accessoriesLink: string,
-    private PapaParse: typeof window.Papa
+    private PapaParse: typeof window.Papa,
+    private path2Link: string
   ) {
-    this.currentNode = new Observable<Node>(this.nodeTree.root);
-    this.answerCollection = this.experience.findComponentsByTag(OPTION);
+    this.currentTree = nodeTree;
+    this.path1NodeTree = nodeTree;
+    this.currentNode = new Observable<Node>(nodeTree.root);
     this.backLayersCollection = this.experience.findLayersByTag(BACK);
     this.navCollecttion = this.experience.findComponentsByTag(NAV);
     this.pathTextCollection = this.experience.findComponentsByTag(PATH);
@@ -61,6 +66,7 @@ export class QuizContext {
     this.mcaseAdapterCtaCollection = this.experience.findLayersByTag(
       `${MCASE_ADAPTER}-cta`
     );
+
     this.resultHandler = new ResultHandler(
       experience,
       CerosSDK,
@@ -72,7 +78,7 @@ export class QuizContext {
       this.imgLrgLink
     );
 
-    this.mcaseAdapterModuleHandler = new ModuleHandler(
+    this.mcaseAdapterModuleHandler = new ProductModuleHandler(
       MCASE_ADAPTER,
       experience,
       CerosSDK,
@@ -122,42 +128,24 @@ export class QuizContext {
   assignQuestionsStrategy() {
     for (const fieldName in fieldNodesDict) {
       const field = fieldNodesDict[fieldName];
-      let strategy: QuestionStrategy;
 
       if (field.type === "question") {
-        if (field.questionStrategy === "hiding") {
-          strategy = new HidingOptionsStrategy(
-            fieldName,
-            this.experience,
-            this.currentNode,
-            this.CerosSDK
-          );
-        } else if (field.questionStrategy === "masking-with-subcategories") {
-          strategy = new MaskingOptionsWithSubcategoriesStrategy(
-            fieldName,
-            this.experience,
-            this.currentNode,
-            this.CerosSDK
-          );
-        } else {
-          strategy = new MaskingOptionsStrategy(
-            fieldName,
-            this.experience,
-            this.currentNode,
-            this.CerosSDK
-          );
-        }
+        const strategy = QuestionStrategyFactory.create(
+          fieldName,
+          field,
+          this.experience,
+          this.currentNode,
+          this.CerosSDK
+        );
+
         this.questions[fieldName] = strategy;
+
+        strategy.selectedOption.subscribe(this.handleSelectedAnswer.bind(this));
       }
     }
   }
 
   subscribeToCerosEvents() {
-    this.answerCollection.on(
-      this.CerosSDK.EVENTS.CLICKED,
-      this.handleAnswerClick.bind(this)
-    );
-
     this.backLayersCollection.on(
       this.CerosSDK.EVENTS.CLICKED,
       this.handleBackNavigation.bind(this)
@@ -205,41 +193,70 @@ export class QuizContext {
   }
 
   resetQuiz() {
-    this.currentNode.value = this.nodeTree.root;
+    this.currentNode.value = this.currentTree.root;
   }
 
-  handleAnswerClick(comp: CerosComponent) {
-    if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
+  async handleSelectedAnswer(selection: string) {
+    const [qName, key, answer] = selection.split(":");
 
-    const qName = getValueFromTags(comp.getTags(), QUESTION);
-    const question = this.questions[qName];
-    const answer = comp.getPayload().trim();
-
-    if (!question) {
-      console.error(`Could not find question field ${qName}`);
-      return;
-    }
-
-    const { key, value }: { key: "elementId" | "value"; value: string } =
-      question instanceof HidingOptionsStrategy
-        ? { key: "elementId", value: comp.id }
-        : { key: "value", value: answer };
-
-    const node = this.nodeTree.findChild(this.currentNode.value, key, value);
-
-    if (node) {
-      if (
-        fieldNodesDict[qName].skipif &&
-        fieldNodesDict[qName].skipif.find((str) => str === answer)
-      ) {
-        const nextNode = node.children[0];
-        this.currentNode.value = nextNode;
+    if (qName === "fuse type") {
+      if (answer.toLowerCase() === "guide me") {
+        //load path2 csv data
+        this.currentTree = await this.loadCsvDataIntoNodeTree();
       } else {
-        this.currentNode.value = node;
+        this.currentTree = this.path1NodeTree;
       }
-    } else {
-      console.error(`coudn't find node with ${qName} and value ${value}`);
+      this.currentNode.value = this.currentTree.root;
     }
+
+    const nextNode = this.currentTree.findChild(
+      this.currentNode.value,
+      key as "value" | "elementId",
+      answer
+    );
+
+    if (nextNode) {
+      this.updateCurrentNodeValue(nextNode, qName, answer);
+    } else {
+      console.error(`coudn't find node with ${qName} and value ${answer}`);
+    }
+  }
+
+  updateCurrentNodeValue(nextNode: Node, qName: string, answer: string) {
+    if (
+      fieldNodesDict[qName].skipif &&
+      fieldNodesDict[qName].skipif.find((str) => str === answer) &&
+      nextNode.children.length
+    ) {
+      this.currentNode.value = nextNode.children[0];
+    } else {
+      this.currentNode.value = nextNode;
+    }
+  }
+
+  loadCsvDataIntoNodeTree() {
+    if (this.path2NodeTree) return Promise.resolve(this.path2NodeTree);
+
+    const tree = new NodeTree(fieldNodesDict);
+
+    return new Promise<NodeTree>((resolve, reject) => {
+      this.PapaParse.parse(this.path2Link, {
+        header: true,
+        download: true,
+        complete: (result) => {
+          tree.buildTree(result.data, path2Fields);
+          tree.mergeDataWithFields(
+            this.path1NodeTree,
+            tree.root,
+            transitionFields
+          );
+          this.path2NodeTree = tree;
+
+          resolve(tree);
+        },
+        error: (error: any) => reject(error),
+      });
+    });
   }
 
   handleBackNavigation(layer: CerosLayer) {
@@ -273,6 +290,8 @@ export class QuizContext {
   }
 
   handleRandomNavigation(comp: CerosComponent) {
+    if (this.doubleClickHandler.isDoubleClickBug(comp.id)) return;
+
     const name = comp.getPayload().toLowerCase();
     const node = this.currentNode.value.findParentByName(name);
     if (node && node.parent) {
@@ -283,15 +302,29 @@ export class QuizContext {
   }
 
   handleNodeChange(node: Node) {
-    if (node.children) {
+    if (node.children.length) {
       if (this.isLastQuestion(node)) {
-        this.resultHandler.showResultModule(node.children.length);
+        const pathName =
+          this.currentTree === this.path1NodeTree ? PATH1 : PATH2;
+        this.resultHandler.showResultModule(node.children.length, pathName);
+        this.handlePathNavigation(this.resultHandler);
       } else {
-        console.log(this.currentNode.value);
         const childNodeName = node.children[0].name.toLowerCase();
-        this.questions[childNodeName] &&
-          this.questions[childNodeName].displayAnswerOptions(node);
+        const step = this.questions[childNodeName];
+        if (step) {
+          step.displayAnswerOptions(node);
+          this.handlePathNavigation(step);
+        }
       }
+      console.log(this.currentNode.value);
+    }
+  }
+
+  handlePathNavigation(handler: QuestionStrategy | ResultHandler) {
+    if (this.currentTree === this.path2NodeTree) {
+      handler.displayPathNavigation(PATH2);
+    } else {
+      handler.displayPathNavigation(PATH1);
     }
   }
 
@@ -304,7 +337,10 @@ export class QuizContext {
       if (name === "Root") {
         return;
       }
-      const template = fieldNodesDict[name].pathText;
+      const template =
+        name === "fuse type" && this.currentTree === this.path2NodeTree
+          ? "{{}}"
+          : fieldNodesDict[name].pathText;
       const text = template.replace("{{}}", capitalize(value));
       pathArray.push(text);
     });
@@ -318,6 +354,7 @@ export class QuizContext {
 
   isLastQuestion(node: Node) {
     const childNode = node.children[0];
-    return Object.keys(childNode.data).length;
+
+    return childNode.name === "part";
   }
 }

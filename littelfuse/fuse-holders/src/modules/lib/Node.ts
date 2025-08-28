@@ -1,4 +1,4 @@
-import { CsvData } from "./quizTypes";
+import { CsvData } from "../quizTypes";
 
 export class Node {
   public children: Node[] = [];
@@ -14,6 +14,22 @@ export class Node {
   findChildByValueProperty(value: string) {
     return (
       this.children.find(
+        (child) => child.value.toLowerCase() === value.toLowerCase()
+      ) || null
+    );
+  }
+
+  findChildThatIncludesValue(value: string) {
+    return (
+      this.children.find(
+        (child) => child.value.toLowerCase() === value.toLowerCase()
+      ) || null
+    );
+  }
+
+  findAllChildrenThatIncludeValue(value: string) {
+    return (
+      this.children.filter(
         (child) => child.value.toLowerCase() === value.toLowerCase()
       ) || null
     );

@@ -5,29 +5,33 @@ import {
   MAX_RELATED_PRODUCTS,
   PRODUCT_GUIDE,
   RELATED_PRODUCTS,
-  IMG_LRG,
   RESULTS,
   MAX_RESULTS,
+  PART,
+  PATH2,
+  TAB,
 } from "./constants";
-import { Node } from "./Node";
+import { Node } from "./lib/Node";
 import { Observable } from "./Observer";
 import { LandingPageProxy } from "./LandinPageProxy";
 import { CsvData, Overlay } from "./quizTypes";
-import { ModuleHandler } from "./ModuleHandler";
+import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { Carousel } from "./Carousel";
+import { TabNavHandler } from "./moduleStrategies/TabNavHandler";
 
 export class ResultHandler {
+  public pathNavigationCollection: CerosLayerCollection;
   public landingPageProxy: LandingPageProxy;
-
+  private tabNavHandler: TabNavHandler;
   public csvData: Record<Overlay, Record<string, CsvData>> = {
     "related products": {},
     accessories: {},
   };
 
-  private resultModulesHandler: ModuleHandler;
-  private relatedProductsModulesHandler: ModuleHandler;
-  private accessoriesModulesHandler: ModuleHandler;
+  private resultModulesHandler: ProductModuleHandler;
+  private relatedProductsModulesHandler: ProductModuleHandler;
+  private accessoriesModulesHandler: ProductModuleHandler;
   private resultsCarousel: Carousel;
   private accessoriesCarousel: Carousel;
   private relatedProductsCarousel: Carousel;
@@ -44,8 +48,9 @@ export class ResultHandler {
     private PapaParse: typeof window.Papa,
     private imgLrgLink: Observable<string>
   ) {
+    this.pathNavigationCollection = experience.findLayersByTag(`nav:${PART}`);
     this.landingPageProxy = new LandingPageProxy();
-    this.resultModulesHandler = new ModuleHandler(
+    this.resultModulesHandler = new ProductModuleHandler(
       RESULTS,
       experience,
       CerosSDK,
@@ -54,7 +59,7 @@ export class ResultHandler {
       this.imgLrgLink
     );
 
-    this.relatedProductsModulesHandler = new ModuleHandler(
+    this.relatedProductsModulesHandler = new ProductModuleHandler(
       RELATED_PRODUCTS,
       experience,
       CerosSDK,
@@ -63,7 +68,7 @@ export class ResultHandler {
       this.imgLrgLink
     );
 
-    this.accessoriesModulesHandler = new ModuleHandler(
+    this.accessoriesModulesHandler = new ProductModuleHandler(
       ACCESSORIES,
       experience,
       CerosSDK,
@@ -95,24 +100,71 @@ export class ResultHandler {
       experience,
       this.resultModulesHandler
     );
+
+    this.tabNavHandler = new TabNavHandler(
+      this.experience,
+      this.CerosSDK,
+      this.showPath2Results.bind(this),
+      TAB,
+      "",
+      "max current",
+      this.formatTabText
+    );
   }
 
-  showResultModule(length: number) {
-    this.updateResultModules(length);
+  formatTabText(val: string) {
+    return `${val}A`;
+  }
+
+  displayPathNavigation(pathName: string) {
+    this.pathNavigationCollection.layers.forEach((layer: CerosLayer) => {
+      if (layer.getPayload().trim() === pathName) {
+        layer.show();
+      } else {
+        layer.hide();
+      }
+    });
+  }
+
+  showResultModule(length: number, pathName: string) {
+    if (pathName === PATH2) {
+      this.tabNavHandler.init(this.currentNodeObservable.value);
+
+      // if there is only one tab, display resuls without tab navigation
+      if (
+        this.tabNavHandler.isOneTab(this.currentNodeObservable.value.children)
+      ) {
+        this.showPath1Results(length);
+      }
+      this.tabNavHandler.display();
+      // }
+    } else {
+      this.showPath1Results(length);
+    }
+  }
+
+  showPath1Results(length: number) {
+    this.updateResultModules(length, this.currentNodeObservable.value.children);
 
     this.triggerHotspot(RESULTS, length, MAX_RESULTS);
   }
 
-  sortNodesBySales() {
-    return this.currentNodeObservable.value.children.sort((a, b) => {
+  showPath2Results(length: number, nodes: Node[]) {
+    this.updateResultModules(length, nodes);
+
+    this.triggerHotspot(RESULTS, length, MAX_RESULTS);
+  }
+
+  sortNodesBySales(nodes: Node[]) {
+    return nodes.sort((a, b) => {
       const aSales = isNaN(Number(a.data.sales)) ? 0 : Number(a.data.sales);
       const bSales = isNaN(Number(b.data.sales)) ? 0 : Number(b.data.sales);
       return bSales - aSales;
     });
   }
 
-  updateResultModules(type: number) {
-    const results = this.sortNodesBySales();
+  updateResultModules(type: number, nodes: Node[]) {
+    const results = this.sortNodesBySales(nodes);
     if (results.length <= MAX_RESULTS) {
       results.forEach((node, index) => {
         this.resultModulesHandler.updateModule(

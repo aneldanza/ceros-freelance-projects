@@ -1,7 +1,6 @@
-import { DELIMETER } from "./constants";
-import { NodeTree } from "./NodeTree";
+import { DELIMETER, DEFAULT_IMAGE } from "./constants";
 
-import { Node } from "./Node";
+import { FieldNodes } from "./quizTypes";
 
 export const getValueFromTags = (
   tags: string[],
@@ -27,4 +26,32 @@ export const capitalize = (text: string) => {
     .map((word: string) => word[0].toUpperCase() + word.slice(1));
 
   return words.join(" ");
+};
+
+export const stepsFromFieldNames = (
+  fieldNames: string[],
+  allSteps: FieldNodes
+) => {
+  const entries = fieldNames.map((name) => [name, allSteps[name]]);
+  return Object.fromEntries(entries);
+};
+
+export const getModuleTag = (
+  length: number,
+  index: number,
+  moduleName: string
+) => {
+  return length > 1
+    ? `${length}-${moduleName}-${index + 1}`
+    : `${length}-${moduleName}`;
+};
+
+export const setImageUrl = (imgStr: string, img: CerosLayer) => {
+  try {
+    new URL(imgStr);
+    img.setUrl(imgStr);
+  } catch (e) {
+    console.error(e);
+    img.setUrl(DEFAULT_IMAGE);
+  }
 };
