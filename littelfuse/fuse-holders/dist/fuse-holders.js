@@ -1,7 +1,7 @@
 define('modules/constants',["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DEFAULT_IMAGE = exports.TAB = exports.FUSE_TYPE_INFO = exports.FUSE_STYLE_INFO = exports.PATH1 = exports.PATH2 = exports.IMG_LRG = exports.MCASE_ADAPTER = exports.MAX_RESULTS = exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.SEGMENTS = exports.PARTS = exports.RESULTS = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.RESET = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = exports.path1Fields = exports.path2Fields = exports.transitionFields = void 0;
+    exports.DEFAULT_IMAGE = exports.TAB = exports.FUSE_TYPE_INFO = exports.FUSE_STYLE_INFO = exports.PATH1 = exports.PATH2 = exports.IMG_LRG = exports.MCASE_ADAPTER = exports.MAX_TABS = exports.MAX_RESULTS = exports.MAX_ACCESSORIES = exports.MAX_RELATED_PRODUCTS = exports.DIVIDER = exports.SEGMENTS = exports.PARTS = exports.RESULTS = exports.ACCESSORIES = exports.RELATED_PRODUCTS = exports.NAV = exports.BACK = exports.PATH = exports.PRODUCT_GUIDE = exports.BUY_NOW = exports.PRINT = exports.DATASHEET = exports.DESCRIPTION = exports.IMAGE = exports.PART = exports.SERIES = exports.SPECS = exports.DELIMETER = exports.RESET = exports.QUESTION = exports.OPTION = exports.fieldNodesDict = exports.path1Fields = exports.path2Fields = exports.transitionFields = void 0;
     exports.transitionFields = {
         "fuse type": "fuse type-path2",
         "fuse style": "fuse style-path2",
@@ -132,6 +132,7 @@ define('modules/constants',["require", "exports"], function (require, exports) {
     exports.MAX_RELATED_PRODUCTS = 2;
     exports.MAX_ACCESSORIES = 4;
     exports.MAX_RESULTS = 5;
+    exports.MAX_TABS = 4;
     exports.MCASE_ADAPTER = "mcase-adapter";
     exports.IMG_LRG = "img lrg";
     exports.PATH2 = "path2";
@@ -845,7 +846,7 @@ define('modules/moduleStrategies/NavModuleHandler',["require", "exports", "./Mod
     exports.NavModuleHandler = NavModuleHandler;
 });
 
-define('modules/moduleStrategies/TabNavHandler',["require", "exports", "./NavModuleHandler", "../Observer"], function (require, exports, NavModuleHandler_1, Observer_1) {
+define('modules/moduleStrategies/TabNavHandler',["require", "exports", "./NavModuleHandler", "../Observer", "../constants"], function (require, exports, NavModuleHandler_1, Observer_1, constants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.TabNavHandler = void 0;
@@ -906,7 +907,7 @@ define('modules/moduleStrategies/TabNavHandler',["require", "exports", "./NavMod
             const length = Object.keys(this.segments).length;
             if (length) {
                 this.updateNavModules(length);
-                this.triggerHotspot(this.tabTag, length, 3);
+                this.triggerHotspot(this.tabTag, length, constants_1.MAX_TABS);
             }
         }
         updateNavModules(length) {
