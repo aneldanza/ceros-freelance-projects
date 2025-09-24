@@ -56,17 +56,20 @@ export class HidingOptionsStrategy extends QuestionStrategy {
       //  call displayMobileOptions for each row
 
       let firstRowNodes: Node[] = [];
+      let secondRowNodes: Node[] = [];
 
       if (sortedNodes.length % 2 === 0) {
-        firstRowNodes = sortedNodes.splice(0, 2);
+        firstRowNodes = sortedNodes.slice(0, 2);
+        secondRowNodes = sortedNodes.slice(2);
       } else {
-        firstRowNodes = sortedNodes.splice(0, 3);
+        firstRowNodes = sortedNodes.slice(0, 3);
+        secondRowNodes = sortedNodes.slice(3);
       }
 
       this.displayMobileLayoutOptions(firstRowNodes, 1);
 
-      sortedNodes.length
-        ? this.displayMobileLayoutOptions(sortedNodes, 2)
+      secondRowNodes.length
+        ? this.displayMobileLayoutOptions(secondRowNodes, 2)
         : this.hideMobileOptionsRow(2);
     } else {
       this.displayLayoutOptions(sortedNodes, this.handleTextOptions);
