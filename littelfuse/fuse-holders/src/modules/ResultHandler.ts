@@ -243,10 +243,44 @@ export class ResultHandler {
     link: string
   ) {
     layerArray.forEach((layer) => {
-      this.registerOverlayAnimation(layer, moduleTag, name);
+      if (this.resultModulesHandler.isNew) {
+        this.registerOverlayAnimation(layer, moduleTag, name);
 
-      this.registerOverlayClick(layer, moduleTag, name, link);
+        this.registerOverlayClick(layer, moduleTag, name, link);
+      } else {
+        this.handleButtonDisplay(layer, moduleTag, name);
+      }
     });
+  }
+
+  handleButtonDisplay(l: CerosLayer, moduleTag: string, name: Overlay) {
+    const items = this.getPartNumbers(moduleTag, name);
+    if (items.length === 0) {
+      l.hide();
+    } else if (name === ACCESSORIES) {
+      const hasRelatedProducts = !!this.getPartNumbers(
+        moduleTag,
+        RELATED_PRODUCTS
+      ).length;
+
+      const hasProductGuide = !!this.getValue(moduleTag, PRODUCT_GUIDE);
+
+      if (hasRelatedProducts || hasProductGuide) {
+        if (l.getTags().find((tag) => tag === "pos:1")) {
+          l.hide();
+        } else {
+          l.show();
+        }
+      } else {
+        if (l.getTags().find((tag) => tag === "pos:2")) {
+          l.hide();
+        } else {
+          l.show();
+        }
+      }
+    } else {
+      l.show();
+    }
   }
 
   registerOverlayAnimation(
@@ -254,10 +288,10 @@ export class ResultHandler {
     moduleTag: string,
     name: Overlay
   ) {
-    layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+    layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (l) => {
       const items = this.getPartNumbers(moduleTag, name);
       if (items.length === 0) {
-        layer.hide();
+        l.hide();
       } else if (name === ACCESSORIES) {
         const hasRelatedProducts = !!this.getPartNumbers(
           moduleTag,
@@ -267,12 +301,12 @@ export class ResultHandler {
         const hasProductGuide = !!this.getValue(moduleTag, PRODUCT_GUIDE);
 
         if (hasRelatedProducts || hasProductGuide) {
-          if (layer.getTags().find((tag) => tag === "pos:1")) {
-            layer.hide();
+          if (l.getTags().find((tag) => tag === "pos:1")) {
+            l.hide();
           }
         } else {
-          if (layer.getTags().find((tag) => tag === "pos:2")) {
-            layer.hide();
+          if (l.getTags().find((tag) => tag === "pos:2")) {
+            l.hide();
           }
         }
       }

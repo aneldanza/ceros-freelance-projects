@@ -13,7 +13,7 @@ export abstract class ModuleHandler {
     };
   } = {};
 
-  protected isNew: boolean = false;
+  public isNew: boolean = false;
   protected doubleClickBugHandler: DoubleClickBugHandler;
 
   constructor(
