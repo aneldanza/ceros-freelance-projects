@@ -10,6 +10,7 @@ import {
   PART,
   PATH2,
   TAB,
+  MOBILE_MAX_ITEMS,
 } from "./constants";
 import { Node } from "./lib/Node";
 import { Observable } from "./Observer";
@@ -19,6 +20,7 @@ import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { Carousel } from "./Carousel";
 import { TabNavHandler } from "./moduleStrategies/TabNavHandler";
+import { isMobile } from "./utils";
 
 export class ResultHandler {
   public pathNavigationCollection: CerosLayerCollection;
@@ -28,6 +30,7 @@ export class ResultHandler {
     "related products": {},
     accessories: {},
   };
+  private maxResultItems: number = MAX_RESULTS;
 
   private resultModulesHandler: ProductModuleHandler;
   private relatedProductsModulesHandler: ProductModuleHandler;
@@ -48,6 +51,9 @@ export class ResultHandler {
     private PapaParse: typeof window.Papa,
     private imgLrgLink: Observable<string>
   ) {
+    if (isMobile(experience)) {
+      this.maxResultItems = MOBILE_MAX_ITEMS;
+    }
     this.pathNavigationCollection = experience.findLayersByTag(`nav:${PART}`);
     this.landingPageProxy = new LandingPageProxy();
     this.resultModulesHandler = new ProductModuleHandler(
@@ -94,11 +100,12 @@ export class ResultHandler {
     );
 
     this.resultsCarousel = new Carousel(
-      MAX_RESULTS,
+      this.maxResultItems,
       RESULTS,
       CerosSDK,
       experience,
-      this.resultModulesHandler
+      this.resultModulesHandler,
+      this.processOverlayLayers.bind(this)
     );
 
     this.tabNavHandler = new TabNavHandler(
@@ -146,13 +153,13 @@ export class ResultHandler {
   showPath1Results(length: number) {
     this.updateResultModules(length, this.currentNodeObservable.value.children);
 
-    this.triggerHotspot(RESULTS, length, MAX_RESULTS);
+    this.triggerHotspot(RESULTS, length, this.maxResultItems);
   }
 
   showPath2Results(length: number, nodes: Node[]) {
     this.updateResultModules(length, nodes);
 
-    this.triggerHotspot(RESULTS, length, MAX_RESULTS);
+    this.triggerHotspot(RESULTS, length, this.maxResultItems);
   }
 
   sortNodesBySales(nodes: Node[]) {
@@ -165,7 +172,7 @@ export class ResultHandler {
 
   updateResultModules(type: number, nodes: Node[]) {
     const results = this.sortNodesBySales(nodes);
-    if (results.length <= MAX_RESULTS) {
+    if (results.length <= this.maxResultItems) {
       results.forEach((node, index) => {
         this.resultModulesHandler.updateModule(
           type,

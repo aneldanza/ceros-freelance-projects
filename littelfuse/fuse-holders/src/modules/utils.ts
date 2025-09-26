@@ -55,3 +55,7 @@ export const setImageUrl = (imgStr: string, img: CerosLayer) => {
     img.setUrl(DEFAULT_IMAGE);
   }
 };
+
+export const isMobile = (experience: Experience) => {
+  return experience.findComponentsByTag("mobile").components.length > 0;
+};

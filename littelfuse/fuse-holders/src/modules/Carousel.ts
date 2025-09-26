@@ -30,7 +30,11 @@ export class Carousel {
     private name: Overlay | typeof RESULTS,
     private CerosSDK: CerosSDK,
     private experience: Experience,
-    private moduleHandler: ProductModuleHandler
+    private moduleHandler: ProductModuleHandler,
+    private processOverlayLayers?: (
+      layersDict: Record<string, CerosLayer[]>,
+      moduleTag: string
+    ) => void
   ) {
     this.registerNavigationEvents();
   }
@@ -107,7 +111,12 @@ export class Carousel {
     while (i < this.max && i < parts.length) {
       const part = parts[i];
       if (part) {
-        this.moduleHandler.updateModule(this.max, i, part);
+        this.moduleHandler.updateModule(
+          this.max,
+          i,
+          part,
+          this.processOverlayLayers
+        );
       }
       i++;
     }

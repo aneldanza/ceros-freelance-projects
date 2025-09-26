@@ -1,5 +1,6 @@
 import { QuestionStrategy } from "./QuestionStrategy";
 import { Node } from "../lib/Node";
+import { isMobile } from "../utils";
 
 export class HidingOptionsStrategy extends QuestionStrategy {
   private isMobile: boolean;
@@ -11,8 +12,7 @@ export class HidingOptionsStrategy extends QuestionStrategy {
     super(name, experience, CerosSDK);
     this.key = "elementId";
 
-    this.isMobile =
-      this.experience.findComponentsByTag("mobile").components.length > 0;
+    this.isMobile = isMobile(experience);
 
     this.isTablet =
       this.experience.findComponentsByTag("tablet").components.length > 0;
