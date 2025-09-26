@@ -43,7 +43,11 @@ export class ProductModuleHandler extends ModuleHandler {
     module.hide();
   }
 
-  processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
+  processLayers(
+    layersDict: Record<string, CerosLayer[]>,
+    moduleTag: string,
+    isLittelfusePick?: boolean
+  ) {
     layersDict[IMAGE] &&
       this.showImageFromUrl(
         moduleTag,
@@ -87,6 +91,17 @@ export class ProductModuleHandler extends ModuleHandler {
 
     layersDict[DESCRIPTION] &&
       this.updateResultTextbox(DESCRIPTION, moduleTag, layersDict[DESCRIPTION]);
+
+    layersDict["pick"] &&
+      this.handleLittelfusePick(layersDict["pick"], !!isLittelfusePick);
+  }
+
+  handleLittelfusePick(layerArray: CerosLayer[], isLittelfusePick: boolean) {
+    if (isLittelfusePick) {
+      layerArray.forEach((l) => l.show());
+    } else {
+      layerArray.forEach((l) => l.hide());
+    }
   }
 
   imageClickCallback(moduleTag: string) {

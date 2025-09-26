@@ -111,11 +111,13 @@ export class Carousel {
     while (i < this.max && i < parts.length) {
       const part = parts[i];
       if (part) {
+        const isLittelfusePick = this.currentPage.value === 1;
         this.moduleHandler.updateModule(
           this.max,
           i,
           part,
-          this.processOverlayLayers
+          this.processOverlayLayers,
+          isLittelfusePick
         );
       }
       i++;
