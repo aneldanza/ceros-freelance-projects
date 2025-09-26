@@ -58,7 +58,7 @@ export class HidingOptionsStrategy extends QuestionStrategy {
       let firstRowNodes: Node[] = [];
       let secondRowNodes: Node[] = [];
 
-      if (sortedNodes.length % 2 === 0) {
+      if (sortedNodes.length === 4) {
         firstRowNodes = sortedNodes.slice(0, 2);
         secondRowNodes = sortedNodes.slice(2);
       } else {
