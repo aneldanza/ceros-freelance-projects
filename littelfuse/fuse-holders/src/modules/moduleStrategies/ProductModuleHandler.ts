@@ -13,7 +13,7 @@ import {
 import { LandingPageProxy } from "../LandinPageProxy";
 import { ModuleHandler } from "./ModuleHandler";
 import { Observable } from "../Observer";
-import { getModuleTag } from "../utils";
+import { getModuleTag, isMobile } from "../utils";
 
 export class ProductModuleHandler extends ModuleHandler {
   private imgLargeHotspotCollection = this.experience.findComponentsByTag(
@@ -90,9 +90,11 @@ export class ProductModuleHandler extends ModuleHandler {
   }
 
   imageClickCallback(moduleTag: string) {
-    const currentObj = this.getResultData(moduleTag);
-    this.imgLrgLink.value = currentObj.data.image;
-    this.imgLargeHotspotCollection.click();
+    if (!isMobile(this.experience)) {
+      const currentObj = this.getResultData(moduleTag);
+      this.imgLrgLink.value = currentObj.data.image;
+      this.imgLargeHotspotCollection.click();
+    }
   }
 
   registerResultClcikEvent(
