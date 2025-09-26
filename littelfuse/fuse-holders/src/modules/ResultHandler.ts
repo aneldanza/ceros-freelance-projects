@@ -88,7 +88,7 @@ export class ResultHandler {
     );
 
     this.accessoriesCarousel = new Carousel(
-      MAX_ACCESSORIES,
+      this.maxAccessories,
       ACCESSORIES,
       CerosSDK,
       experience,
@@ -96,7 +96,7 @@ export class ResultHandler {
     );
 
     this.relatedProductsCarousel = new Carousel(
-      MAX_RELATED_PRODUCTS,
+      this.maxRelatedProducts,
       RELATED_PRODUCTS,
       CerosSDK,
       experience,
@@ -213,7 +213,7 @@ export class ResultHandler {
   }
 
   updateRelatedProductsModules(parts: CsvData[]) {
-    if (parts.length <= MAX_RELATED_PRODUCTS) {
+    if (parts.length <= this.maxRelatedProducts) {
       parts.forEach((part, index) => {
         this.relatedProductsModulesHandler.updateModule(
           parts.length,
@@ -227,7 +227,7 @@ export class ResultHandler {
   }
 
   updateAccessoriesModules(parts: CsvData[]) {
-    if (parts.length <= MAX_ACCESSORIES) {
+    if (parts.length <= this.maxAccessories) {
       parts.forEach((part, index) => {
         this.accessoriesModulesHandler.updateModule(parts.length, index, part);
       });
@@ -300,10 +300,10 @@ export class ResultHandler {
 
       if (overlayName === RELATED_PRODUCTS) {
         this.updateRelatedProductsModules(parts);
-        this.triggerHotspot(overlayName, parts.length, MAX_RELATED_PRODUCTS);
+        this.triggerHotspot(overlayName, parts.length, this.maxRelatedProducts);
       } else if (overlayName === ACCESSORIES) {
         this.updateAccessoriesModules(parts);
-        this.triggerHotspot(overlayName, parts.length, MAX_ACCESSORIES);
+        this.triggerHotspot(overlayName, parts.length, this.maxAccessories);
       }
     });
   }
