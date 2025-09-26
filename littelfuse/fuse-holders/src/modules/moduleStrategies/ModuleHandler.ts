@@ -121,6 +121,18 @@ export abstract class ModuleHandler {
     return this.moduleDict[type][moduleTag];
   }
 
+  hideModule(type: number, index: number) {
+    const moduleTag = getModuleTag(type, index, this.moduleName);
+    const module = this.experience.findLayersByTag(moduleTag);
+
+    if (!module.layers.length) {
+      console.error(`No module found with tag: ${moduleTag}`);
+      return;
+    }
+
+    module.hide();
+  }
+
   abstract processLayers(
     layersDict: Record<string, CerosLayer[]>,
     moduleTag: string,

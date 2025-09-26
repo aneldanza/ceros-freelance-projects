@@ -1,11 +1,12 @@
 import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
-import { Observable } from "./Observer";
+import { NonStrictObservable } from "./Observer";
 import { CsvData, Overlay } from "./quizTypes";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
-import { RESULTS } from "./constants";
+import { PARTS, RESULTS } from "./constants";
+import { PartModuleHandler } from "./moduleStrategies/PartModuleHandler";
 
 export class Carousel {
-  private currentPage: Observable<number> = new Observable(0);
+  private currentPage: NonStrictObservable<number> = new NonStrictObservable(0);
   private parts: CsvData[] = [];
   private next: CerosLayerCollection = this.experience.findLayersByTag(
     `${this.name}-next`
@@ -27,10 +28,10 @@ export class Carousel {
 
   constructor(
     private max: number,
-    private name: Overlay | typeof RESULTS,
+    private name: Overlay | typeof RESULTS | typeof PARTS,
     private CerosSDK: CerosSDK,
     private experience: Experience,
-    private moduleHandler: ProductModuleHandler,
+    private moduleHandler: ProductModuleHandler | PartModuleHandler,
     private processOverlayLayers?: (
       layersDict: Record<string, CerosLayer[]>,
       moduleTag: string

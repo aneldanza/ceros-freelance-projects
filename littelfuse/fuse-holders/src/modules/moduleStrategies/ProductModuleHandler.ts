@@ -31,17 +31,17 @@ export class ProductModuleHandler extends ModuleHandler {
     super(moduleName, experience, CerosSDK);
   }
 
-  hideModule(type: number, index: number) {
-    const moduleTag = getModuleTag(type, index, this.moduleName);
-    const module = this.experience.findLayersByTag(moduleTag);
+  // hideModule(type: number, index: number) {
+  //   const moduleTag = getModuleTag(type, index, this.moduleName);
+  //   const module = this.experience.findLayersByTag(moduleTag);
 
-    if (!module.layers.length) {
-      console.error(`No module found with tag: ${moduleTag}`);
-      return;
-    }
+  //   if (!module.layers.length) {
+  //     console.error(`No module found with tag: ${moduleTag}`);
+  //     return;
+  //   }
 
-    module.hide();
-  }
+  //   module.hide();
+  // }
 
   processLayers(
     layersDict: Record<string, CerosLayer[]>,
