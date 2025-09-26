@@ -31,6 +31,8 @@ export class ResultHandler {
     accessories: {},
   };
   private maxResultItems: number = MAX_RESULTS;
+  private maxRelatedProducts: number = MAX_RELATED_PRODUCTS;
+  private maxAccessories: number = MAX_ACCESSORIES;
 
   private resultModulesHandler: ProductModuleHandler;
   private relatedProductsModulesHandler: ProductModuleHandler;
@@ -53,6 +55,8 @@ export class ResultHandler {
   ) {
     if (isMobile(experience)) {
       this.maxResultItems = MOBILE_MAX_ITEMS;
+      this.maxRelatedProducts = MOBILE_MAX_ITEMS;
+      this.maxAccessories = MOBILE_MAX_ITEMS;
     }
     this.pathNavigationCollection = experience.findLayersByTag(`nav:${PART}`);
     this.landingPageProxy = new LandingPageProxy();
