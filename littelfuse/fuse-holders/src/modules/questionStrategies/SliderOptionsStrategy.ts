@@ -125,6 +125,8 @@ export class SliderOptionsStrategy extends QuestionStrategy {
       if (this.output) this.output.style.display = "none";
       this.nextButton.hide();
       this.nextButtonMask.hide();
+      const sliderInfo = this.experience.findLayersByTag("slider-info");
+      sliderInfo.hide();
 
       this.displaySingleOption(nodeValues);
     }
