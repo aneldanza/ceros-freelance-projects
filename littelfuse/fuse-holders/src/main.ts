@@ -14,7 +14,8 @@ const path2Link = script.getAttribute("data-path2") || "";
 
 if (typeof require !== "undefined" && typeof require === "function") {
   require.config({
-    baseUrl: "http://127.0.0.1:5173/",
+    baseUrl:
+      "https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/fuse-holders/",
     paths: {
       CerosSDK: "//sdk.ceros.com/standalone-player-sdk-v5.min",
       PapaParse:

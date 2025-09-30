@@ -1,5 +1,6 @@
 import { Node } from "../lib/Node";
 import { Observable } from "../Observer";
+import { isMobile } from "../utils";
 import { QuestionStrategy } from "./QuestionStrategy";
 
 export class SliderOptionsStrategy extends QuestionStrategy {
@@ -144,6 +145,8 @@ export class SliderOptionsStrategy extends QuestionStrategy {
     const slider = this.getSlider(sliderContainer) as HTMLInputElement;
     this.slider = slider;
 
+    // if (isMobile(this.experience)) {
+    // } else {
     this.slider.addEventListener("input", (event) => {
       const target = event.target as HTMLInputElement;
 
@@ -152,6 +155,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
         this.currentIndex.value = parseInt(target.value, 10);
       }
     });
+    // }
     this.updateSliderValuePosition();
   }
 
