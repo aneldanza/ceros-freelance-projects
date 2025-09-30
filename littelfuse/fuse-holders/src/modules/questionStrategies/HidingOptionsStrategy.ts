@@ -72,7 +72,7 @@ export class HidingOptionsStrategy extends QuestionStrategy {
         ? this.displayMobileLayoutOptions(secondRowNodes, 2)
         : this.hideMobileOptionsRow(2);
     } else {
-      this.displayLayoutOptions(sortedNodes, this.handleTextOptions);
+      this.displayLayoutOptions(sortedNodes, this.handleTextOptions.bind(this));
     }
   }
 
