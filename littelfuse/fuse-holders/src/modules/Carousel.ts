@@ -94,14 +94,13 @@ export class Carousel {
 
       if (this.isLastPage()) {
         this.next.hide();
-      } else {
-        this.next.show();
-      }
-
-      if (this.isFirstPage()) {
+        this.back.show();
+      } else if (this.isFirstPage()) {
         this.back.hide();
+        this.next.show();
       } else {
         this.back.show();
+        this.next.show();
       }
     });
   }
@@ -111,6 +110,7 @@ export class Carousel {
     const parts = this.pages[this.currentPage.value];
     while (i < this.max && i < parts.length) {
       const part = parts[i];
+
       if (part) {
         const isLittelfusePick = this.currentPage.value === 1;
         this.moduleHandler.updateModule(

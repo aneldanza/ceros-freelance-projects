@@ -651,15 +651,6 @@ define('modules/moduleStrategies/ProductModuleHandler',["require", "exports", ".
             this.imgLrgLink = imgLrgLink;
             this.imgLargeHotspotCollection = this.experience.findComponentsByTag(`${constants_1.IMG_LRG}-1`);
         }
-        // hideModule(type: number, index: number) {
-        //   const moduleTag = getModuleTag(type, index, this.moduleName);
-        //   const module = this.experience.findLayersByTag(moduleTag);
-        //   if (!module.layers.length) {
-        //     console.error(`No module found with tag: ${moduleTag}`);
-        //     return;
-        //   }
-        //   module.hide();
-        // }
         processLayers(layersDict, moduleTag, isLittelfusePick) {
             layersDict[constants_1.IMAGE] &&
                 this.showImageFromUrl(moduleTag, ModuleHandler_1.ModuleHandler.handleModuleImage, layersDict[constants_1.IMAGE], this.imageClickCallback.bind(this));
@@ -783,15 +774,15 @@ define('modules/Carousel',["require", "exports", "./Observer", "./DoubleClickBug
                 this.populate();
                 if (this.isLastPage()) {
                     this.next.hide();
+                    this.back.show();
                 }
-                else {
-                    this.next.show();
-                }
-                if (this.isFirstPage()) {
+                else if (this.isFirstPage()) {
                     this.back.hide();
+                    this.next.show();
                 }
                 else {
                     this.back.show();
+                    this.next.show();
                 }
             });
         }
@@ -800,6 +791,7 @@ define('modules/Carousel',["require", "exports", "./Observer", "./DoubleClickBug
             const parts = this.pages[this.currentPage.value];
             while (i < this.max && i < parts.length) {
                 const part = parts[i];
+                console.log("populating part with index" + i);
                 if (part) {
                     const isLittelfusePick = this.currentPage.value === 1;
                     this.moduleHandler.updateModule(this.max, i, part, this.processOverlayLayers, isLittelfusePick);
@@ -1584,6 +1576,8 @@ define('modules/questionStrategies/SliderOptionsStrategy',["require", "exports",
                     this.output.style.display = "none";
                 this.nextButton.hide();
                 this.nextButtonMask.hide();
+                const sliderInfo = this.experience.findLayersByTag("slider-info");
+                sliderInfo.hide();
                 this.displaySingleOption(nodeValues);
             }
         }
