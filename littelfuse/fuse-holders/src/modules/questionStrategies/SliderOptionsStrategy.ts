@@ -184,12 +184,32 @@ export class SliderOptionsStrategy extends QuestionStrategy {
     }
   }
 
+  // updateSliderBackground() {
+  //   if (this.slider) {
+  //     const percent =
+  //       (this.currentIndex.value / (this.sliderValues.length - 1)) * 100;
+  //     const trackStyle = `linear-gradient(to right, #5CC883 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
+  //     this.slider.style.background = trackStyle;
+  //   }
+  // }
+
   updateSliderBackground() {
     if (this.slider) {
       const percent =
         (this.currentIndex.value / (this.sliderValues.length - 1)) * 100;
-      const trackStyle = `linear-gradient(to right, #5CC883 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
-      this.slider.style.background = trackStyle;
+
+      // WebKit-only logic (Chrome, Safari, Edge)
+      const isWebKit = "WebkitAppearance" in document.documentElement.style;
+      if (isWebKit) {
+        const trackStyle = `linear-gradient(
+        to right,
+        #5CC883 0%,
+        #008752 ${percent}%,
+        #ccc ${percent}%,
+        #ccc 100%
+      )`;
+        this.slider.style.background = trackStyle;
+      }
     }
   }
 
