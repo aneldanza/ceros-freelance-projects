@@ -11,8 +11,17 @@ export class Carousel {
   private next: CerosLayerCollection = this.experience.findLayersByTag(
     `${this.name}-next`
   );
+
   private back: CerosLayerCollection = this.experience.findLayersByTag(
     `${this.name}-back`
+  );
+
+  private backMask: CerosLayerCollection = this.experience.findLayersByTag(
+    `${this.name}-mask-back`
+  );
+
+  private nextMask: CerosLayerCollection = this.experience.findLayersByTag(
+    `${this.name}-mask-next`
   );
 
   private currentIndex: CerosComponentCollection =
@@ -75,17 +84,17 @@ export class Carousel {
       this.currentPage.value--;
     });
 
-    this.next.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
-      if (this.isLastPage()) {
-        this.next.hide();
-      }
-    });
+    // this.next.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
+    //   if (this.isLastPage()) {
+    //     this.next.hide();
+    //   }
+    // });
 
-    this.back.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
-      if (this.isFirstPage()) {
-        this.back.hide();
-      }
-    });
+    // this.back.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
+    //   if (this.isFirstPage()) {
+    //     this.back.hide();
+    //   }
+    // });
 
     this.currentPage.subscribe(() => {
       this.hideModules();
@@ -93,14 +102,20 @@ export class Carousel {
       this.populate();
 
       if (this.isLastPage()) {
-        this.next.hide();
-        this.back.show();
+        // this.next.hide();
+        // this.back.show();
+        this.nextMask.show();
+        this.backMask.hide();
       } else if (this.isFirstPage()) {
-        this.back.hide();
-        this.next.show();
+        // this.back.hide();
+        // this.next.show();
+        this.backMask.show();
+        this.nextMask.hide();
       } else {
-        this.back.show();
-        this.next.show();
+        // this.back.show();
+        // this.next.show();
+        this.backMask.hide();
+        this.nextMask.hide();
       }
     });
   }
