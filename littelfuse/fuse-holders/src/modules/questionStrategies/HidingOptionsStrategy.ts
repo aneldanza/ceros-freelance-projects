@@ -1,5 +1,6 @@
 import { QuestionStrategy } from "./QuestionStrategy";
 import { Node } from "../lib/Node";
+import { isMobile } from "../utils";
 
 export class HidingOptionsStrategy extends QuestionStrategy {
   private isMobile: boolean;
@@ -11,8 +12,7 @@ export class HidingOptionsStrategy extends QuestionStrategy {
     super(name, experience, CerosSDK);
     this.key = "elementId";
 
-    this.isMobile =
-      this.experience.findComponentsByTag("mobile").components.length > 0;
+    this.isMobile = isMobile(experience);
 
     this.isTablet =
       this.experience.findComponentsByTag("tablet").components.length > 0;
@@ -58,7 +58,7 @@ export class HidingOptionsStrategy extends QuestionStrategy {
       let firstRowNodes: Node[] = [];
       let secondRowNodes: Node[] = [];
 
-      if (sortedNodes.length % 2 === 0) {
+      if (sortedNodes.length === 4) {
         firstRowNodes = sortedNodes.slice(0, 2);
         secondRowNodes = sortedNodes.slice(2);
       } else {
@@ -72,7 +72,7 @@ export class HidingOptionsStrategy extends QuestionStrategy {
         ? this.displayMobileLayoutOptions(secondRowNodes, 2)
         : this.hideMobileOptionsRow(2);
     } else {
-      this.displayLayoutOptions(sortedNodes, this.handleTextOptions);
+      this.displayLayoutOptions(sortedNodes, this.handleTextOptions.bind(this));
     }
   }
 

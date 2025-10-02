@@ -13,7 +13,7 @@ import {
 import { LandingPageProxy } from "../LandinPageProxy";
 import { ModuleHandler } from "./ModuleHandler";
 import { Observable } from "../Observer";
-import { getModuleTag } from "../utils";
+import { getModuleTag, isMobile } from "../utils";
 
 export class ProductModuleHandler extends ModuleHandler {
   private imgLargeHotspotCollection = this.experience.findComponentsByTag(
@@ -31,19 +31,11 @@ export class ProductModuleHandler extends ModuleHandler {
     super(moduleName, experience, CerosSDK);
   }
 
-  hideModule(type: number, index: number) {
-    const moduleTag = getModuleTag(type, index, this.moduleName);
-    const module = this.experience.findLayersByTag(moduleTag);
-
-    if (!module.layers.length) {
-      console.error(`No module found with tag: ${moduleTag}`);
-      return;
-    }
-
-    module.hide();
-  }
-
-  processLayers(layersDict: Record<string, CerosLayer[]>, moduleTag: string) {
+  processLayers(
+    layersDict: Record<string, CerosLayer[]>,
+    moduleTag: string,
+    isLittelfusePick?: boolean
+  ) {
     layersDict[IMAGE] &&
       this.showImageFromUrl(
         moduleTag,
@@ -87,12 +79,25 @@ export class ProductModuleHandler extends ModuleHandler {
 
     layersDict[DESCRIPTION] &&
       this.updateResultTextbox(DESCRIPTION, moduleTag, layersDict[DESCRIPTION]);
+
+    layersDict["pick"] &&
+      this.handleLittelfusePick(layersDict["pick"], !!isLittelfusePick);
+  }
+
+  handleLittelfusePick(layerArray: CerosLayer[], isLittelfusePick: boolean) {
+    if (isLittelfusePick) {
+      layerArray.forEach((l) => l.show());
+    } else {
+      layerArray.forEach((l) => l.hide());
+    }
   }
 
   imageClickCallback(moduleTag: string) {
-    const currentObj = this.getResultData(moduleTag);
-    this.imgLrgLink.value = currentObj.data.image;
-    this.imgLargeHotspotCollection.click();
+    if (!isMobile(this.experience)) {
+      const currentObj = this.getResultData(moduleTag);
+      this.imgLrgLink.value = currentObj.data.image;
+      this.imgLargeHotspotCollection.click();
+    }
   }
 
   registerResultClcikEvent(
@@ -101,18 +106,27 @@ export class ProductModuleHandler extends ModuleHandler {
     moduleTag: string
   ) {
     layerArray.forEach((layer) => {
-      layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
-        const obj = this.getResultData(moduleTag);
+      if (this.isNew) {
+        layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
+          const obj = this.getResultData(moduleTag);
 
-        this.landingPageProxy.openAndTrackLink(obj.data[key], layer.id);
-      });
+          this.landingPageProxy.openAndTrackLink(obj.data[key], layer.id);
+        });
 
-      layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+        layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+          const dict = this.getResultData(moduleTag);
+          if (!dict.data[key]) {
+            layer.hide();
+          }
+        });
+      } else if (isMobile(this.experience) && key === PRODUCT_GUIDE) {
         const dict = this.getResultData(moduleTag);
         if (!dict.data[key]) {
           layer.hide();
+        } else {
+          layer.show();
         }
-      });
+      }
     });
   }
 }

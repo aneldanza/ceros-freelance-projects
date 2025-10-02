@@ -15,6 +15,7 @@ export class MaskingOptionsStrategy extends QuestionStrategy {
     this.key = "value";
     this.maskCollection = this.experience.findLayersByTag(`mask:${this.name}`);
     this.registerCerosEvents();
+    this.registerMaskAnimations();
   }
 
   registerCerosEvents() {
@@ -33,8 +34,15 @@ export class MaskingOptionsStrategy extends QuestionStrategy {
   }
 
   displayAnswerOptions(node: Node): void {
-    this.maskCollection.layers.forEach((comp: CerosLayer) => {
-      this.handleMasks(comp, node);
+    this.maskCollection.layers.forEach((mask: CerosLayer) => {
+      // this.handleMasks(comp, node);
+      const foundNode = node.findChildByValueProperty(mask.getPayload().trim());
+
+      if (foundNode) {
+        mask.hide();
+      } else {
+        mask.show();
+      }
     });
   }
 
@@ -44,7 +52,7 @@ export class MaskingOptionsStrategy extends QuestionStrategy {
     if (foundNode) {
       mask.hide();
     } else {
-      mask.show();
+      // mask.show();
     }
   }
 

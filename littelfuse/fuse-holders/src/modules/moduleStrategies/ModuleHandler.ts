@@ -13,7 +13,7 @@ export abstract class ModuleHandler {
     };
   } = {};
 
-  protected isNew: boolean = false;
+  public isNew: boolean = false;
   protected doubleClickBugHandler: DoubleClickBugHandler;
 
   constructor(
@@ -37,7 +37,8 @@ export abstract class ModuleHandler {
     processOverlayLayers?: (
       layersDict: Record<string, CerosLayer[]>,
       moduleTag: string
-    ) => void
+    ) => void,
+    isLittelfusePick?: boolean
   ) {
     const moduleTag = getModuleTag(type, index, this.moduleName);
     const module = this.experience.findLayersByTag(moduleTag);
@@ -63,7 +64,7 @@ export abstract class ModuleHandler {
     this.moduleDict[size][moduleTag].data = data;
     this.moduleDict[size][moduleTag].layers = layersDict;
 
-    this.processLayers(layersDict, moduleTag);
+    this.processLayers(layersDict, moduleTag, isLittelfusePick);
     processOverlayLayers && processOverlayLayers(layersDict, moduleTag);
 
     console.log(this.moduleDict);
@@ -120,8 +121,21 @@ export abstract class ModuleHandler {
     return this.moduleDict[type][moduleTag];
   }
 
+  hideModule(type: number, index: number) {
+    const moduleTag = getModuleTag(type, index, this.moduleName);
+    const module = this.experience.findLayersByTag(moduleTag);
+
+    if (!module.layers.length) {
+      console.error(`No module found with tag: ${moduleTag}`);
+      return;
+    }
+
+    module.hide();
+  }
+
   abstract processLayers(
     layersDict: Record<string, CerosLayer[]>,
-    moduleTag: string
+    moduleTag: string,
+    isLittelfusePick?: boolean
   ): void;
 }

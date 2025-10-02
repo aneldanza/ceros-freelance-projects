@@ -10,6 +10,7 @@ import {
   PART,
   PATH2,
   TAB,
+  MOBILE_MAX_ITEMS,
 } from "./constants";
 import { Node } from "./lib/Node";
 import { Observable } from "./Observer";
@@ -19,6 +20,7 @@ import { ProductModuleHandler } from "./moduleStrategies/ProductModuleHandler";
 import { DoubleClickBugHandler } from "./DoubleClickBugHandler";
 import { Carousel } from "./Carousel";
 import { TabNavHandler } from "./moduleStrategies/TabNavHandler";
+import { isMobile } from "./utils";
 
 export class ResultHandler {
   public pathNavigationCollection: CerosLayerCollection;
@@ -28,6 +30,9 @@ export class ResultHandler {
     "related products": {},
     accessories: {},
   };
+  private maxResultItems: number = MAX_RESULTS;
+  private maxRelatedProducts: number = MAX_RELATED_PRODUCTS;
+  private maxAccessories: number = MAX_ACCESSORIES;
 
   private resultModulesHandler: ProductModuleHandler;
   private relatedProductsModulesHandler: ProductModuleHandler;
@@ -48,6 +53,11 @@ export class ResultHandler {
     private PapaParse: typeof window.Papa,
     private imgLrgLink: Observable<string>
   ) {
+    if (isMobile(experience)) {
+      this.maxResultItems = MOBILE_MAX_ITEMS;
+      this.maxRelatedProducts = MOBILE_MAX_ITEMS;
+      this.maxAccessories = MOBILE_MAX_ITEMS;
+    }
     this.pathNavigationCollection = experience.findLayersByTag(`nav:${PART}`);
     this.landingPageProxy = new LandingPageProxy();
     this.resultModulesHandler = new ProductModuleHandler(
@@ -78,7 +88,7 @@ export class ResultHandler {
     );
 
     this.accessoriesCarousel = new Carousel(
-      MAX_ACCESSORIES,
+      this.maxAccessories,
       ACCESSORIES,
       CerosSDK,
       experience,
@@ -86,7 +96,7 @@ export class ResultHandler {
     );
 
     this.relatedProductsCarousel = new Carousel(
-      MAX_RELATED_PRODUCTS,
+      this.maxRelatedProducts,
       RELATED_PRODUCTS,
       CerosSDK,
       experience,
@@ -94,11 +104,12 @@ export class ResultHandler {
     );
 
     this.resultsCarousel = new Carousel(
-      MAX_RESULTS,
+      this.maxResultItems,
       RESULTS,
       CerosSDK,
       experience,
-      this.resultModulesHandler
+      this.resultModulesHandler,
+      this.processOverlayLayers.bind(this)
     );
 
     this.tabNavHandler = new TabNavHandler(
@@ -146,13 +157,13 @@ export class ResultHandler {
   showPath1Results(length: number) {
     this.updateResultModules(length, this.currentNodeObservable.value.children);
 
-    this.triggerHotspot(RESULTS, length, MAX_RESULTS);
+    this.triggerHotspot(RESULTS, length, this.maxResultItems);
   }
 
   showPath2Results(length: number, nodes: Node[]) {
     this.updateResultModules(length, nodes);
 
-    this.triggerHotspot(RESULTS, length, MAX_RESULTS);
+    this.triggerHotspot(RESULTS, length, this.maxResultItems);
   }
 
   sortNodesBySales(nodes: Node[]) {
@@ -165,7 +176,7 @@ export class ResultHandler {
 
   updateResultModules(type: number, nodes: Node[]) {
     const results = this.sortNodesBySales(nodes);
-    if (results.length <= MAX_RESULTS) {
+    if (results.length <= this.maxResultItems) {
       results.forEach((node, index) => {
         this.resultModulesHandler.updateModule(
           type,
@@ -202,7 +213,7 @@ export class ResultHandler {
   }
 
   updateRelatedProductsModules(parts: CsvData[]) {
-    if (parts.length <= MAX_RELATED_PRODUCTS) {
+    if (parts.length <= this.maxRelatedProducts) {
       parts.forEach((part, index) => {
         this.relatedProductsModulesHandler.updateModule(
           parts.length,
@@ -216,7 +227,7 @@ export class ResultHandler {
   }
 
   updateAccessoriesModules(parts: CsvData[]) {
-    if (parts.length <= MAX_ACCESSORIES) {
+    if (parts.length <= this.maxAccessories) {
       parts.forEach((part, index) => {
         this.accessoriesModulesHandler.updateModule(parts.length, index, part);
       });
@@ -232,10 +243,44 @@ export class ResultHandler {
     link: string
   ) {
     layerArray.forEach((layer) => {
-      this.registerOverlayAnimation(layer, moduleTag, name);
+      if (this.resultModulesHandler.isNew) {
+        this.registerOverlayAnimation(layer, moduleTag, name);
 
-      this.registerOverlayClick(layer, moduleTag, name, link);
+        this.registerOverlayClick(layer, moduleTag, name, link);
+      } else {
+        this.handleButtonDisplay(layer, moduleTag, name);
+      }
     });
+  }
+
+  handleButtonDisplay(l: CerosLayer, moduleTag: string, name: Overlay) {
+    const items = this.getPartNumbers(moduleTag, name);
+    if (items.length === 0) {
+      l.hide();
+    } else if (name === ACCESSORIES) {
+      const hasRelatedProducts = !!this.getPartNumbers(
+        moduleTag,
+        RELATED_PRODUCTS
+      ).length;
+
+      const hasProductGuide = !!this.getValue(moduleTag, PRODUCT_GUIDE);
+
+      if (hasRelatedProducts || hasProductGuide) {
+        if (l.getTags().find((tag) => tag === "pos:1")) {
+          l.hide();
+        } else {
+          l.show();
+        }
+      } else {
+        if (l.getTags().find((tag) => tag === "pos:2")) {
+          l.hide();
+        } else {
+          l.show();
+        }
+      }
+    } else {
+      l.show();
+    }
   }
 
   registerOverlayAnimation(
@@ -243,10 +288,10 @@ export class ResultHandler {
     moduleTag: string,
     name: Overlay
   ) {
-    layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+    layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (l) => {
       const items = this.getPartNumbers(moduleTag, name);
       if (items.length === 0) {
-        layer.hide();
+        l.hide();
       } else if (name === ACCESSORIES) {
         const hasRelatedProducts = !!this.getPartNumbers(
           moduleTag,
@@ -256,12 +301,12 @@ export class ResultHandler {
         const hasProductGuide = !!this.getValue(moduleTag, PRODUCT_GUIDE);
 
         if (hasRelatedProducts || hasProductGuide) {
-          if (layer.getTags().find((tag) => tag === "pos:1")) {
-            layer.hide();
+          if (l.getTags().find((tag) => tag === "pos:1")) {
+            l.hide();
           }
         } else {
-          if (layer.getTags().find((tag) => tag === "pos:2")) {
-            layer.hide();
+          if (l.getTags().find((tag) => tag === "pos:2")) {
+            l.hide();
           }
         }
       }
@@ -289,10 +334,10 @@ export class ResultHandler {
 
       if (overlayName === RELATED_PRODUCTS) {
         this.updateRelatedProductsModules(parts);
-        this.triggerHotspot(overlayName, parts.length, MAX_RELATED_PRODUCTS);
+        this.triggerHotspot(overlayName, parts.length, this.maxRelatedProducts);
       } else if (overlayName === ACCESSORIES) {
         this.updateAccessoriesModules(parts);
-        this.triggerHotspot(overlayName, parts.length, MAX_ACCESSORIES);
+        this.triggerHotspot(overlayName, parts.length, this.maxAccessories);
       }
     });
   }

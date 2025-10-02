@@ -1,5 +1,6 @@
 import { Node } from "../lib/Node";
 import { Observable } from "../Observer";
+import { isMobile } from "../utils";
 import { QuestionStrategy } from "./QuestionStrategy";
 
 export class SliderOptionsStrategy extends QuestionStrategy {
@@ -124,6 +125,8 @@ export class SliderOptionsStrategy extends QuestionStrategy {
       if (this.output) this.output.style.display = "none";
       this.nextButton.hide();
       this.nextButtonMask.hide();
+      const sliderInfo = this.experience.findLayersByTag("slider-info");
+      sliderInfo.hide();
 
       this.displaySingleOption(nodeValues);
     }
@@ -144,6 +147,8 @@ export class SliderOptionsStrategy extends QuestionStrategy {
     const slider = this.getSlider(sliderContainer) as HTMLInputElement;
     this.slider = slider;
 
+    // if (isMobile(this.experience)) {
+    // } else {
     this.slider.addEventListener("input", (event) => {
       const target = event.target as HTMLInputElement;
 
@@ -152,6 +157,7 @@ export class SliderOptionsStrategy extends QuestionStrategy {
         this.currentIndex.value = parseInt(target.value, 10);
       }
     });
+    // }
     this.updateSliderValuePosition();
   }
 
@@ -178,12 +184,32 @@ export class SliderOptionsStrategy extends QuestionStrategy {
     }
   }
 
+  // updateSliderBackground() {
+  //   if (this.slider) {
+  //     const percent =
+  //       (this.currentIndex.value / (this.sliderValues.length - 1)) * 100;
+  //     const trackStyle = `linear-gradient(to right, #5CC883 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
+  //     this.slider.style.background = trackStyle;
+  //   }
+  // }
+
   updateSliderBackground() {
     if (this.slider) {
       const percent =
         (this.currentIndex.value / (this.sliderValues.length - 1)) * 100;
-      const trackStyle = `linear-gradient(to right, #5CC883 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
-      this.slider.style.background = trackStyle;
+
+      // WebKit-only logic (Chrome, Safari, Edge)
+      const isWebKit = "WebkitAppearance" in document.documentElement.style;
+      if (isWebKit) {
+        const trackStyle = `linear-gradient(
+        to right,
+        #5CC883 0%,
+        #008752 ${percent}%,
+        #ccc ${percent}%,
+        #ccc 100%
+      )`;
+        this.slider.style.background = trackStyle;
+      }
     }
   }
 
