@@ -690,16 +690,27 @@ define('modules/moduleStrategies/ProductModuleHandler',["require", "exports", ".
         }
         registerResultClcikEvent(layerArray, key, moduleTag) {
             layerArray.forEach((layer) => {
-                layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
-                    const obj = this.getResultData(moduleTag);
-                    this.landingPageProxy.openAndTrackLink(obj.data[key], layer.id);
-                });
-                layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+                if (this.isNew) {
+                    layer.on(this.CerosSDK.EVENTS.CLICKED, () => {
+                        const obj = this.getResultData(moduleTag);
+                        this.landingPageProxy.openAndTrackLink(obj.data[key], layer.id);
+                    });
+                    layer.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, (layer) => {
+                        const dict = this.getResultData(moduleTag);
+                        if (!dict.data[key]) {
+                            layer.hide();
+                        }
+                    });
+                }
+                else if ((0, utils_1.isMobile)(this.experience) && key === constants_1.PRODUCT_GUIDE) {
                     const dict = this.getResultData(moduleTag);
                     if (!dict.data[key]) {
                         layer.hide();
                     }
-                });
+                    else {
+                        layer.show();
+                    }
+                }
             });
         }
     }
@@ -722,6 +733,8 @@ define('modules/Carousel',["require", "exports", "./Observer", "./DoubleClickBug
             this.parts = [];
             this.next = this.experience.findLayersByTag(`${this.name}-next`);
             this.back = this.experience.findLayersByTag(`${this.name}-back`);
+            this.backMask = this.experience.findLayersByTag(`${this.name}-mask-back`);
+            this.nextMask = this.experience.findLayersByTag(`${this.name}-mask-next`);
             this.currentIndex = this.experience.findComponentsByTag(`${this.name}-current`);
             this.totalIndex = this.experience.findComponentsByTag(`${this.name}-total`);
             this.pages = {};
@@ -758,31 +771,37 @@ define('modules/Carousel',["require", "exports", "./Observer", "./DoubleClickBug
                     return;
                 this.currentPage.value--;
             });
-            this.next.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
-                if (this.isLastPage()) {
-                    this.next.hide();
-                }
-            });
-            this.back.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
-                if (this.isFirstPage()) {
-                    this.back.hide();
-                }
-            });
+            // this.next.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
+            //   if (this.isLastPage()) {
+            //     this.next.hide();
+            //   }
+            // });
+            // this.back.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
+            //   if (this.isFirstPage()) {
+            //     this.back.hide();
+            //   }
+            // });
             this.currentPage.subscribe(() => {
                 this.hideModules();
                 this.updatePageIndex();
                 this.populate();
                 if (this.isLastPage()) {
-                    this.next.hide();
-                    this.back.show();
+                    // this.next.hide();
+                    // this.back.show();
+                    this.nextMask.show();
+                    this.backMask.hide();
                 }
                 else if (this.isFirstPage()) {
-                    this.back.hide();
-                    this.next.show();
+                    // this.back.hide();
+                    // this.next.show();
+                    this.backMask.show();
+                    this.nextMask.hide();
                 }
                 else {
-                    this.back.show();
-                    this.next.show();
+                    // this.back.show();
+                    // this.next.show();
+                    this.backMask.hide();
+                    this.nextMask.hide();
                 }
             });
         }
@@ -791,7 +810,6 @@ define('modules/Carousel',["require", "exports", "./Observer", "./DoubleClickBug
             const parts = this.pages[this.currentPage.value];
             while (i < this.max && i < parts.length) {
                 const part = parts[i];
-                console.log("populating part with index" + i);
                 if (part) {
                     const isLittelfusePick = this.currentPage.value === 1;
                     this.moduleHandler.updateModule(this.max, i, part, this.processOverlayLayers, isLittelfusePick);
@@ -1621,11 +1639,29 @@ define('modules/questionStrategies/SliderOptionsStrategy',["require", "exports",
                         : `${this.sliderValues[this.currentIndex.value]}A`;
             }
         }
+        // updateSliderBackground() {
+        //   if (this.slider) {
+        //     const percent =
+        //       (this.currentIndex.value / (this.sliderValues.length - 1)) * 100;
+        //     const trackStyle = `linear-gradient(to right, #5CC883 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
+        //     this.slider.style.background = trackStyle;
+        //   }
+        // }
         updateSliderBackground() {
             if (this.slider) {
                 const percent = (this.currentIndex.value / (this.sliderValues.length - 1)) * 100;
-                const trackStyle = `linear-gradient(to right, #5CC883 0%, #008752 ${percent}%, #ccc ${percent}%, #ccc 100%)`;
-                this.slider.style.background = trackStyle;
+                // WebKit-only logic (Chrome, Safari, Edge)
+                const isWebKit = "WebkitAppearance" in document.documentElement.style;
+                if (isWebKit) {
+                    const trackStyle = `linear-gradient(
+        to right,
+        #5CC883 0%,
+        #008752 ${percent}%,
+        #ccc ${percent}%,
+        #ccc 100%
+      )`;
+                    this.slider.style.background = trackStyle;
+                }
             }
         }
         getSlider(sliderContainer) {
