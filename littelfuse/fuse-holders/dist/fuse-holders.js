@@ -702,7 +702,8 @@ define('modules/moduleStrategies/ProductModuleHandler',["require", "exports", ".
                         }
                     });
                 }
-                else if ((0, utils_1.isMobile)(this.experience) && key === constants_1.PRODUCT_GUIDE) {
+                else if (((0, utils_1.isMobile)(this.experience) && key === constants_1.PRODUCT_GUIDE) ||
+                    key === this.distributor) {
                     const dict = this.getResultData(moduleTag);
                     if (!dict.data[key]) {
                         layer.hide();
@@ -771,35 +772,19 @@ define('modules/Carousel',["require", "exports", "./Observer", "./DoubleClickBug
                     return;
                 this.currentPage.value--;
             });
-            // this.next.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
-            //   if (this.isLastPage()) {
-            //     this.next.hide();
-            //   }
-            // });
-            // this.back.on(this.CerosSDK.EVENTS.ANIMATION_STARTED, () => {
-            //   if (this.isFirstPage()) {
-            //     this.back.hide();
-            //   }
-            // });
             this.currentPage.subscribe(() => {
                 this.hideModules();
                 this.updatePageIndex();
                 this.populate();
                 if (this.isLastPage()) {
-                    // this.next.hide();
-                    // this.back.show();
                     this.nextMask.show();
                     this.backMask.hide();
                 }
                 else if (this.isFirstPage()) {
-                    // this.back.hide();
-                    // this.next.show();
                     this.backMask.show();
                     this.nextMask.hide();
                 }
                 else {
-                    // this.back.show();
-                    // this.next.show();
                     this.backMask.hide();
                     this.nextMask.hide();
                 }
