@@ -119,7 +119,10 @@ export class ProductModuleHandler extends ModuleHandler {
             layer.hide();
           }
         });
-      } else if (isMobile(this.experience) && key === PRODUCT_GUIDE) {
+      } else if (
+        (isMobile(this.experience) && key === PRODUCT_GUIDE) ||
+        key === this.distributor
+      ) {
         const dict = this.getResultData(moduleTag);
         if (!dict.data[key]) {
           layer.hide();
