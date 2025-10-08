@@ -145,4 +145,4 @@ export const FUSE_TYPE_INFO = "fuse type info";
 export const TAB = "tab";
 
 export const DEFAULT_IMAGE =
-  "https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/fuse-holders/Image+Not+Available.jpg";
+  "https://info.littelfuse.com/hubfs/Transportation_Logistics/Files%20and%20Presentations/Ceros/Image-Not-Available.jpg";
