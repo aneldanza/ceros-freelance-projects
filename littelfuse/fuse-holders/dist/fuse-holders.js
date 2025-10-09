@@ -141,7 +141,7 @@ define('modules/constants',["require", "exports"], function (require, exports) {
     exports.FUSE_STYLE_INFO = "fuse style info";
     exports.FUSE_TYPE_INFO = "fuse type info";
     exports.TAB = "tab";
-    exports.DEFAULT_IMAGE = "https://ceros-projects.s3.us-east-2.amazonaws.com/littlefuse/fuse-holders/Image+Not+Available.jpg";
+    exports.DEFAULT_IMAGE = "https://info.littelfuse.com/hubfs/Transportation_Logistics/Files%20and%20Presentations/Ceros/Image-Not-Available.jpg";
 });
 
 define('modules/lib/Node',["require", "exports"], function (require, exports) {
